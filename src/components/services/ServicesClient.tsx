@@ -1,0 +1,249 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { type Service, FREQUENCY_OPTIONS } from "@/lib/services-data";
+import type { Contractor } from "@/lib/contractors-data";
+import { supabase, type DbService, type DbContractor } from "@/lib/supabase";
+import { dbToService, serviceToDb, dbToContractor, contractorToDb } from "@/lib/mappers";
+import { PlusIcon, SearchIcon } from "@/components/icons";
+import AddServiceModal from "./AddServiceModal";
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function daysUntil(dateStr: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr + "T00:00:00");
+  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function frequencyLabel(months: number): string {
+  const opt = FREQUENCY_OPTIONS.find((o) => o.value === months);
+  return opt?.label ?? `Every ${months} months`;
+}
+
+export default function ServicesClient() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      const [svcResult, conResult] = await Promise.all([
+        supabase
+          .from("services")
+          .select("*")
+          .order("next_service_date", { ascending: true })
+          .returns<DbService[]>(),
+        supabase
+          .from("contractors")
+          .select("*")
+          .order("company", { ascending: true })
+          .returns<DbContractor[]>(),
+      ]);
+
+      if (svcResult.error) {
+        console.error("Failed to fetch services:", svcResult.error);
+      } else {
+        setServices(svcResult.data.map(dbToService));
+      }
+      if (!conResult.error && conResult.data) {
+        setContractors(conResult.data.map(dbToContractor));
+      }
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
+
+  const filtered = services.filter((s) => {
+    const q = searchQuery.toLowerCase();
+    if (!q) return true;
+    return (
+      s.name.toLowerCase().includes(q) ||
+      s.provider.toLowerCase().includes(q)
+    );
+  });
+
+  async function handleContractorAdded(
+    data: Omit<Contractor, "id" | "createdAt">
+  ): Promise<Contractor> {
+    const { data: rows, error } = await supabase
+      .from("contractors")
+      .insert(contractorToDb(data) as Record<string, unknown>)
+      .select()
+      .returns<DbContractor[]>();
+
+    if (error || !rows?.length) {
+      throw new Error("Failed to add contractor");
+    }
+    const newContractor = dbToContractor(rows[0]);
+    setContractors((prev) =>
+      [...prev, newContractor].sort((a, b) =>
+        a.company.localeCompare(b.company)
+      )
+    );
+    return newContractor;
+  }
+
+  async function handleAdd(data: Omit<Service, "id" | "createdAt">) {
+    const { data: rows, error } = await supabase
+      .from("services")
+      .insert(serviceToDb(data) as Record<string, unknown>)
+      .select()
+      .returns<DbService[]>();
+
+    if (error) {
+      console.error("Failed to add service:", error);
+      return;
+    }
+    setServices(
+      [...services, dbToService(rows[0])].sort((a, b) =>
+        a.nextServiceDate.localeCompare(b.nextServiceDate)
+      )
+    );
+    setModalOpen(false);
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
+      {/* Header */}
+      <header className="flex items-center justify-between mb-6">
+        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+          Home Services
+        </h1>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+        >
+          <PlusIcon width={14} height={14} />
+          Add Service
+        </button>
+      </header>
+
+      {/* Search */}
+      {services.length > 0 && (
+        <div className="mb-4">
+          <div className="relative">
+            <SearchIcon
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
+              width={14}
+              height={14}
+            />
+            <input
+              type="text"
+              placeholder="Search services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Content */}
+      {loading ? (
+        <p className="text-sm text-text-3">Loading services...</p>
+      ) : services.length === 0 ? (
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
+          <p className="text-sm font-semibold text-text-primary mb-1">
+            No services yet
+          </p>
+          <p className="text-[13px] text-text-3">
+            Start tracking recurring home services like mowing, plowing, and maintenance.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
+          <ul role="list" aria-label="Home services">
+            {filtered.map((s) => {
+              const days = daysUntil(s.nextServiceDate);
+              const isOverdue = days <= 0;
+              const isSoon = days > 0 && days <= 30;
+
+              let dueLabel: string;
+              if (isOverdue) {
+                dueLabel =
+                  days === 0
+                    ? "Due today"
+                    : `${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} overdue`;
+              } else {
+                dueLabel = `in ${days} day${days !== 1 ? "s" : ""}`;
+              }
+
+              return (
+                <li key={s.id} className="border-b border-border last:border-b-0">
+                  <Link
+                    href={`/services/${s.id}`}
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                  >
+                    {/* Service info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[13px] font-semibold text-text-primary truncate">
+                          {s.name}
+                        </span>
+                        <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-purple-light text-purple">
+                          {frequencyLabel(s.frequencyMonths)}
+                        </span>
+                      </div>
+                      {s.provider && (
+                        <p className="text-[12px] text-text-3 truncate">
+                          {s.provider}
+                          {s.cost !== null && ` — $${s.cost.toLocaleString()}`}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Due date */}
+                    <div className="flex flex-col items-end gap-0.5 shrink-0">
+                      <span
+                        className={`text-[13px] font-medium whitespace-nowrap ${
+                          isOverdue
+                            ? "text-red"
+                            : isSoon
+                              ? "text-accent"
+                              : "text-text-primary"
+                        }`}
+                      >
+                        {formatDate(s.nextServiceDate)}
+                      </span>
+                      <span
+                        className={`text-[11px] ${
+                          isOverdue
+                            ? "text-red font-medium"
+                            : "text-text-3"
+                        }`}
+                      >
+                        {dueLabel}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Add modal */}
+      {modalOpen && (
+        <AddServiceModal
+          contractors={contractors}
+          onSave={handleAdd}
+          onContractorAdded={handleContractorAdded}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
