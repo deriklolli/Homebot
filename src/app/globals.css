@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN TOKENS — mapped from original styles.css
+   ============================================================ */
+@theme inline {
+  /* Brand */
+  --color-accent: #FF692D;
+  --color-accent-light: rgba(255, 105, 45, 0.1);
+  --color-accent-mid: rgba(255, 105, 45, 0.25);
+
+  /* Semantic */
+  --color-green: #18a558;
+  --color-green-light: rgba(24, 165, 88, 0.12);
+  --color-red: #e03131;
+  --color-red-light: rgba(224, 49, 49, 0.12);
+  --color-teal: #00a2c7;
+
+  /* Surface */
+  --color-bg: #f5f0eb;
+  --color-surface: #ffffff;
+  --color-surface-hover: #fdfbf9;
+
+  /* Border */
+  --color-border: #efece9;
+  --color-border-strong: #dedad5;
+
+  /* Text */
+  --color-text-primary: #22201d;
+  --color-text-2: #5a5754;
+  --color-text-3: #84827f;
+  --color-text-4: #b0aca8;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(34,32,29,0.06), 0 1px 2px rgba(34,32,29,0.04);
+  --shadow-hover: 0 4px 16px rgba(34,32,29,0.08), 0 2px 4px rgba(34,32,29,0.04);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  /* Spacing scale */
+  --spacing-s1: 4px;
+  --spacing-s2: 8px;
+  --spacing-s3: 12px;
+  --spacing-s4: 16px;
+  --spacing-s5: 20px;
+  --spacing-s6: 24px;
+  --spacing-s8: 32px;
+
+  /* Transitions */
+  --transition-timing-fast: 120ms ease;
+  --transition-timing-base: 200ms ease;
+  --transition-timing-slow: 300ms ease;
+
+  /* Sidebar widths */
+  --spacing-sidebar-collapsed: 56px;
+  --spacing-sidebar-expanded: 224px;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+body {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Scrollbar styling */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+.custom-scroll::-webkit-scrollbar { width: 5px; }
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
