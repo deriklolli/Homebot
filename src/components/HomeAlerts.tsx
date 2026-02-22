@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { BellIcon, PackageIcon, ChevronRightIcon } from "@/components/icons";
+import { BellIcon, PackageIcon, XIcon } from "@/components/icons";
 
 interface AlertItem {
   id: string;
@@ -22,6 +22,7 @@ function daysUntil(dateStr: string): number {
 
 export default function HomeAlerts() {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -77,69 +78,96 @@ export default function HomeAlerts() {
             <BellIcon width={18} height={18} className="text-green" />
           </div>
           <p className="text-[13px] text-text-3">
-            No items need attention right now.
+            Whoohoo! You have no alerts.
           </p>
         </div>
       ) : (
-        <ul
-          className="flex flex-col -mx-5"
-          role="list"
-          aria-label="Inventory alerts"
-        >
-          {alerts.map((item) => {
-            const isOverdue = item.daysUntil <= 0;
-            const label = isOverdue
-              ? item.daysUntil === 0
-                ? "Due today"
-                : `${Math.abs(item.daysUntil)} day${Math.abs(item.daysUntil) !== 1 ? "s" : ""} overdue`
-              : `in ${item.daysUntil} day${item.daysUntil !== 1 ? "s" : ""}`;
-
+        (() => {
+          const visible = alerts.filter((a) => !dismissed.has(a.id));
+          if (visible.length === 0) {
             return (
-              <li key={item.id}>
-                <Link
-                  href={`/inventory/${item.id}`}
-                  className="grid grid-cols-[32px_1fr_auto_auto] items-center gap-2 px-5 py-[9px] border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
-                >
-                  {item.thumbnailUrl ? (
-                    <img
-                      src={item.thumbnailUrl}
-                      alt=""
-                      className="w-8 h-8 rounded-full object-cover shrink-0"
-                    />
-                  ) : (
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                        isOverdue ? "bg-red/10" : "bg-accent/10"
-                      }`}
-                    >
-                      <PackageIcon
-                        width={16}
-                        height={16}
-                        className={isOverdue ? "text-red" : "text-accent"}
-                      />
-                    </div>
-                  )}
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-[13px] font-medium text-text-primary truncate">
-                      {item.name}
-                    </span>
-                    <span className="text-[11px] text-text-3">
-                      Reorder reminder
-                    </span>
-                  </div>
-                  <span
-                    className={`text-[13px] font-medium whitespace-nowrap ${
-                      isOverdue ? "text-red" : "text-accent"
-                    }`}
-                  >
-                    {label}
-                  </span>
-                  <ChevronRightIcon className="text-text-4 shrink-0" />
-                </Link>
-              </li>
+              <div className="flex flex-col items-center gap-2 py-6 px-4 text-center">
+                <div className="w-10 h-10 rounded-full bg-green-light flex items-center justify-center">
+                  <BellIcon width={18} height={18} className="text-green" />
+                </div>
+                <p className="text-[13px] text-text-3">
+                  Whoohoo! You have no alerts.
+                </p>
+              </div>
             );
-          })}
-        </ul>
+          }
+          return (
+            <ul
+              className="flex flex-col -mx-5"
+              role="list"
+              aria-label="Inventory alerts"
+            >
+              {visible.map((item) => {
+                const isOverdue = item.daysUntil <= 0;
+                const label = isOverdue
+                  ? item.daysUntil === 0
+                    ? "Due today"
+                    : `${Math.abs(item.daysUntil)} day${Math.abs(item.daysUntil) !== 1 ? "s" : ""} overdue`
+                  : `in ${item.daysUntil} day${item.daysUntil !== 1 ? "s" : ""}`;
+
+                return (
+                  <li key={item.id} className="relative">
+                    <Link
+                      href={`/inventory/${item.id}`}
+                      className="grid grid-cols-[32px_1fr_auto] items-center gap-2 pl-5 pr-10 py-[9px] border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
+                    >
+                      {item.thumbnailUrl ? (
+                        <img
+                          src={item.thumbnailUrl}
+                          alt=""
+                          className="w-8 h-8 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                            isOverdue ? "bg-red/10" : "bg-accent/10"
+                          }`}
+                        >
+                          <PackageIcon
+                            width={16}
+                            height={16}
+                            className={isOverdue ? "text-red" : "text-accent"}
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="text-[13px] font-medium text-text-primary truncate">
+                          {item.name}
+                        </span>
+                        <span className="text-[11px] text-text-3">
+                          Reorder reminder
+                        </span>
+                      </div>
+                      <span
+                        className={`text-[13px] font-medium whitespace-nowrap ${
+                          isOverdue ? "text-red" : "text-accent"
+                        }`}
+                      >
+                        {label}
+                      </span>
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label={`Dismiss alert for ${item.name}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setDismissed((prev) => new Set(prev).add(item.id));
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-text-3 hover:text-text-primary hover:bg-border transition-colors duration-[120ms]"
+                    >
+                      <XIcon width={12} height={12} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        })()
       )}
     </div>
   );

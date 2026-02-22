@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
 export interface DbContractor {
   id: string;
@@ -9,6 +9,8 @@ export interface DbContractor {
   specialty: string;
   rating: number;
   notes: string;
+  website: string;
+  logo_url: string;
   created_at: string;
 }
 
@@ -72,4 +74,4 @@ export interface DbService {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);

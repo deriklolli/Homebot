@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import {
   HomebotLogo,
   SidebarToggleIcon,
@@ -15,6 +17,7 @@ import {
   GearIcon,
   HelpCircleIcon,
   ChevronDownIcon,
+  LogOutIcon,
 } from "./icons";
 
 const navItems = [
@@ -33,7 +36,51 @@ const bottomItems = [
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
+
+  const displayName =
+    user?.user_metadata?.full_name ?? user?.email ?? "User";
+  const initial = (
+    user?.user_metadata?.full_name?.[0] ??
+    user?.email?.[0] ??
+    "?"
+  ).toUpperCase();
 
   return (
     <aside
@@ -122,20 +169,30 @@ export default function Sidebar() {
       </div>
 
       {/* User footer */}
-      <div className="px-2 pb-3 border-t border-border shrink-0">
+      <div className="px-2 pb-3 border-t border-border shrink-0 relative" ref={menuRef}>
         <button
           className="flex items-center gap-2 w-full py-2 px-2 rounded-[var(--radius-md)] text-[13px] font-medium text-text-primary hover:bg-border transition-[background] duration-[120ms]"
           aria-label="Open user profile menu"
+          onClick={() => setMenuOpen(!menuOpen)}
         >
-          <div className="w-7 h-7 rounded-full bg-accent text-white text-[11px] font-bold flex items-center justify-center shrink-0">
-            D
-          </div>
+          {user?.user_metadata?.avatar_url ? (
+            <img
+              src={user.user_metadata.avatar_url}
+              alt=""
+              className="w-7 h-7 rounded-full shrink-0"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-accent text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+              {initial}
+            </div>
+          )}
           <span
-            className={`flex-1 text-left transition-all duration-200 whitespace-nowrap ${
+            className={`flex-1 text-left transition-all duration-200 whitespace-nowrap truncate ${
               expanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden"
             }`}
           >
-            Derik
+            {displayName}
           </span>
           <ChevronDownIcon
             className={`text-text-3 transition-opacity duration-200 ${
@@ -143,6 +200,19 @@ export default function Sidebar() {
             }`}
           />
         </button>
+
+        {/* Dropdown menu */}
+        {menuOpen && expanded && (
+          <div className="absolute bottom-full left-2 right-2 mb-1 bg-surface rounded-[var(--radius-md)] border border-border shadow-[var(--shadow-hover)] overflow-hidden z-20">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 w-full py-2.5 px-3 text-[13px] font-medium text-text-primary hover:bg-border transition-[background] duration-[120ms]"
+            >
+              <LogOutIcon width={15} height={15} />
+              Sign out
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

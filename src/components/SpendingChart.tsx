@@ -5,23 +5,22 @@ import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
 
-const labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
+export interface SpendingDataPoint {
+  label: string;
+  value: number;
+}
 
-const thisMonth = [
-  0, 1_400, 3_100, 5_200, 7_800, 10_600, 13_800, 17_200, 20_900, 25_100,
-  29_600, 34_200, 38_900, 43_400, 47_800, 52_100, 56_300, 60_200, 63_400,
-  65_800, 66_900, 67_200, 67_500, 67_700, 67_850, 67_930, 67_960, 67_972,
-  67_976, 67_976, 67_976,
-];
+interface SpendingChartProps {
+  data: SpendingDataPoint[];
+  lastYearData: SpendingDataPoint[];
+  view: "month" | "year";
+}
 
-const avgMonth = [
-  0, 900, 2_100, 3_700, 5_600, 7_400, 9_300, 11_400, 13_700, 16_200, 18_700,
-  21_400, 24_100, 26_800, 29_500, 32_100, 34_600, 37_000, 39_200, 41_200,
-  42_900, 44_200, 45_300, 46_200, 46_900, 47_400, 47_700, 47_860, 47_950,
-  47_990, 48_000,
-];
-
-export default function SpendingChart() {
+export default function SpendingChart({
+  data,
+  lastYearData,
+  view,
+}: SpendingChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
 
@@ -32,10 +31,17 @@ export default function SpendingChart() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Destroy previous chart instance on re-render
     if (chartRef.current) {
       chartRef.current.destroy();
     }
+
+    const labels = data.map((d) => d.label);
+    const values = data.map((d) => d.value);
+    const lastYearValues = lastYearData.map((d) => d.value);
+
+    const allValues = [...values, ...lastYearValues];
+    const maxVal = Math.max(...allValues, 100);
+    const niceMax = Math.ceil(maxVal / 1000) * 1000 || 1000;
 
     const grad = ctx.createLinearGradient(0, 0, 0, 200);
     grad.addColorStop(0, "rgba(255, 105, 45, 0.32)");
@@ -48,19 +54,19 @@ export default function SpendingChart() {
         labels,
         datasets: [
           {
-            label: "Average month (last 12 months)",
-            data: avgMonth,
-            borderColor: "#aaaaaa",
+            label: "Last Year",
+            data: lastYearValues,
+            borderColor: "#d4cdc5",
             borderWidth: 1.5,
-            borderDash: [5, 4],
+            borderDash: [3, 3],
             fill: false,
             pointRadius: 0,
             pointHoverRadius: 4,
             tension: 0.35,
           },
           {
-            label: "This month",
-            data: thisMonth,
+            label: view === "month" ? "This Month" : "This Year",
+            data: values,
             borderColor: "#FF692D",
             borderWidth: 2.5,
             fill: true,
@@ -88,9 +94,6 @@ export default function SpendingChart() {
             cornerRadius: 8,
             boxPadding: 4,
             callbacks: {
-              title(items) {
-                return items[0].label;
-              },
               label(item) {
                 const val = item.parsed.y ?? 0;
                 return `${item.dataset.label}: $${val.toLocaleString("en-US")}`;
@@ -106,27 +109,22 @@ export default function SpendingChart() {
               color: "#84827f",
               font: { size: 11, family: "Inter, sans-serif", weight: 500 },
               maxRotation: 0,
-              maxTicksLimit: 8,
-              callback(_val, idx) {
-                const day = idx + 1;
-                if ([1, 5, 9, 13, 17, 21, 25, 31].includes(day))
-                  return `Day ${day}`;
-                return null;
-              },
+              maxTicksLimit: view === "month" ? 8 : 12,
             },
           },
           y: {
             grid: { color: "#efece9", lineWidth: 1 },
             border: { display: false },
             beginAtZero: true,
-            max: 80_000,
+            max: niceMax,
             ticks: {
               color: "#84827f",
               font: { size: 11, family: "Inter, sans-serif", weight: 500 },
-              stepSize: 20_000,
               callback(val) {
-                if (val === 0) return "$0";
-                return `$${(Number(val) / 1000).toFixed(0)}K`;
+                const n = Number(val);
+                if (n === 0) return "$0";
+                if (n >= 1000) return `$${(n / 1000).toFixed(0)}K`;
+                return `$${n}`;
               },
             },
           },
@@ -137,13 +135,13 @@ export default function SpendingChart() {
     return () => {
       chartRef.current?.destroy();
     };
-  }, []);
+  }, [data, lastYearData, view]);
 
   return (
     <canvas
       ref={canvasRef}
       role="img"
-      aria-label="Area chart showing this month's spending vs. 12-month average"
+      aria-label={`Area chart showing ${view === "month" ? "this month's" : "this year's"} home spending vs last year`}
     />
   );
 }

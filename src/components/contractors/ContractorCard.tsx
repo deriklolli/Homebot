@@ -4,6 +4,7 @@ import {
   PhoneCallIcon,
   MailIcon,
   PencilIcon,
+  UserIcon,
 } from "@/components/icons";
 
 export default function ContractorCard({
@@ -24,9 +25,17 @@ export default function ContractorCard({
       <div className="p-5">
         {/* Name + avatar + edit */}
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-9 h-9 rounded-full bg-accent text-white text-[11px] font-bold flex items-center justify-center shrink-0">
-            {initials}
-          </div>
+          {contractor.logoUrl ? (
+            <img
+              src={contractor.logoUrl}
+              alt={contractor.company}
+              className="w-9 h-9 rounded-full object-contain bg-white border border-border shrink-0"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-accent text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+              {initials || <UserIcon width={18} height={18} />}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold text-text-primary truncate">
               {contractor.company}

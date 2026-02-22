@@ -6,7 +6,7 @@ import { type Contractor } from "@/lib/contractors-data";
 import { supabase, type DbProject, type DbContractor } from "@/lib/supabase";
 import { dbToProject, dbToContractor, projectToDb } from "@/lib/mappers";
 import { PlusIcon } from "@/components/icons";
-import ProjectRow from "./ProjectRow";
+import ProjectCard from "./ProjectCard";
 import ProjectSearchFilterBar from "./ProjectSearchFilterBar";
 import AddProjectModal from "./AddProjectModal";
 
@@ -126,27 +126,22 @@ export default function ProjectsClient() {
         {filtered.length} project{filtered.length !== 1 ? "s" : ""}
       </p>
 
-      {/* Project list */}
-      {filtered.length > 0 && (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
-          <ul role="list" aria-label="Projects">
-            {filtered.map((p) => (
-              <ProjectRow
-                key={p.id}
-                project={p}
-                contractorCompany={
-                  p.contractorId
-                    ? contractorMap.get(p.contractorId)?.company ?? null
-                    : null
-                }
-              />
-            ))}
-          </ul>
+      {/* Project cards */}
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((p) => (
+            <ProjectCard
+              key={p.id}
+              project={p}
+              contractorCompany={
+                p.contractorId
+                  ? contractorMap.get(p.contractorId)?.company ?? null
+                  : null
+              }
+            />
+          ))}
         </div>
-      )}
-
-      {/* Empty state */}
-      {filtered.length === 0 && (
+      ) : (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
           <p className="text-sm font-semibold text-text-primary mb-1">
             No projects found

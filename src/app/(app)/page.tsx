@@ -1,8 +1,7 @@
-import SpendingChart from "@/components/SpendingChart";
 import UpcomingAppointments from "@/components/UpcomingAppointments";
 import HomeAlerts from "@/components/HomeAlerts";
+import SpendingCard from "@/components/SpendingCard";
 import {
-  StarIcon,
   GearIcon,
   InfoIcon,
   RefreshIcon,
@@ -35,7 +34,9 @@ export default function DashboardPage() {
 
         {/* Column 2 */}
         <div className="flex flex-col gap-4">
-          <SpendingCard />
+          <Card>
+            <SpendingCard />
+          </Card>
           <Card>
             <UpcomingAppointments />
           </Card>
@@ -65,42 +66,6 @@ function Card({
   );
 }
 
-function SelectControl({
-  label,
-  options,
-}: {
-  label: string;
-  options: string[];
-}) {
-  return (
-    <div className="relative inline-flex items-center">
-      <select
-        className="appearance-none bg-border border-none rounded-[var(--radius-sm)] py-[5px] pl-2.5 pr-[26px] text-xs font-medium text-text-primary cursor-pointer hover:bg-border-strong transition-[background] duration-[120ms]"
-        aria-label={label}
-        defaultValue={options[0]}
-      >
-        {options.map((opt) => (
-          <option key={opt}>{opt}</option>
-        ))}
-      </select>
-      <svg
-        className="absolute right-[7px] pointer-events-none text-text-3"
-        width={13}
-        height={13}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    </div>
-  );
-}
-
 /* ----- Budget ----- */
 function BudgetCard() {
   return (
@@ -115,10 +80,7 @@ function BudgetCard() {
             </a>
             <p className="text-xs text-text-3">February 2026</p>
           </div>
-          <SelectControl
-            label="Budget view"
-            options={["Expenses", "Income", "Net"]}
-          />
+          <span className="text-xs font-medium text-text-3">Expenses</span>
         </header>
 
         <div className="flex flex-col gap-4">
@@ -257,48 +219,4 @@ function CreditScoreCard() {
   );
 }
 
-/* ----- Spending Chart ----- */
-function SpendingCard() {
-  return (
-    <Card>
-      <div className="p-5">
-        <header className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex flex-col gap-[3px] min-w-0">
-            <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
-              Spending
-              <StarIcon />
-            </h2>
-            <p className="text-[22px] font-bold text-text-primary tracking-tight leading-tight">
-              $67,976.72{" "}
-              <span className="text-sm font-normal text-text-3">
-                this month
-              </span>
-            </p>
-          </div>
-          <SelectControl
-            label="Spending comparison period"
-            options={[
-              "This month vs. average month",
-              "This month vs. last month",
-              "This month vs. last year",
-            ]}
-          />
-        </header>
-        <div className="h-[200px] -mx-1 my-3 relative">
-          <SpendingChart />
-        </div>
-        <div className="flex flex-wrap gap-4 pt-2" aria-hidden="true">
-          <span className="flex items-center gap-1.5 text-[11px] text-text-3">
-            <span className="inline-block w-5 h-0.5 rounded-sm bg-[#aaaaaa] shrink-0" />
-            Average month (last 12 months)
-          </span>
-          <span className="flex items-center gap-1.5 text-[11px] text-text-3">
-            <span className="inline-block w-5 h-0.5 rounded-sm bg-accent shrink-0" />
-            This month
-          </span>
-        </div>
-      </div>
-    </Card>
-  );
-}
 

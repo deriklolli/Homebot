@@ -11,6 +11,7 @@ import {
   PencilIcon,
   TrashIcon,
   PackageIcon,
+  CheckCircleIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 
@@ -42,6 +43,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
   const [notFound, setNotFound] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [purchased, setPurchased] = useState(false);
 
   useEffect(() => {
     async function fetchItem() {
@@ -93,6 +95,34 @@ export default function InventoryDetailClient({ id }: { id: string }) {
     }
     setItem(dbToInventoryItem(rows[0]));
     setEditModalOpen(false);
+  }
+
+  async function handleMarkPurchased() {
+    if (!item) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
+
+    const nextReminder = new Date(today);
+    nextReminder.setMonth(nextReminder.getMonth() + item.frequencyMonths);
+    const nextReminderStr = nextReminder.toISOString().split("T")[0];
+
+    const { data: rows, error } = await supabase
+      .from("inventory_items")
+      .update({
+        last_ordered_date: todayStr,
+        next_reminder_date: nextReminderStr,
+      })
+      .eq("id", item.id)
+      .select()
+      .returns<DbInventoryItem[]>();
+
+    if (error) {
+      console.error("Failed to mark as purchased:", error);
+      return;
+    }
+    setItem(dbToInventoryItem(rows[0]));
+    setPurchased(true);
   }
 
   async function handleDelete() {
@@ -178,6 +208,18 @@ export default function InventoryDetailClient({ id }: { id: string }) {
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={purchased ? undefined : handleMarkPurchased}
+            disabled={purchased}
+            className={`inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] text-[13px] font-medium transition-all duration-[120ms] ${
+              purchased
+                ? "bg-green text-white cursor-default"
+                : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
+            }`}
+          >
+            <CheckCircleIcon width={14} height={14} />
+            {purchased ? "Purchased!" : "Mark as Purchased"}
+          </button>
           <button
             onClick={() => setEditModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"

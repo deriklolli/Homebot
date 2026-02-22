@@ -14,6 +14,8 @@ export function dbToContractor(row: DbContractor): Contractor {
     specialty: row.specialty as Contractor["specialty"],
     rating: row.rating,
     notes: row.notes,
+    website: row.website,
+    logoUrl: row.logo_url,
     createdAt: row.created_at,
   };
 }
@@ -29,6 +31,8 @@ export function contractorToDb(
     specialty: data.specialty,
     rating: data.rating,
     notes: data.notes,
+    website: data.website,
+    logo_url: data.logoUrl,
   };
 }
 

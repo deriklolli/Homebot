@@ -21,5 +21,7 @@ export interface Contractor {
   specialty: Specialty;
   rating: number;
   notes: string;
+  website: string;
+  logoUrl: string;
   createdAt: string;
 }
