@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { BellIcon, PackageIcon, XIcon } from "@/components/icons";
+import { BellIcon, ApplianceIcon, XIcon } from "@/components/icons";
 
 interface AlertItem {
   id: string;
@@ -123,16 +123,8 @@ export default function HomeAlerts() {
                           className="w-8 h-8 rounded-full object-cover shrink-0"
                         />
                       ) : (
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                            isOverdue ? "bg-red/10" : "bg-accent/10"
-                          }`}
-                        >
-                          <PackageIcon
-                            width={16}
-                            height={16}
-                            className={isOverdue ? "text-red" : "text-accent"}
-                          />
+                        <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0">
+                          <ApplianceIcon width={16} height={16} className="text-white" strokeWidth={1.5} />
                         </div>
                       )}
                       <div className="flex flex-col gap-0.5 min-w-0">

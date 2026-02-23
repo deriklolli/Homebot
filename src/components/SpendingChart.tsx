@@ -35,6 +35,15 @@ export default function SpendingChart({
       chartRef.current.destroy();
     }
 
+    // Read CSS custom properties for theme-aware chart colors
+    const styles = getComputedStyle(document.documentElement);
+    const accent = styles.getPropertyValue("--color-accent").trim() || "#FF692D";
+    const borderStrong = styles.getPropertyValue("--color-border-strong").trim() || "#dedad5";
+    const surface = styles.getPropertyValue("--color-surface").trim() || "#ffffff";
+    const textPrimary = styles.getPropertyValue("--color-text-primary").trim() || "#22201d";
+    const text3 = styles.getPropertyValue("--color-text-3").trim() || "#84827f";
+    const border = styles.getPropertyValue("--color-border").trim() || "#efece9";
+
     const labels = data.map((d) => d.label);
     const values = data.map((d) => d.value);
     const lastYearValues = lastYearData.map((d) => d.value);
@@ -56,7 +65,7 @@ export default function SpendingChart({
           {
             label: "Last Year",
             data: lastYearValues,
-            borderColor: "#d4cdc5",
+            borderColor: borderStrong,
             borderWidth: 1.5,
             borderDash: [3, 3],
             fill: false,
@@ -67,13 +76,13 @@ export default function SpendingChart({
           {
             label: view === "month" ? "This Month" : "This Year",
             data: values,
-            borderColor: "#FF692D",
+            borderColor: accent,
             borderWidth: 2.5,
             fill: true,
             backgroundColor: grad,
             pointRadius: 0,
             pointHoverRadius: 5,
-            pointHoverBackgroundColor: "#FF692D",
+            pointHoverBackgroundColor: accent,
             tension: 0.35,
           },
         ],
@@ -85,10 +94,10 @@ export default function SpendingChart({
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: "#ffffff",
-            titleColor: "#22201d",
-            bodyColor: "#84827f",
-            borderColor: "#efece9",
+            backgroundColor: surface,
+            titleColor: textPrimary,
+            bodyColor: text3,
+            borderColor: border,
             borderWidth: 1,
             padding: 10,
             cornerRadius: 8,
@@ -106,19 +115,19 @@ export default function SpendingChart({
             grid: { display: false },
             border: { display: false },
             ticks: {
-              color: "#84827f",
+              color: text3,
               font: { size: 11, family: "Inter, sans-serif", weight: 500 },
               maxRotation: 0,
               maxTicksLimit: view === "month" ? 8 : 12,
             },
           },
           y: {
-            grid: { color: "#efece9", lineWidth: 1 },
+            grid: { color: "rgba(150, 150, 160, 0.15)", lineWidth: 1 },
             border: { display: false },
             beginAtZero: true,
             max: niceMax,
             ticks: {
-              color: "#84827f",
+              color: text3,
               font: { size: 11, family: "Inter, sans-serif", weight: 500 },
               callback(val) {
                 const n = Number(val);

@@ -9,6 +9,7 @@ import {
   type ProjectStatus,
   type ProjectEvent,
   type ProjectNote,
+  type ProjectImage,
 } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
 import {
@@ -17,6 +18,7 @@ import {
   type DbContractor,
   type DbProjectEvent,
   type DbProjectNote,
+  type DbProjectImage,
 } from "@/lib/supabase";
 import {
   dbToProject,
@@ -24,6 +26,7 @@ import {
   projectToDb,
   dbToProjectEvent,
   dbToProjectNote,
+  dbToProjectImage,
 } from "@/lib/mappers";
 
 type TimelineItem =
@@ -45,6 +48,7 @@ import {
 import AddProjectModal from "./AddProjectModal";
 import CompleteProjectModal from "./CompleteProjectModal";
 import AddEventModal from "./AddEventModal";
+import ProjectImageGallery, { type ProjectImageGalleryHandle } from "./ProjectImageGallery";
 
 const STATUS_BADGE: Record<ProjectStatus, string> = {
   "In Progress": "bg-accent-light text-accent",
@@ -82,6 +86,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [project, setProject] = useState<Project | null>(null);
   const [events, setEvents] = useState<ProjectEvent[]>([]);
   const [notes, setNotes] = useState<ProjectNote[]>([]);
+  const [images, setImages] = useState<ProjectImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -95,10 +100,11 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const addMenuRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<ProjectImageGalleryHandle>(null);
 
   useEffect(() => {
     async function fetchData() {
-      const [projectRes, contractorsRes, eventsRes, notesRes] = await Promise.all([
+      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes] = await Promise.all([
         supabase
           .from("projects")
           .select("*")
@@ -122,6 +128,12 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectNote[]>(),
+        supabase
+          .from("project_images")
+          .select("*")
+          .eq("project_id", id)
+          .order("created_at", { ascending: true })
+          .returns<DbProjectImage[]>(),
       ]);
 
       if (projectRes.error || !projectRes.data) {
@@ -140,6 +152,10 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
       if (notesRes.data) {
         setNotes(notesRes.data.map(dbToProjectNote));
+      }
+
+      if (imagesRes.data) {
+        setImages(imagesRes.data.map(dbToProjectImage));
       }
 
       setLoading(false);
@@ -469,6 +485,15 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 >
                   Add Note
                 </button>
+                <button
+                  onClick={() => {
+                    galleryRef.current?.triggerUpload();
+                    setAddMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                >
+                  Add Photos
+                </button>
               </div>
             )}
           </div>
@@ -589,6 +614,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           </div>
         )
       )}
+
+      {/* Photos */}
+      <ProjectImageGallery
+        ref={galleryRef}
+        projectId={project.id}
+        images={images}
+        onImagesChange={setImages}
+      />
 
       {/* Completion details */}
       {project.status === "Completed" && (

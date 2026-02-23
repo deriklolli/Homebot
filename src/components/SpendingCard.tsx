@@ -179,7 +179,7 @@ export default function SpendingCard() {
       </div>
       <div className="flex flex-wrap gap-4 pt-2" aria-hidden="true">
         <span className="flex items-center gap-1.5 text-[11px] text-text-3">
-          <span className="inline-block w-5 h-0.5 rounded-sm bg-[#d4cdc5] shrink-0" />
+          <span className="inline-block w-5 h-0.5 rounded-sm bg-border-strong shrink-0" />
           Last year
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-text-3">

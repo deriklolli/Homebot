@@ -4,17 +4,19 @@ import {
   type Specialty,
   type Contractor,
 } from "@/lib/contractors-data";
-import { XIcon, StarFilledIcon, ChevronDownIcon } from "@/components/icons";
+import { XIcon, StarFilledIcon, ChevronDownIcon, TrashIcon } from "@/components/icons";
 
 interface AddContractorModalProps {
   contractor?: Contractor;
   onSave: (contractor: Omit<Contractor, "id" | "createdAt">) => void;
+  onDelete?: () => void;
   onClose: () => void;
 }
 
 export default function AddContractorModal({
   contractor,
   onSave,
+  onDelete,
   onClose,
 }: AddContractorModalProps) {
   const isEditing = !!contractor;
@@ -269,7 +271,18 @@ export default function AddContractorModal({
           </label>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-border">
+          <div className="flex items-center gap-3 pt-2 border-t border-border">
+            {isEditing && onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-red/30 bg-surface text-red text-[13px] font-medium hover:bg-red-light transition-all duration-[120ms]"
+              >
+                <TrashIcon width={14} height={14} />
+                Delete
+              </button>
+            )}
+            <div className="flex-1" />
             <button
               type="button"
               onClick={onClose}

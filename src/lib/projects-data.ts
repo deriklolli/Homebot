@@ -21,6 +21,14 @@ export interface ProjectNote {
   createdAt: string;
 }
 
+export interface ProjectImage {
+  id: string;
+  projectId: string;
+  storagePath: string;
+  caption: string;
+  createdAt: string;
+}
+
 export interface Project {
   id: string;
   name: string;

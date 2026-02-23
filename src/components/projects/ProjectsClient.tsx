@@ -17,7 +17,7 @@ export default function ProjectsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<
     ProjectStatus | "All"
-  >("All");
+  >("In Progress");
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -113,7 +113,36 @@ export default function ProjectsClient() {
         </button>
       </header>
 
-      {/* Search + filter */}
+      {/* Tabs */}
+      <div className="flex gap-0 border-b border-border mb-4" role="tablist" aria-label="Project status">
+        {(["In Progress", "Completed"] as const).map((tab) => {
+          const isActive = selectedStatus === tab;
+          const count = projects.filter((p) => p.status === tab).length;
+          return (
+            <button
+              key={tab}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setSelectedStatus(isActive ? "All" : tab)}
+              className={`relative px-4 py-2.5 text-[13px] font-medium transition-colors duration-[120ms] ${
+                isActive
+                  ? "text-accent"
+                  : "text-text-3 hover:text-text-primary"
+              }`}
+            >
+              {tab}
+              <span className={`ml-1.5 text-[11px] ${isActive ? "text-accent" : "text-text-4"}`}>
+                {count}
+              </span>
+              {isActive && (
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent rounded-full" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search */}
       <ProjectSearchFilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}

@@ -133,7 +133,7 @@ export default function ServicesClient() {
       {/* Search */}
       {services.length > 0 && (
         <div className="mb-4">
-          <div className="relative">
+          <div className="relative max-w-full sm:max-w-[250px]">
             <SearchIcon
               className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
               width={14}

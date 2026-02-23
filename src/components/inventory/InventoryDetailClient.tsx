@@ -10,7 +10,7 @@ import {
   ChevronLeftIcon,
   PencilIcon,
   TrashIcon,
-  PackageIcon,
+  ApplianceIcon,
   CheckCircleIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
@@ -245,11 +245,11 @@ export default function InventoryDetailClient({ id }: { id: string }) {
             <img
               src={item.thumbnailUrl}
               alt={item.name}
-              className="w-28 h-28 rounded-[var(--radius-lg)] object-cover bg-border"
+              className="w-28 h-28 rounded-full object-cover bg-border"
             />
           ) : (
-            <div className="w-28 h-28 rounded-[var(--radius-lg)] bg-border/50 flex items-center justify-center">
-              <PackageIcon width={32} height={32} className="text-text-4" />
+            <div className="w-28 h-28 rounded-full bg-accent flex items-center justify-center">
+              <ApplianceIcon width={48} height={48} className="text-white" strokeWidth={1.5} />
             </div>
           )}
         </div>

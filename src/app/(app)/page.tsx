@@ -1,8 +1,9 @@
 import UpcomingAppointments from "@/components/UpcomingAppointments";
 import HomeAlerts from "@/components/HomeAlerts";
+import TaskList from "@/components/TaskList";
 import SpendingCard from "@/components/SpendingCard";
+import ThemeToggleButton from "@/components/ThemeToggleButton";
 import {
-  GearIcon,
   InfoIcon,
   RefreshIcon,
 } from "@/components/icons";
@@ -15,10 +16,7 @@ export default function DashboardPage() {
         <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
           1715 Red Hawk Trail
         </h1>
-        <button className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]">
-          <GearIcon width={13} height={13} />
-          Customize
-        </button>
+        <ThemeToggleButton />
       </header>
 
       {/* Dashboard Grid */}
@@ -27,6 +25,9 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4">
           <Card>
             <HomeAlerts />
+          </Card>
+          <Card>
+            <TaskList />
           </Card>
           <BudgetCard />
           <CreditScoreCard />

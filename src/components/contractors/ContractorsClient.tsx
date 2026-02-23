@@ -85,6 +85,21 @@ export default function ContractorsClient() {
     setEditingContractor(null);
   }
 
+  async function handleDelete() {
+    if (!editingContractor) return;
+    const { error } = await supabase
+      .from("contractors")
+      .delete()
+      .eq("id", editingContractor.id);
+
+    if (error) {
+      console.error("Failed to delete contractor:", error);
+      return;
+    }
+    setContractors(contractors.filter((c) => c.id !== editingContractor.id));
+    setEditingContractor(null);
+  }
+
   function closeModal() {
     setModalOpen(false);
     setEditingContractor(null);
@@ -159,6 +174,7 @@ export default function ContractorsClient() {
         <AddContractorModal
           contractor={editingContractor}
           onSave={handleEdit}
+          onDelete={handleDelete}
           onClose={closeModal}
         />
       )}

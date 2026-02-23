@@ -1,6 +1,6 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbInventoryItem, DbService } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbInventoryItem, DbService } from "./supabase";
 import type { Contractor } from "./contractors-data";
-import type { Project, ProjectEvent, ProjectNote } from "./projects-data";
+import type { Project, ProjectEvent, ProjectNote, ProjectImage } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
 import type { Service } from "./services-data";
 
@@ -92,6 +92,16 @@ export function projectToDb(
     scheduled_date: data.scheduledDate,
     notes: data.notes,
     status: data.status,
+  };
+}
+
+export function dbToProjectImage(row: DbProjectImage): ProjectImage {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    storagePath: row.storage_path,
+    caption: row.caption,
+    createdAt: row.created_at,
   };
 }
 

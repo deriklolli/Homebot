@@ -71,6 +71,21 @@ export interface DbService {
   created_at: string;
 }
 
+export interface DbProjectImage {
+  id: string;
+  project_id: string;
+  storage_path: string;
+  caption: string;
+  created_at: string;
+}
+
+export interface DbTask {
+  id: string;
+  title: string;
+  completed: boolean;
+  created_at: string;
+}
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 

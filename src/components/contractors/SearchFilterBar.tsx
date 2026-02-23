@@ -17,7 +17,7 @@ export default function SearchFilterBar({
   return (
     <div className="flex flex-col sm:flex-row gap-3 mb-4">
       {/* Search input */}
-      <div className="relative flex-1">
+      <div className="relative max-w-full sm:max-w-[250px]">
         <SearchIcon
           className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
           width={15}
