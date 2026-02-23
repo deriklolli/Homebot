@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { type Service, FREQUENCY_OPTIONS } from "@/lib/services-data";
 import type { Contractor } from "@/lib/contractors-data";
 import { supabase, type DbService, type DbContractor } from "@/lib/supabase";
@@ -36,6 +35,7 @@ export default function ServicesClient() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -114,6 +114,44 @@ export default function ServicesClient() {
     setModalOpen(false);
   }
 
+  async function handleEdit(data: Omit<Service, "id" | "createdAt">) {
+    if (!editingService) return;
+
+    const { data: rows, error } = await supabase
+      .from("services")
+      .update(serviceToDb(data) as Record<string, unknown>)
+      .eq("id", editingService.id)
+      .select()
+      .returns<DbService[]>();
+
+    if (error) {
+      console.error("Failed to update service:", error);
+      return;
+    }
+    setServices(
+      services
+        .map((s) => (s.id === editingService.id ? dbToService(rows[0]) : s))
+        .sort((a, b) => a.nextServiceDate.localeCompare(b.nextServiceDate))
+    );
+    setEditingService(null);
+  }
+
+  async function handleDelete() {
+    if (!editingService) return;
+
+    const { error } = await supabase
+      .from("services")
+      .delete()
+      .eq("id", editingService.id);
+
+    if (error) {
+      console.error("Failed to delete service:", error);
+      return;
+    }
+    setServices(services.filter((s) => s.id !== editingService.id));
+    setEditingService(null);
+  }
+
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       {/* Header */}
@@ -182,9 +220,10 @@ export default function ServicesClient() {
 
               return (
                 <li key={s.id} className="border-b border-border last:border-b-0">
-                  <Link
-                    href={`/services/${s.id}`}
-                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                  <button
+                    type="button"
+                    onClick={() => setEditingService(s)}
+                    className="w-full text-left flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
                   >
                     {/* Service info */}
                     <div className="flex-1 min-w-0">
@@ -227,7 +266,7 @@ export default function ServicesClient() {
                         {dueLabel}
                       </span>
                     </div>
-                  </Link>
+                  </button>
                 </li>
               );
             })}
@@ -242,6 +281,18 @@ export default function ServicesClient() {
           onSave={handleAdd}
           onContractorAdded={handleContractorAdded}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {/* Edit modal */}
+      {editingService && (
+        <AddServiceModal
+          service={editingService}
+          contractors={contractors}
+          onSave={handleEdit}
+          onDelete={handleDelete}
+          onContractorAdded={handleContractorAdded}
+          onClose={() => setEditingService(null)}
         />
       )}
     </div>

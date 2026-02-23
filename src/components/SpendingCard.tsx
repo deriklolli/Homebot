@@ -5,10 +5,29 @@ import { supabase } from "@/lib/supabase";
 import SpendingChart, { type SpendingDataPoint } from "./SpendingChart";
 import { ChevronDownIcon } from "@/components/icons";
 
+type SpendingCategory = "projects" | "inventory" | "services";
+
 interface SpendingEntry {
   date: string;
   amount: number;
+  category: SpendingCategory;
 }
+
+const CATEGORY_CONFIG: {
+  key: SpendingCategory;
+  label: string;
+  color: string;
+}[] = [
+  { key: "projects", label: "Projects", color: "bg-accent" },
+  { key: "inventory", label: "Inventory", color: "bg-teal" },
+  { key: "services", label: "Services", color: "bg-purple" },
+];
+
+const CATEGORY_DOT: Record<SpendingCategory, string> = {
+  projects: "bg-accent",
+  inventory: "bg-teal",
+  services: "bg-purple",
+};
 
 function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
@@ -62,6 +81,19 @@ function buildYearData(
   });
 }
 
+function isInPeriod(
+  dateStr: string,
+  view: "month" | "year",
+  year: number,
+  month: number
+): boolean {
+  const d = new Date(dateStr + "T00:00:00");
+  if (view === "month") {
+    return d.getFullYear() === year && d.getMonth() === month;
+  }
+  return d.getFullYear() === year;
+}
+
 export default function SpendingCard() {
   const [view, setView] = useState<"month" | "year">("month");
   const [entries, setEntries] = useState<SpendingEntry[]>([]);
@@ -69,7 +101,7 @@ export default function SpendingCard() {
 
   useEffect(() => {
     async function fetchSpending() {
-      const [projectsRes, servicesRes] = await Promise.all([
+      const [projectsRes, servicesRes, inventoryRes] = await Promise.all([
         supabase
           .from("projects")
           .select("total_cost, completed_at")
@@ -80,6 +112,11 @@ export default function SpendingCard() {
           .select("cost, last_service_date")
           .not("last_service_date", "is", null)
           .not("cost", "is", null),
+        supabase
+          .from("inventory_items")
+          .select("cost, last_ordered_date")
+          .not("last_ordered_date", "is", null)
+          .not("cost", "is", null),
       ]);
 
       const result: SpendingEntry[] = [];
@@ -89,6 +126,7 @@ export default function SpendingCard() {
           result.push({
             date: row.completed_at.split("T")[0],
             amount: row.total_cost,
+            category: "projects",
           });
         }
       }
@@ -98,6 +136,17 @@ export default function SpendingCard() {
           result.push({
             date: row.last_service_date.split("T")[0],
             amount: row.cost,
+            category: "services",
+          });
+        }
+      }
+
+      if (!inventoryRes.error && inventoryRes.data) {
+        for (const row of inventoryRes.data) {
+          result.push({
+            date: row.last_ordered_date.split("T")[0],
+            amount: row.cost,
+            category: "inventory",
           });
         }
       }
@@ -123,16 +172,20 @@ export default function SpendingCard() {
       ? buildMonthData(entries, lastYear, month)
       : buildYearData(entries, lastYear);
 
-  const total = entries.reduce((sum, e) => {
-    const d = new Date(e.date + "T00:00:00");
-    if (view === "month") {
-      if (d.getFullYear() === year && d.getMonth() === month) return sum + e.amount;
-    } else {
-      if (d.getFullYear() === year) return sum + e.amount;
-    }
-    return sum;
-  }, 0);
+  // Compute totals per category for current period
+  const categoryTotals: Record<SpendingCategory, number> = {
+    projects: 0,
+    inventory: 0,
+    services: 0,
+  };
 
+  for (const e of entries) {
+    if (isInPeriod(e.date, view, year, month)) {
+      categoryTotals[e.category] += e.amount;
+    }
+  }
+
+  const total = categoryTotals.projects + categoryTotals.inventory + categoryTotals.services;
   const periodLabel = view === "month" ? "this month" : "this year";
 
   return (
@@ -187,6 +240,36 @@ export default function SpendingCard() {
           {view === "month" ? "This month" : "This year"}
         </span>
       </div>
+
+      {/* Category Breakdown */}
+      {!loading && (
+        <div className="flex flex-col gap-3 border-t border-border pt-4 mt-4">
+          {CATEGORY_CONFIG.map(({ key, label, color }) => {
+            const amount = categoryTotals[key];
+            const percent = total > 0 ? (amount / total) * 100 : 0;
+
+            return (
+              <div key={key} className="flex flex-col gap-[5px]">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="flex items-center gap-1.5 text-[13px] font-medium text-text-primary">
+                    <span className={`inline-block w-2 h-2 rounded-full ${CATEGORY_DOT[key]} shrink-0`} />
+                    {label}
+                  </span>
+                  <span className="text-[13px] font-medium text-text-primary">
+                    ${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="h-[5px] bg-border rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-[width] duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${color}`}
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -86,7 +86,8 @@ export default function UpcomingAppointments() {
     <div className="p-5">
       <header className="flex items-start justify-between gap-4 mb-4">
         <div className="flex flex-col gap-[3px] min-w-0">
-          <h2 className="text-sm font-semibold text-text-primary">
+          <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
+            <CalendarSolidIcon width={15} height={15} className="text-accent" />
             Upcoming Appointments
           </h2>
           <p className="text-xs text-text-3">Next 3 scheduled</p>

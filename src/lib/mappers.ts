@@ -1,4 +1,4 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbInventoryItem, DbService } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbInventoryItem, DbService, DbHomeSnapshot } from "./supabase";
 import type { Contractor } from "./contractors-data";
 import type { Project, ProjectEvent, ProjectNote, ProjectImage } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
@@ -116,6 +116,7 @@ export function dbToInventoryItem(row: DbInventoryItem): InventoryItem {
     purchaseUrl: row.purchase_url,
     thumbnailUrl: row.thumbnail_url,
     notes: row.notes,
+    cost: row.cost,
     createdAt: row.created_at,
   };
 }
@@ -132,6 +133,7 @@ export function inventoryItemToDb(
     purchase_url: data.purchaseUrl,
     thumbnail_url: data.thumbnailUrl,
     notes: data.notes,
+    cost: data.cost,
   };
 }
 
@@ -164,5 +166,33 @@ export function serviceToDb(
     next_service_date: data.nextServiceDate,
     phone: data.phone,
     notes: data.notes,
+  };
+}
+
+/* ----- Home Snapshot ----- */
+
+export interface HomeSnapshot {
+  id: string;
+  userId: string;
+  redfinUrl: string;
+  address: string | null;
+  photoUrl: string | null;
+  estimatedValue: number | null;
+  valueTrend: "up" | "down" | null;
+  lastScrapedAt: string;
+  createdAt: string;
+}
+
+export function dbToHomeSnapshot(row: DbHomeSnapshot): HomeSnapshot {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    redfinUrl: row.redfin_url,
+    address: row.address,
+    photoUrl: row.photo_url,
+    estimatedValue: row.estimated_value,
+    valueTrend: row.value_trend,
+    lastScrapedAt: row.last_scraped_at,
+    createdAt: row.created_at,
   };
 }

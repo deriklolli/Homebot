@@ -17,5 +17,6 @@ export interface InventoryItem {
   purchaseUrl: string;
   thumbnailUrl: string;
   notes: string;
+  cost: number | null;
   createdAt: string;
 }

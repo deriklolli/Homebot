@@ -12,6 +12,7 @@ export const SPECIALTIES = [
   "Snowplowing",
   "Hot Tub",
   "Waterfall",
+  "Home Cleaning",
 ] as const;
 
 export type Specialty = (typeof SPECIALTIES)[number];

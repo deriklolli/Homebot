@@ -54,6 +54,7 @@ export interface DbInventoryItem {
   purchase_url: string;
   thumbnail_url: string;
   notes: string;
+  cost: number | null;
   created_at: string;
 }
 
@@ -83,6 +84,18 @@ export interface DbTask {
   id: string;
   title: string;
   completed: boolean;
+  created_at: string;
+}
+
+export interface DbHomeSnapshot {
+  id: string;
+  user_id: string;
+  redfin_url: string;
+  address: string | null;
+  photo_url: string | null;
+  estimated_value: number | null;
+  value_trend: "up" | "down" | null;
+  last_scraped_at: string;
   created_at: string;
 }
 

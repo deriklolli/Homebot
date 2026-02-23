@@ -45,6 +45,7 @@ export default function AddInventoryItemModal({
   const [purchaseUrl, setPurchaseUrl] = useState(item?.purchaseUrl ?? "");
   const [thumbnailUrl, setThumbnailUrl] = useState(item?.thumbnailUrl ?? "");
   const [notes, setNotes] = useState(item?.notes ?? "");
+  const [cost, setCost] = useState(item?.cost != null ? String(item.cost) : "");
   const nameRef = useRef<HTMLInputElement>(null);
   const isValid = name.trim() !== "";
 
@@ -76,6 +77,7 @@ export default function AddInventoryItemModal({
       purchaseUrl: purchaseUrl.trim(),
       thumbnailUrl: thumbnailUrl.trim(),
       notes: notes.trim(),
+      cost: cost.trim() ? parseFloat(cost) : null,
     });
   }
 
@@ -163,6 +165,22 @@ export default function AddInventoryItemModal({
               />
             </label>
           </div>
+
+          {/* Cost */}
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-medium text-text-primary">
+              Cost
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              placeholder="$0.00"
+            />
+          </label>
 
           {/* Purchase URL */}
           <label className="flex flex-col gap-1.5">

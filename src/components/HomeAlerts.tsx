@@ -59,15 +59,12 @@ export default function HomeAlerts() {
   }, []);
 
   return (
-    <div className="p-5">
+    <div className="px-5 pt-5 pb-0">
       <header className="flex items-start justify-between gap-4 mb-4">
-        <div className="flex flex-col gap-[3px] min-w-0">
-          <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
-            <BellIcon width={15} height={15} className="text-accent" />
-            Home Inventory Alert
-          </h2>
-          <p className="text-xs text-text-3">Items due within 7 days</p>
-        </div>
+        <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
+          <BellIcon width={15} height={15} className="text-accent" />
+          Home Inventory Alert
+        </h2>
       </header>
 
       {loading ? (
@@ -114,7 +111,7 @@ export default function HomeAlerts() {
                   <li key={item.id} className="relative">
                     <Link
                       href={`/inventory/${item.id}`}
-                      className="grid grid-cols-[32px_1fr_auto] items-center gap-2 pl-5 pr-10 py-[9px] border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
+                      className="grid grid-cols-[32px_1fr_auto] items-center gap-2 pl-5 pr-10 py-3 border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
                     >
                       {item.thumbnailUrl ? (
                         <img
@@ -136,8 +133,8 @@ export default function HomeAlerts() {
                         </span>
                       </div>
                       <span
-                        className={`text-[13px] font-medium whitespace-nowrap ${
-                          isOverdue ? "text-red" : "text-accent"
+                        className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 ${
+                          isOverdue ? "bg-red text-white" : "bg-accent-light text-accent"
                         }`}
                       >
                         {label}

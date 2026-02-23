@@ -3,13 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { FREQUENCY_OPTIONS, type Service } from "@/lib/services-data";
 import type { Contractor } from "@/lib/contractors-data";
-import { XIcon, ChevronDownIcon } from "@/components/icons";
+import { XIcon, ChevronDownIcon, TrashIcon } from "@/components/icons";
 import AddContractorModal from "@/components/contractors/AddContractorModal";
 
 interface AddServiceModalProps {
   service?: Service;
   contractors: Contractor[];
   onSave: (data: Omit<Service, "id" | "createdAt">) => void;
+  onDelete?: () => void;
   onContractorAdded: (data: Omit<Contractor, "id" | "createdAt">) => Promise<Contractor>;
   onClose: () => void;
 }
@@ -35,6 +36,7 @@ export default function AddServiceModal({
   service,
   contractors,
   onSave,
+  onDelete,
   onContractorAdded,
   onClose,
 }: AddServiceModalProps) {
@@ -52,6 +54,7 @@ export default function AddServiceModal({
   const [phone, setPhone] = useState(service?.phone ?? "");
   const [notes, setNotes] = useState(service?.notes ?? "");
   const [showContractorModal, setShowContractorModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const isValid = name.trim() !== "";
 
@@ -231,21 +234,53 @@ export default function AddServiceModal({
             </label>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2 border-t border-border">
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={!isValid}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {isEditing ? "Save Changes" : "Add Service"}
-              </button>
+            <div className="flex items-center gap-3 pt-2 border-t border-border">
+              {isEditing && onDelete && (
+                confirmDelete ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-[12px] text-text-3">Delete this service?</span>
+                    <button
+                      type="button"
+                      onClick={onDelete}
+                      className="inline-flex items-center gap-1 px-2.5 py-[5px] rounded-[var(--radius-sm)] bg-red text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+                    >
+                      Yes, Delete
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      className="text-[12px] font-medium text-text-3 hover:text-text-primary transition-colors duration-[120ms]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 text-[13px] font-medium hover:bg-red-light hover:text-red hover:border-red/20 transition-all duration-[120ms]"
+                  >
+                    <TrashIcon width={13} height={13} />
+                    Delete
+                  </button>
+                )
+              )}
+              <div className="flex gap-3 ml-auto">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!isValid}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {isEditing ? "Save Changes" : "Add Service"}
+                </button>
+              </div>
             </div>
           </form>
         </div>

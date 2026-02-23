@@ -292,6 +292,18 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               </span>
             </div>
 
+            {/* Cost */}
+            <div>
+              <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                Cost
+              </span>
+              <span className="text-[14px] text-text-primary">
+                {item.cost != null
+                  ? `$${item.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : "—"}
+              </span>
+            </div>
+
             {/* Purchase URL */}
             {item.purchaseUrl && (
               <div className="col-span-2">
