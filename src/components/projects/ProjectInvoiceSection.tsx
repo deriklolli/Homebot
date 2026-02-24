@@ -249,7 +249,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
               Invoices
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                 {invoices.map((inv) => {
                   const thumbUrl = thumbnailUrls[inv.id];
 
