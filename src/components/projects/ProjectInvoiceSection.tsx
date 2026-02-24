@@ -275,8 +275,9 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
                           Scanning...
                         </span>
                       ) : inv.amount !== null ? (
-                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-semibold text-center py-0.5">
-                          {formatAmount(inv.amount)}
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-center py-0.5 flex flex-col leading-tight">
+                          <span className="text-[8px] font-medium text-white/80">Invoice Total:</span>
+                          <span className="text-[10px] font-semibold text-green">{formatAmount(inv.amount)}</span>
                         </span>
                       ) : null}
                       <button
