@@ -6,7 +6,7 @@ import { supabase, type DbProjectInvoice } from "@/lib/supabase";
 import { dbToProjectInvoice } from "@/lib/mappers";
 import { compressImage } from "@/lib/compress-image";
 import { extractInvoiceTotal } from "@/lib/extract-invoice-total";
-import { InvoiceSolidIcon, InvoiceIcon, XIcon } from "@/components/icons";
+import { InvoiceSolidIcon, XIcon } from "@/components/icons";
 
 export interface ProjectInvoiceSectionHandle {
   triggerUpload: () => void;
@@ -58,10 +58,9 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
           .update({ amount } as Record<string, unknown>)
           .eq("id", invoiceId);
 
-        onInvoicesChange(
-          invoices.map((inv) =>
-            inv.id === invoiceId ? { ...inv, amount } : inv
-          )
+        // Use functional updater to avoid stale closure over invoices
+        (onInvoicesChange as (fn: (prev: ProjectInvoice[]) => ProjectInvoice[]) => void)(
+          (prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, amount } : inv))
         );
       }
 
@@ -193,41 +192,54 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
               Invoices
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
-              <div className="flex flex-col gap-1">
-                {invoices.map((inv) => (
-                  <div
-                    key={inv.id}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] hover:bg-border/50 cursor-pointer group transition-colors duration-[120ms]"
-                    onClick={() => window.open(getPublicUrl(inv.storagePath), "_blank")}
-                  >
-                    <InvoiceIcon width={16} height={16} className="text-text-3 shrink-0" />
-                    <span className="text-[13px] text-text-primary font-medium truncate flex-1">
-                      {inv.fileName}
-                    </span>
-                    {scanningIds.has(inv.id) ? (
-                      <span className="text-[11px] text-text-3 italic shrink-0">Scanning...</span>
-                    ) : inv.amount !== null ? (
-                      <span className="text-[13px] font-semibold text-green shrink-0">
-                        {formatAmount(inv.amount)}
-                      </span>
-                    ) : null}
-                    <span className="text-[10px] text-text-4 shrink-0">
-                      {formatDate(inv.createdAt)}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(inv);
-                      }}
-                      className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms]"
-                      aria-label="Delete invoice"
+              <div className="flex flex-wrap gap-3">
+                {invoices.map((inv) => {
+                  const isImage = inv.fileType.startsWith("image/");
+                  const url = getPublicUrl(inv.storagePath);
+
+                  return (
+                    <div
+                      key={inv.id}
+                      className="relative group cursor-pointer"
+                      onClick={() => window.open(url, "_blank")}
                     >
-                      <XIcon width={14} height={14} />
-                    </button>
-                  </div>
-                ))}
+                      {isImage ? (
+                        <img
+                          src={url}
+                          alt="Invoice"
+                          className="w-[80px] h-[80px] object-cover rounded-[var(--radius-md)] border border-border"
+                        />
+                      ) : (
+                        <div className="w-[80px] h-[80px] rounded-[var(--radius-md)] border border-border bg-border/50 flex flex-col items-center justify-center gap-1">
+                          <span className="text-[11px] font-bold text-text-3 uppercase">PDF</span>
+                        </div>
+                      )}
+                      {scanningIds.has(inv.id) ? (
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5 rounded-b-[var(--radius-md)]">
+                          Scanning...
+                        </span>
+                      ) : inv.amount !== null ? (
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-semibold text-center py-0.5 rounded-b-[var(--radius-md)]">
+                          {formatAmount(inv.amount)}
+                        </span>
+                      ) : null}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(inv);
+                        }}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-surface border border-border shadow-sm flex items-center justify-center text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms]"
+                        aria-label="Delete invoice"
+                      >
+                        <XIcon width={10} height={10} />
+                      </button>
+                    </div>
+                  );
+                })}
                 {uploading && (
-                  <p className="text-[12px] text-text-3 px-3 py-2">Uploading...</p>
+                  <div className="w-[80px] h-[80px] rounded-[var(--radius-md)] border border-border bg-border/30 flex items-center justify-center">
+                    <span className="text-[10px] text-text-3">Uploading...</span>
+                  </div>
                 )}
               </div>
             </div>
