@@ -29,7 +29,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-const themeScript = `(function(){try{var t=localStorage.getItem("homebot-theme");if(t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})()`;
+const themeScript = `(function(){try{var p=location.pathname;if(p==="/login"||p==="/signup")return;var t=localStorage.getItem("homebot-theme");if(t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")}catch(e){}})()`;
 
 export default function RootLayout({
   children,

@@ -18,8 +18,18 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
+const AUTH_PATHS = ["/login", "/signup"];
+
+function isAuthPage() {
+  return AUTH_PATHS.includes(window.location.pathname);
+}
+
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
+  if (isAuthPage()) {
+    root.classList.remove("dark");
+    return;
+  }
   if (theme === "system") {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     root.classList.toggle("dark", prefersDark);
