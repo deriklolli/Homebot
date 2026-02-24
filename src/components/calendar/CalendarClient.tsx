@@ -9,12 +9,16 @@ import {
   ChevronRightIcon,
 } from "@/components/icons";
 import CalendarGrid, { type CalendarEvent } from "./CalendarGrid";
+import CalendarWeekGrid from "./CalendarWeekGrid";
 import SubscribeModal from "./SubscribeModal";
+
+type CalendarView = "month" | "week";
 
 interface DbCalendarEvent {
   id: string;
   title: string;
   event_date: string;
+  event_time: string | null;
   project_id: string;
   projects: {
     id: string;
@@ -39,6 +43,7 @@ export default function CalendarClient() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState<CalendarView>("month");
   const [subscribeModalOpen, setSubscribeModalOpen] = useState(false);
 
   useEffect(() => {
@@ -46,7 +51,7 @@ export default function CalendarClient() {
       const [projectRes, inventoryRes, serviceRes] = await Promise.all([
         supabase
           .from("project_events")
-          .select("id, title, event_date, project_id, projects(id, name, status)")
+          .select("id, title, event_date, event_time, project_id, projects(id, name, status)")
           .order("event_date", { ascending: true })
           .returns<DbCalendarEvent[]>(),
         supabase
@@ -70,6 +75,7 @@ export default function CalendarClient() {
             id: e.id,
             title: e.title,
             eventDate: e.event_date,
+            eventTime: e.event_time,
             projectId: e.projects.id,
             projectName: e.projects.name,
             projectStatus: e.projects.status as ProjectStatus,
@@ -110,26 +116,50 @@ export default function CalendarClient() {
     fetchEvents();
   }, []);
 
-  function goToPreviousMonth() {
-    setCurrentDate(
-      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
-    );
+  function goToPrevious() {
+    setCurrentDate((prev) => {
+      if (view === "week") {
+        const d = new Date(prev);
+        d.setDate(d.getDate() - 7);
+        return d;
+      }
+      return new Date(prev.getFullYear(), prev.getMonth() - 1, 1);
+    });
   }
 
-  function goToNextMonth() {
-    setCurrentDate(
-      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
-    );
+  function goToNext() {
+    setCurrentDate((prev) => {
+      if (view === "week") {
+        const d = new Date(prev);
+        d.setDate(d.getDate() + 7);
+        return d;
+      }
+      return new Date(prev.getFullYear(), prev.getMonth() + 1, 1);
+    });
   }
 
   function goToToday() {
     setCurrentDate(new Date());
   }
 
-  const monthYear = currentDate.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+  // Header label
+  let headerLabel: string;
+  if (view === "week") {
+    const d = new Date(currentDate);
+    const day = d.getDay();
+    const sun = new Date(d);
+    sun.setDate(d.getDate() - day);
+    const sat = new Date(sun);
+    sat.setDate(sun.getDate() + 6);
+    const fmt = (dt: Date) =>
+      dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    headerLabel = `${fmt(sun)} – ${fmt(sat)}, ${sat.getFullYear()}`;
+  } else {
+    headerLabel = currentDate.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+  }
 
   if (loading) {
     return (
@@ -155,7 +185,7 @@ export default function CalendarClient() {
         </button>
       </header>
 
-      {/* Month navigation */}
+      {/* Navigation */}
       <div className="flex items-center gap-3 mb-4">
         <button
           onClick={goToToday}
@@ -164,26 +194,54 @@ export default function CalendarClient() {
           Today
         </button>
         <button
-          onClick={goToPreviousMonth}
+          onClick={goToPrevious}
           className="inline-flex items-center justify-center w-7 h-7 rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-          aria-label="Previous month"
+          aria-label={view === "week" ? "Previous week" : "Previous month"}
         >
           <ChevronLeftIcon width={14} height={14} />
         </button>
         <button
-          onClick={goToNextMonth}
+          onClick={goToNext}
           className="inline-flex items-center justify-center w-7 h-7 rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-          aria-label="Next month"
+          aria-label={view === "week" ? "Next week" : "Next month"}
         >
           <ChevronRightIcon width={14} height={14} />
         </button>
-        <h2 className="text-[15px] font-semibold text-text-primary">
-          {monthYear}
+        <h2 className="text-[15px] font-semibold text-text-primary flex-1">
+          {headerLabel}
         </h2>
+
+        {/* View toggle */}
+        <div className="flex rounded-[var(--radius-sm)] border border-border-strong overflow-hidden">
+          <button
+            onClick={() => setView("week")}
+            className={`px-3 py-[5px] text-[13px] font-medium transition-all duration-[120ms] ${
+              view === "week"
+                ? "bg-accent text-white"
+                : "bg-surface text-text-2 hover:bg-border hover:text-text-primary"
+            }`}
+          >
+            Week
+          </button>
+          <button
+            onClick={() => setView("month")}
+            className={`px-3 py-[5px] text-[13px] font-medium transition-all duration-[120ms] ${
+              view === "month"
+                ? "bg-accent text-white"
+                : "bg-surface text-text-2 hover:bg-border hover:text-text-primary"
+            }`}
+          >
+            Month
+          </button>
+        </div>
       </div>
 
       {/* Calendar grid */}
-      <CalendarGrid currentDate={currentDate} events={events} />
+      {view === "month" ? (
+        <CalendarGrid currentDate={currentDate} events={events} />
+      ) : (
+        <CalendarWeekGrid currentDate={currentDate} events={events} />
+      )}
 
       {/* Subscribe modal */}
       {subscribeModalOpen && (

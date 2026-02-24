@@ -6,6 +6,7 @@ export interface ProjectCalendarEvent {
   id: string;
   title: string;
   eventDate: string;
+  eventTime?: string | null;
   projectId: string;
   projectName: string;
   projectStatus: ProjectStatus;
@@ -35,6 +36,16 @@ const STATUS_PILL: Record<ProjectStatus, string> = {
   "In Progress": "bg-accent-light text-accent",
   Completed: "bg-green-light text-green",
 };
+
+export function formatShortTime(time: string): string {
+  const [hStr, mStr] = time.split(":");
+  let h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  const suffix = h >= 12 ? "p" : "a";
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return m > 0 ? `${h}:${mStr}${suffix}` : `${h}${suffix}`;
+}
 
 const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -184,8 +195,11 @@ export default function CalendarGrid({
                       key={e.id}
                       href={`/projects/${e.projectId}`}
                       className={`block px-1.5 py-0.5 text-[10px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${STATUS_PILL[e.projectStatus]}`}
-                      title={`${e.projectName}: ${e.title}`}
+                      title={`${e.projectName}: ${e.title}${e.eventTime ? ` at ${formatShortTime(e.eventTime)}` : ""}`}
                     >
+                      {e.eventTime && (
+                        <span className="opacity-70">{formatShortTime(e.eventTime)} </span>
+                      )}
                       {e.projectName}
                     </Link>
                   );
