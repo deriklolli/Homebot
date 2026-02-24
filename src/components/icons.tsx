@@ -414,6 +414,26 @@ export function BuildingIcon(props: IconProps) {
   );
 }
 
+export function UploadIcon(props: IconProps) {
+  return (
+    <svg {...defaultProps} {...props} aria-hidden="true">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+export function AlertCircleIcon(props: IconProps) {
+  return (
+    <svg {...defaultProps} {...props} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  );
+}
+
 export function HomebotLogo(props: IconProps) {
   return (
     <svg width={28} height={24} viewBox="0 0 28 24" fill="none" {...props} aria-hidden="true">

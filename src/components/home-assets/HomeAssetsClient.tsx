@@ -5,8 +5,9 @@ import Link from "next/link";
 import { type HomeAsset, type AssetCategory, CATEGORY_OPTIONS, DEFAULT_ASSETS } from "@/lib/home-assets-data";
 import { supabase, type DbHomeAsset } from "@/lib/supabase";
 import { dbToHomeAsset, homeAssetToDb } from "@/lib/mappers";
-import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, UploadIcon } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
+import ImportAssetsModal from "./ImportAssetsModal";
 
 function warrantyStatus(dateStr: string | null): { label: string; color: string } | null {
   if (!dateStr) return null;
@@ -29,6 +30,7 @@ export default function HomeAssetsClient() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const [prefillAsset, setPrefillAsset] = useState<{ name: string; category: AssetCategory } | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
@@ -69,6 +71,12 @@ export default function HomeAssetsClient() {
     );
     setModalOpen(false);
     setPrefillAsset(null);
+  }
+
+  function handleImportComplete(newAssets: HomeAsset[]) {
+    setAssets(
+      [...assets, ...newAssets].sort((a, b) => a.name.localeCompare(b.name))
+    );
   }
 
   function toggleCategory(cat: string) {
@@ -120,10 +128,18 @@ export default function HomeAssetsClient() {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       {/* Header */}
-      <header className="mb-6">
+      <header className="flex items-center justify-between mb-6">
         <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
           Home Assets
         </h1>
+        <button
+          type="button"
+          onClick={() => setImportModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+        >
+          <UploadIcon width={14} height={14} />
+          Import
+        </button>
       </header>
 
       {/* Search */}
@@ -276,7 +292,13 @@ export default function HomeAssetsClient() {
         />
       )}
 
-
+      {/* Import modal */}
+      {importModalOpen && (
+        <ImportAssetsModal
+          onImportComplete={handleImportComplete}
+          onClose={() => setImportModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
