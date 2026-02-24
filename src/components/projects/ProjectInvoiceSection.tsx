@@ -249,53 +249,54 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
               Invoices
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-x-2 gap-y-3">
                 {invoices.map((inv) => {
                   const thumbUrl = thumbnailUrls[inv.id];
 
                   return (
-                    <div
-                      key={inv.id}
-                      className="relative aspect-square rounded-[var(--radius-md)] overflow-hidden group cursor-pointer border border-border hover:border-accent hover:scale-105 transition-all duration-[160ms] ease-out"
-                      onClick={() => window.open(getFileUrl(inv), "_blank")}
-                    >
-                      {thumbUrl ? (
-                        <img
-                          src={thumbUrl}
-                          alt="Invoice"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-border/40 flex items-center justify-center animate-pulse">
-                          <InvoiceIcon width={22} height={22} className="text-text-4" />
-                        </div>
-                      )}
-                      {scanningIds.has(inv.id) ? (
-                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5">
-                          Scanning...
-                        </span>
-                      ) : inv.amount !== null ? (
-                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-center py-0.5 flex flex-col leading-tight">
-                          <span className="text-[8px] font-medium text-white/80">Invoice Total:</span>
-                          <span className="text-[10px] font-semibold text-green">{formatAmount(inv.amount)}</span>
-                        </span>
-                      ) : null}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(inv);
-                        }}
-                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms] hover:bg-red"
-                        aria-label="Delete invoice"
+                    <div key={inv.id} className="flex flex-col">
+                      <div
+                        className="relative aspect-square rounded-[var(--radius-md)] overflow-hidden group cursor-pointer border border-border hover:border-accent hover:scale-105 transition-all duration-[160ms] ease-out"
+                        onClick={() => window.open(getFileUrl(inv), "_blank")}
                       >
-                        <XIcon width={12} height={12} />
-                      </button>
+                        {thumbUrl ? (
+                          <img
+                            src={thumbUrl}
+                            alt="Invoice"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-border/40 flex items-center justify-center animate-pulse">
+                            <InvoiceIcon width={22} height={22} className="text-text-4" />
+                          </div>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(inv);
+                          }}
+                          className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms] hover:bg-red"
+                          aria-label="Delete invoice"
+                        >
+                          <XIcon width={12} height={12} />
+                        </button>
+                      </div>
+                      {scanningIds.has(inv.id) ? (
+                        <span className="text-[10px] text-text-3 italic text-center mt-1">Scanning...</span>
+                      ) : inv.amount !== null ? (
+                        <div className="flex flex-col items-center mt-1">
+                          <span className="text-[9px] text-text-4">Invoice Total:</span>
+                          <span className="text-[11px] font-semibold text-green">{formatAmount(inv.amount)}</span>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
                 {uploading && (
-                  <div className="aspect-square rounded-[var(--radius-md)] border border-border bg-border/30 flex items-center justify-center">
-                    <span className="text-[10px] text-text-3">Uploading...</span>
+                  <div className="flex flex-col">
+                    <div className="aspect-square rounded-[var(--radius-md)] border border-border bg-border/30 flex items-center justify-center">
+                      <span className="text-[10px] text-text-3">Uploading...</span>
+                    </div>
                   </div>
                 )}
               </div>
