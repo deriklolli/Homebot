@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useImperativeHandle, forwardRef } from "react";
+import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
 import { type ProjectInvoice } from "@/lib/projects-data";
 import { supabase, type DbProjectInvoice } from "@/lib/supabase";
 import { dbToProjectInvoice } from "@/lib/mappers";
@@ -19,19 +19,7 @@ interface ProjectInvoiceSectionProps {
 }
 
 const BUCKET = "project-invoices";
-
-function getPublicUrl(storagePath: string): string {
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
-  return data.publicUrl;
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+const SIGNED_URL_EXPIRY = 3600; // 1 hour
 
 function formatAmount(amount: number): string {
   return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -41,11 +29,46 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
   function ProjectInvoiceSection({ projectId, invoices, onInvoicesChange }, ref) {
     const [uploading, setUploading] = useState(false);
     const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
+    const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => ({
       triggerUpload: () => fileInputRef.current?.click(),
     }));
+
+    // Fetch signed URLs for all image invoices on mount / when invoices change
+    useEffect(() => {
+      async function fetchSignedUrls() {
+        const imageInvoices = invoices.filter(
+          (inv) => !inv.fileType?.startsWith("application/pdf") && !inv.storagePath.endsWith(".pdf")
+        );
+
+        // Only fetch URLs we don't already have (skip local blob URLs)
+        const needUrls = imageInvoices.filter((inv) => !thumbnailUrls[inv.id]);
+        if (needUrls.length === 0) return;
+
+        const paths = needUrls.map((inv) => inv.storagePath);
+        const { data, error } = await supabase.storage
+          .from(BUCKET)
+          .createSignedUrls(paths, SIGNED_URL_EXPIRY);
+
+        if (error || !data) return;
+
+        const newUrls: Record<string, string> = {};
+        data.forEach((item, i) => {
+          if (item.signedUrl) {
+            newUrls[needUrls[i].id] = item.signedUrl;
+          }
+        });
+
+        if (Object.keys(newUrls).length > 0) {
+          setThumbnailUrls((prev) => ({ ...prev, ...newUrls }));
+        }
+      }
+
+      fetchSignedUrls();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [invoices]);
 
     async function scanAndUpdateAmount(invoiceId: string, file: File) {
       setScanningIds((prev) => new Set(prev).add(invoiceId));
@@ -78,6 +101,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
       setUploading(true);
       const newInvoices: ProjectInvoice[] = [];
       const filesToScan: { id: string; file: File }[] = [];
+      const localUrls: Record<string, string> = {};
 
       for (const file of Array.from(files)) {
         try {
@@ -132,12 +156,21 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
           const invoice = dbToProjectInvoice(rows[0]);
           newInvoices.push(invoice);
           filesToScan.push({ id: invoice.id, file });
+
+          // Create a local blob URL for immediate thumbnail display
+          if (!isPdf) {
+            localUrls[invoice.id] = URL.createObjectURL(uploadBlob);
+          }
         } catch (err) {
           console.error("Invoice processing failed:", err);
         }
       }
 
       if (newInvoices.length > 0) {
+        if (Object.keys(localUrls).length > 0) {
+          setThumbnailUrls((prev) => ({ ...prev, ...localUrls }));
+        }
+
         const updated = [...invoices, ...newInvoices];
         onInvoicesChange(updated);
 
@@ -170,7 +203,22 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
         return;
       }
 
+      // Revoke blob URL if it exists
+      if (thumbnailUrls[invoice.id]?.startsWith("blob:")) {
+        URL.revokeObjectURL(thumbnailUrls[invoice.id]);
+      }
+      setThumbnailUrls((prev) => {
+        const next = { ...prev };
+        delete next[invoice.id];
+        return next;
+      });
+
       onInvoicesChange(invoices.filter((inv) => inv.id !== invoice.id));
+    }
+
+    function getFileUrl(inv: ProjectInvoice): string {
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(inv.storagePath);
+      return data.publicUrl;
     }
 
     return (
@@ -195,26 +243,29 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
               <div className="flex flex-col gap-2">
                 {invoices.map((inv) => {
                   const isPdf = inv.fileType === "application/pdf" || inv.storagePath.endsWith(".pdf");
-                  const url = getPublicUrl(inv.storagePath);
+                  const thumbUrl = thumbnailUrls[inv.id];
 
                   return (
                     <div
                       key={inv.id}
                       className="flex items-center gap-3 rounded-[var(--radius-sm)] hover:bg-border/50 cursor-pointer group transition-colors duration-[120ms] p-1.5"
-                      onClick={() => window.open(url, "_blank")}
+                      onClick={() => window.open(getFileUrl(inv), "_blank")}
                     >
                       {isPdf ? (
                         <div className="w-[52px] h-[52px] rounded-[var(--radius-md)] border border-border bg-border/40 flex items-center justify-center shrink-0">
                           <InvoiceIcon width={22} height={22} className="text-text-3" />
                         </div>
-                      ) : (
+                      ) : thumbUrl ? (
                         <div className="relative w-[52px] h-[52px] rounded-[var(--radius-md)] overflow-hidden border border-border hover:border-accent transition-all duration-[160ms] shrink-0">
                           <img
-                            src={url}
+                            src={thumbUrl}
                             alt="Invoice"
                             className="w-full h-full object-cover"
-                            loading="lazy"
                           />
+                        </div>
+                      ) : (
+                        <div className="w-[52px] h-[52px] rounded-[var(--radius-md)] border border-border bg-border/40 flex items-center justify-center shrink-0 animate-pulse">
+                          <InvoiceIcon width={22} height={22} className="text-text-4" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
