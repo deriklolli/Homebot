@@ -23,6 +23,7 @@ import {
 import {
   dbToProject,
   dbToContractor,
+  contractorToDb,
   projectToDb,
   dbToProjectEvent,
   dbToProjectNote,
@@ -378,6 +379,23 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     setAddEventModalOpen(false);
   }
 
+  async function handleContractorAdded(
+    data: Omit<Contractor, "id" | "createdAt">
+  ): Promise<Contractor> {
+    const { data: rows, error } = await supabase
+      .from("contractors")
+      .insert(contractorToDb(data) as Record<string, unknown>)
+      .select()
+      .returns<DbContractor[]>();
+
+    if (error || !rows?.length) {
+      throw new Error("Failed to add contractor");
+    }
+    const newContractor = dbToContractor(rows[0]);
+    setContractors((prev) => [...prev, newContractor]);
+    return newContractor;
+  }
+
   async function handleDeleteEvent(eventId: string) {
     const { error } = await supabase
       .from("project_events")
@@ -532,21 +550,26 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           <ThumbsUpSolidIcon width={30} height={30} className="text-accent" />
           Hired
         </span>
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1">
-          {contractor ? (
-            <>
-              <span className="block text-[13px] font-semibold text-text-primary">
-                {contractor.company}
-              </span>
-              {contractor.name && (
-                <span className="block text-[12px] text-text-3">
-                  {contractor.name}
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
+          <div>
+            {contractor ? (
+              <>
+                <span className="block text-[13px] font-semibold text-text-primary">
+                  {contractor.company}
                 </span>
-              )}
-            </>
-          ) : (
-            <span className="text-[13px] text-text-3">Unassigned</span>
-          )}
+                {contractor.name && (
+                  <span className="block text-[12px] text-text-3">
+                    {contractor.name}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-[13px] text-text-3">Unassigned</span>
+            )}
+          </div>
+          <span className="text-[10px] text-text-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+            Added {formatDateTime(project.createdAt)}
+          </span>
         </div>
       </div>
 
@@ -584,13 +607,18 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                   </>
                 )}
               </div>
-              <button
-                onClick={() => handleDeleteEvent(item.data.id)}
-                className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms]"
-                aria-label="Delete event"
-              >
-                <XIcon width={14} height={14} />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[10px] text-text-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+                  Added {formatDateTime(item.data.createdAt)}
+                </span>
+                <button
+                  onClick={() => handleDeleteEvent(item.data.id)}
+                  className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms]"
+                  aria-label="Delete event"
+                >
+                  <XIcon width={14} height={14} />
+                </button>
+              </div>
             </div>
           </div>
         ) : (
@@ -603,13 +631,18 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               <p className="text-[13px] text-text-primary leading-relaxed whitespace-pre-wrap">
                 {item.data.content}
               </p>
-              <button
-                onClick={() => handleDeleteNote(item.data.id)}
-                className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms] shrink-0 ml-3"
-                aria-label="Delete note"
-              >
-                <XIcon width={14} height={14} />
-              </button>
+              <div className="flex items-center gap-2 shrink-0 ml-3">
+                <span className="text-[10px] text-text-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+                  Added {formatDateTime(item.data.createdAt)}
+                </span>
+                <button
+                  onClick={() => handleDeleteNote(item.data.id)}
+                  className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms]"
+                  aria-label="Delete note"
+                >
+                  <XIcon width={14} height={14} />
+                </button>
+              </div>
             </div>
           </div>
         )
@@ -722,6 +755,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           contractors={contractors}
           defaultContractorId={project.contractorId}
           onSave={handleAddEvent}
+          onContractorAdded={handleContractorAdded}
           onClose={() => setAddEventModalOpen(false)}
         />
       )}

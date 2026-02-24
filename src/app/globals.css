@@ -119,8 +119,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Accessible focus ring */
-:focus-visible {
+/* Accessible focus ring (skip form fields that style their own focus) */
+:focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);

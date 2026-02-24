@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { type Contractor } from "@/lib/contractors-data";
 import { XIcon } from "@/components/icons";
+import AddContractorModal from "@/components/contractors/AddContractorModal";
 
 interface AddEventModalProps {
   contractors: Contractor[];
@@ -13,6 +14,7 @@ interface AddEventModalProps {
     eventTime: string | null;
     contractorId: string | null;
   }) => void;
+  onContractorAdded: (data: Omit<Contractor, "id" | "createdAt">) => Promise<Contractor>;
   onClose: () => void;
 }
 
@@ -24,6 +26,7 @@ export default function AddEventModal({
   contractors,
   defaultContractorId,
   onSave,
+  onContractorAdded,
   onClose,
 }: AddEventModalProps) {
   const [title, setTitle] = useState("");
@@ -32,6 +35,7 @@ export default function AddEventModal({
   const [contractorId, setContractorId] = useState<string | null>(
     defaultContractorId
   );
+  const [showContractorModal, setShowContractorModal] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const isValid = title.trim() !== "";
 
@@ -59,6 +63,7 @@ export default function AddEventModal({
   }
 
   return (
+    <>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
       onClick={(e) => {
@@ -105,17 +110,26 @@ export default function AddEventModal({
             </span>
             <select
               value={contractorId ?? ""}
-              onChange={(e) =>
-                setContractorId(e.target.value || null)
-              }
+              onChange={(e) => {
+                if (e.target.value === "__add__") {
+                  setShowContractorModal(true);
+                  e.target.value = contractorId ?? "";
+                  return;
+                }
+                setContractorId(e.target.value || null);
+              }}
               className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
             >
               <option value="">No contractor</option>
-              {contractors.map((c) => (
+              {[...contractors]
+                .sort((a, b) => (a.company || a.name).localeCompare(b.company || b.name))
+                .map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.company}{c.name ? ` — ${c.name}` : ""}
+                  {c.company || c.name}
                 </option>
               ))}
+              <option disabled>──────────</option>
+              <option value="__add__">+ Add Contractor</option>
             </select>
           </label>
 
@@ -166,5 +180,17 @@ export default function AddEventModal({
         </form>
       </div>
     </div>
+
+    {showContractorModal && (
+      <AddContractorModal
+        onSave={async (data) => {
+          const newContractor = await onContractorAdded(data);
+          setContractorId(newContractor.id);
+          setShowContractorModal(false);
+        }}
+        onClose={() => setShowContractorModal(false)}
+      />
+    )}
+    </>
   );
 }

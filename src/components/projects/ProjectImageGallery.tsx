@@ -165,7 +165,12 @@ const ProjectImageGallery = forwardRef<ProjectImageGalleryHandle, ProjectImageGa
             <CameraIcon width={30} height={30} className="text-accent" />
             Photos
           </span>
-          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1 group/photos">
+            <div className="flex justify-end mb-2">
+              <span className="text-[10px] text-text-4 opacity-0 group-hover/photos:opacity-100 transition-opacity duration-[120ms]">
+                Added {new Date(images[0].createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              </span>
+            </div>
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2">
               {images.map((img, i) => (
                 <div

@@ -14,6 +14,7 @@ import {
   CheckCircleIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
+import { buyNowUrl } from "@/lib/utils";
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
@@ -292,18 +293,6 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               </span>
             </div>
 
-            {/* Cost */}
-            <div>
-              <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-                Cost
-              </span>
-              <span className="text-[14px] text-text-primary">
-                {item.cost != null
-                  ? `$${item.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                  : "—"}
-              </span>
-            </div>
-
             {/* Purchase URL */}
             {item.purchaseUrl && (
               <div className="col-span-2">
@@ -311,7 +300,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                   Purchase Link
                 </span>
                 <a
-                  href={item.purchaseUrl}
+                  href={buyNowUrl(item.name, item.purchaseUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[13px] text-accent hover:underline"
@@ -320,21 +309,21 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 </a>
               </div>
             )}
+
+            {/* Description */}
+            {item.description && (
+              <div className="col-span-2">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Description
+                </span>
+                <p className="text-[14px] text-text-primary leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Description */}
-      {item.description && (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
-          <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-2">
-            Description
-          </span>
-          <p className="text-[14px] text-text-primary leading-relaxed">
-            {item.description}
-          </p>
-        </div>
-      )}
 
       {/* Notes */}
       {item.notes && (

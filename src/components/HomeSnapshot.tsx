@@ -6,11 +6,10 @@ import type { DbHomeSnapshot } from "@/lib/supabase";
 import { dbToHomeSnapshot, type HomeSnapshot as HomeSnapshotType } from "@/lib/mappers";
 import {
   HomeIcon,
-  RefreshIcon,
   TrendUpIcon,
   TrendDownIcon,
-  XIcon,
   SearchIcon,
+  PencilIcon,
 } from "./icons";
 
 function formatCurrency(value: number): string {
@@ -19,6 +18,16 @@ function formatCurrency(value: number): string {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function formatAddress(address: string): { street: string; cityStateZip: string } | null {
+  // Typical format: "123 Main St, City, ST 12345"
+  const firstComma = address.indexOf(",");
+  if (firstComma === -1) return null;
+  const street = address.slice(0, firstComma).trim();
+  const cityStateZip = address.slice(firstComma + 1).trim();
+  if (!street || !cityStateZip) return null;
+  return { street, cityStateZip };
 }
 
 function timeAgo(dateStr: string): string {
@@ -40,6 +49,7 @@ export default function HomeSnapshot() {
   const [error, setError] = useState("");
   const [editingValue, setEditingValue] = useState(false);
   const [valueInput, setValueInput] = useState("");
+  const [editingHome, setEditingHome] = useState(false);
 
   // Load existing snapshot on mount
   useEffect(() => {
@@ -124,61 +134,12 @@ export default function HomeSnapshot() {
         setSnapshot(dbToHomeSnapshot(rows[0]));
       }
       setUrlInput("");
+      setEditingHome(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setScraping(false);
     }
-  }
-
-  async function handleRefresh() {
-    if (!snapshot) return;
-    setScraping(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/scrape-home", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: snapshot.redfinUrl }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Refresh failed");
-        setScraping(false);
-        return;
-      }
-
-      const supabase = createClient();
-      const { data: rows, error: dbError } = await supabase
-        .from("home_snapshot")
-        .update({
-          address: data.address || snapshot.address,
-          photo_url: data.photoUrl || snapshot.photoUrl,
-          estimated_value: data.estimatedValue || snapshot.estimatedValue,
-          value_trend: data.valueTrend,
-          last_scraped_at: new Date().toISOString(),
-        } as Record<string, unknown>)
-        .eq("id", snapshot.id)
-        .select()
-        .returns<DbHomeSnapshot[]>();
-
-      if (!dbError && rows && rows.length > 0) {
-        setSnapshot(dbToHomeSnapshot(rows[0]));
-      }
-    } catch {
-      setError("Refresh failed");
-    } finally {
-      setScraping(false);
-    }
-  }
-
-  async function handleDisconnect() {
-    if (!snapshot) return;
-    const supabase = createClient();
-    await supabase.from("home_snapshot").delete().eq("id", snapshot.id);
-    setSnapshot(null);
   }
 
   async function handleValueSave() {
@@ -218,7 +179,7 @@ export default function HomeSnapshot() {
         <header className="flex items-start justify-between gap-4 mb-4">
           <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
             <HomeIcon width={16} height={16} className="text-accent" />
-            Home Snapshot
+            Your Home's Estimated Value
           </h2>
         </header>
         <div className="flex flex-col items-center gap-4 py-4 px-4 text-center">
@@ -269,27 +230,59 @@ export default function HomeSnapshot() {
       <header className="flex items-start justify-between gap-4 mb-4">
         <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
           <HomeIcon width={16} height={16} className="text-accent" />
-          Home Snapshot
+          Your Home's Estimated Value
         </h2>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handleRefresh}
-            disabled={scraping}
-            className="inline-flex items-center text-text-4 p-1 rounded-full hover:text-accent hover:bg-accent-light transition-all duration-[120ms] disabled:opacity-50"
-            aria-label="Refresh home data"
-          >
-            <RefreshIcon width={14} height={14} className={scraping ? "animate-spin" : ""} />
-          </button>
-          <button
-            onClick={handleDisconnect}
-            className="inline-flex items-center text-text-4 p-1 rounded-full hover:text-red hover:bg-red-light transition-all duration-[120ms]"
-            aria-label="Disconnect home"
-          >
-            <XIcon width={14} height={14} />
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setEditingHome(true);
+            setUrlInput(snapshot.redfinUrl || "");
+          }}
+          className="p-1 rounded-[var(--radius-sm)] text-text-3 hover:text-accent hover:bg-accent/10 transition-all duration-[120ms]"
+          aria-label="Edit home"
+        >
+          <PencilIcon width={14} height={14} />
+        </button>
       </header>
 
+      {editingHome ? (
+        <div className="flex flex-col gap-3">
+          <div className="flex w-full gap-2">
+            <div className="relative flex-1">
+              <SearchIcon
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
+                width={14}
+                height={14}
+              />
+              <input
+                type="url"
+                placeholder="https://redfin.com/..."
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleConnect()}
+                className="w-full pl-8 pr-3 py-2 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                aria-label="Redfin property URL"
+                autoFocus
+              />
+            </div>
+            <button
+              onClick={handleConnect}
+              disabled={scraping || !urlInput.trim()}
+              className="px-4 py-2 rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            >
+              {scraping ? "Updating..." : "Update"}
+            </button>
+          </div>
+          <button
+            onClick={() => setEditingHome(false)}
+            className="text-[11px] font-medium text-text-3 hover:underline self-start"
+          >
+            Cancel
+          </button>
+          {error && (
+            <p className="text-[12px] text-red">{error}</p>
+          )}
+        </div>
+      ) : (
       <div className="flex gap-4">
         {/* Property photo */}
         {snapshot.photoUrl ? (
@@ -313,16 +306,26 @@ export default function HomeSnapshot() {
 
         {/* Property info */}
         <div className="flex flex-col justify-center gap-1 min-w-0">
-          {snapshot.address && (
-            <a
-              href={snapshot.redfinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[13px] font-medium text-text-primary hover:text-accent transition-colors duration-[120ms] truncate"
-            >
-              {snapshot.address}
-            </a>
-          )}
+          {snapshot.address && (() => {
+            const parsed = formatAddress(snapshot.address);
+            return (
+              <a
+                href={snapshot.redfinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[13px] font-medium text-text-primary hover:text-accent transition-colors duration-[120ms]"
+              >
+                {parsed ? (
+                  <>
+                    <span className="block truncate">{parsed.street}</span>
+                    <span className="block truncate">{parsed.cityStateZip}</span>
+                  </>
+                ) : (
+                  <span className="truncate">{snapshot.address}</span>
+                )}
+              </a>
+            );
+          })()}
 
           {/* Value */}
           {editingValue ? (
@@ -352,22 +355,13 @@ export default function HomeSnapshot() {
           ) : (
             <div className="flex items-center gap-2">
               {snapshot.estimatedValue ? (
-                <button
-                  onClick={() => {
-                    setValueInput(String(snapshot.estimatedValue));
-                    setEditingValue(true);
-                  }}
-                  className="text-xl font-bold text-text-primary hover:text-accent transition-colors duration-[120ms]"
-                >
+                <span className="text-xl font-bold text-text-primary">
                   {formatCurrency(snapshot.estimatedValue)}
-                </button>
+                </span>
               ) : (
-                <button
-                  onClick={() => setEditingValue(true)}
-                  className="text-[13px] font-medium text-accent hover:underline"
-                >
-                  Add home value
-                </button>
+                <span className="text-[13px] text-text-3">
+                  No value set
+                </span>
               )}
 
               {snapshot.valueTrend === "up" && (
@@ -380,6 +374,7 @@ export default function HomeSnapshot() {
                   <TrendDownIcon width={14} height={14} />
                 </span>
               )}
+
             </div>
           )}
 
@@ -388,8 +383,9 @@ export default function HomeSnapshot() {
           </span>
         </div>
       </div>
+      )}
 
-      {error && (
+      {error && !editingHome && (
         <p className="text-[12px] text-red mt-2">{error}</p>
       )}
     </div>

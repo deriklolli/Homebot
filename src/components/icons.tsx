@@ -404,6 +404,16 @@ export function MenuIcon(props: IconProps) {
   );
 }
 
+export function BuildingIcon(props: IconProps) {
+  return (
+    <svg {...defaultProps} {...props} aria-hidden="true">
+      <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+      <path d="M9 22V12h6v10" />
+      <path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01" />
+    </svg>
+  );
+}
+
 export function HomebotLogo(props: IconProps) {
   return (
     <svg width={28} height={24} viewBox="0 0 28 24" fill="none" {...props} aria-hidden="true">

@@ -1,9 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import type { Contractor } from "@/lib/contractors-data";
 import {
   StarFilledIcon,
   PhoneCallIcon,
   MailIcon,
   PencilIcon,
+  BuildingIcon,
   UserIcon,
 } from "@/components/icons";
 
@@ -14,35 +18,38 @@ export default function ContractorCard({
   contractor: Contractor;
   onEdit: (contractor: Contractor) => void;
 }) {
-  const initials = contractor.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+  const [logoError, setLogoError] = useState(false);
 
   return (
     <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200">
       <div className="p-5">
         {/* Name + avatar + edit */}
         <div className="flex items-start gap-3 mb-3">
-          {contractor.logoUrl ? (
+          {contractor.logoUrl?.trim() && !logoError ? (
             <img
               src={contractor.logoUrl}
               alt={contractor.company}
               className="w-9 h-9 rounded-full object-contain bg-white border border-border shrink-0"
+              onError={() => setLogoError(true)}
             />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-accent text-white text-[11px] font-bold flex items-center justify-center shrink-0">
-              {initials || <UserIcon width={18} height={18} />}
+            <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center shrink-0">
+              {contractor.company?.trim() ? (
+                <BuildingIcon width={18} height={18} />
+              ) : (
+                <UserIcon width={18} height={18} />
+              )}
             </div>
           )}
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold text-text-primary truncate">
-              {contractor.company}
+              {contractor.company?.trim() || contractor.name}
             </p>
-            <p className="text-xs text-text-3 truncate">
-              {contractor.name}
-            </p>
+            {contractor.company?.trim() && contractor.name && (
+              <p className="text-xs text-text-3 truncate">
+                {contractor.name}
+              </p>
+            )}
           </div>
           <button
             onClick={() => onEdit(contractor)}

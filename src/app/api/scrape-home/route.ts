@@ -38,7 +38,12 @@ function extractTitle(html: string): string | null {
 function parseAddress(ogTitle: string | null, pageTitle: string | null): string | null {
   const raw = ogTitle || pageTitle;
   if (!raw) return null;
-  return raw.replace(/\s*[|–—-]\s*Redfin.*$/i, "").trim() || null;
+  return raw
+    .replace(/\s*[|–—-]\s*Redfin.*$/i, "")       // strip "| Redfin" suffix
+    .replace(/\s*[|·]\s*\d+\s*beds?.*$/i, "")     // strip "| 3 beds ..." or "· 3 beds ..."
+    .replace(/\s*[|·]\s*\d+\s*baths?.*$/i, "")    // strip "| 2 baths ..." or "· 2 baths ..."
+    .replace(/\s*[|·]\s*[\d,]+\s*sq\s*ft.*$/i, "") // strip sqft info
+    .trim() || null;
 }
 
 /**

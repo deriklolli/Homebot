@@ -5,17 +5,9 @@ import Link from "next/link";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { supabase, type DbInventoryItem } from "@/lib/supabase";
 import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
-import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon, CheckCircleIcon, PencilIcon, XIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+import { buyNowUrl } from "@/lib/utils";
 
 function daysUntil(dateStr: string): number {
   const today = new Date();
@@ -34,6 +26,8 @@ export default function InventoryClient() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchItems() {
@@ -96,6 +90,91 @@ export default function InventoryClient() {
     setModalOpen(false);
   }
 
+  async function handleMarkPurchased(e: React.MouseEvent, item: InventoryItem) {
+    e.preventDefault();
+    e.stopPropagation();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
+
+    const nextReminder = new Date(today);
+    nextReminder.setMonth(nextReminder.getMonth() + item.frequencyMonths);
+    const nextReminderStr = nextReminder.toISOString().split("T")[0];
+
+    const { data: rows, error } = await supabase
+      .from("inventory_items")
+      .update({
+        last_ordered_date: todayStr,
+        next_reminder_date: nextReminderStr,
+      })
+      .eq("id", item.id)
+      .select()
+      .returns<DbInventoryItem[]>();
+
+    if (error) {
+      console.error("Failed to mark as purchased:", error);
+      return;
+    }
+    setItems(
+      items
+        .map((i) => (i.id === item.id ? dbToInventoryItem(rows[0]) : i))
+        .sort((a, b) => a.nextReminderDate.localeCompare(b.nextReminderDate))
+    );
+    setPurchasedIds((prev) => new Set(prev).add(item.id));
+  }
+
+  async function handleEdit(data: Omit<InventoryItem, "id" | "createdAt">) {
+    if (!editingItem) return;
+
+    let thumbnailUrl = data.thumbnailUrl;
+    if (!thumbnailUrl && data.purchaseUrl && data.purchaseUrl !== editingItem.purchaseUrl) {
+      try {
+        const res = await fetch("/api/scrape-thumbnail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: data.purchaseUrl }),
+        });
+        const json = (await res.json()) as { thumbnailUrl: string };
+        thumbnailUrl = json.thumbnailUrl ?? "";
+      } catch {
+        // keep empty
+      }
+    }
+
+    const { data: rows, error } = await supabase
+      .from("inventory_items")
+      .update(inventoryItemToDb({ ...data, thumbnailUrl }) as Record<string, unknown>)
+      .eq("id", editingItem.id)
+      .select()
+      .returns<DbInventoryItem[]>();
+
+    if (error) {
+      console.error("Failed to update item:", error);
+      return;
+    }
+    setItems(
+      items
+        .map((i) => (i.id === editingItem.id ? dbToInventoryItem(rows[0]) : i))
+        .sort((a, b) => a.nextReminderDate.localeCompare(b.nextReminderDate))
+    );
+    setEditingItem(null);
+  }
+
+  async function handleDelete(e: React.MouseEvent, itemId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    const { error } = await supabase
+      .from("inventory_items")
+      .delete()
+      .eq("id", itemId);
+
+    if (error) {
+      console.error("Failed to delete item:", error);
+      return;
+    }
+    setItems(items.filter((i) => i.id !== itemId));
+  }
+
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       {/* Header */}
@@ -115,7 +194,7 @@ export default function InventoryClient() {
       {/* Search */}
       {items.length > 0 && (
         <div className="mb-4">
-          <div className="relative max-w-full sm:max-w-[250px]">
+          <div className="relative max-w-full sm:max-w-[350px]">
             <SearchIcon
               className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
               width={14}
@@ -123,10 +202,10 @@ export default function InventoryClient() {
             />
             <input
               type="text"
-              placeholder="Search items..."
+              placeholder="Search Home Inventory"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="w-full pl-9 pr-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
             />
           </div>
         </div>
@@ -172,7 +251,7 @@ export default function InventoryClient() {
                       <li key={item.id} className="border-b border-border last:border-b-0">
                         <Link
                           href={`/inventory/${item.id}`}
-                          className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                          className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
                         >
                           {item.thumbnailUrl ? (
                             <img
@@ -195,13 +274,52 @@ export default function InventoryClient() {
                               </p>
                             )}
                           </div>
-                          <div className="flex flex-col items-end gap-0.5 shrink-0">
-                            <span className="text-[13px] font-medium text-red whitespace-nowrap">
-                              {formatDate(item.nextReminderDate)}
-                            </span>
-                            <span className="text-[11px] text-red font-medium">
-                              {dueLabel}
-                            </span>
+                          <span
+                            className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${
+                              isOverdue ? "bg-red text-white" : "bg-accent-light text-accent"
+                            }`}
+                          >
+                            {dueLabel}
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0 w-full pl-[52px] sm:w-auto sm:pl-0 sm:ml-2">
+                            <a
+                              href={buyNowUrl(item.name, item.purchaseUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+                            >
+                              Buy Now
+                            </a>
+                            <button
+                              type="button"
+                              onClick={(e) => handleMarkPurchased(e, item)}
+                              disabled={purchasedIds.has(item.id)}
+                              className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-all duration-[120ms] inline-flex items-center gap-1 ${
+                                purchasedIds.has(item.id)
+                                  ? "bg-green text-white cursor-default"
+                                  : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
+                              }`}
+                            >
+                              <CheckCircleIcon width={12} height={12} />
+                              {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingItem(item); }}
+                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                              aria-label="Edit item"
+                            >
+                              <PencilIcon width={13} height={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDelete(e, item.id)}
+                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-red transition-all duration-[120ms]"
+                              aria-label="Delete item"
+                            >
+                              <XIcon width={13} height={13} />
+                            </button>
                           </div>
                         </Link>
                       </li>
@@ -228,7 +346,7 @@ export default function InventoryClient() {
                       <li key={item.id} className="border-b border-border last:border-b-0">
                         <Link
                           href={`/inventory/${item.id}`}
-                          className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                          className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
                         >
                           {item.thumbnailUrl ? (
                             <img
@@ -256,17 +374,52 @@ export default function InventoryClient() {
                               </p>
                             )}
                           </div>
-                          <div className="flex flex-col items-end gap-0.5 shrink-0">
-                            <span
-                              className={`text-[13px] font-medium whitespace-nowrap ${
-                                isSoon ? "text-accent" : "text-text-primary"
+                          <span
+                            className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${
+                              isSoon ? "bg-accent-light text-accent" : "bg-border text-text-3"
+                            }`}
+                          >
+                            {dueLabel}
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0 w-full pl-[52px] sm:w-auto sm:pl-0 sm:ml-2">
+                            <a
+                              href={buyNowUrl(item.name, item.purchaseUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+                            >
+                              Buy Now
+                            </a>
+                            <button
+                              type="button"
+                              onClick={(e) => handleMarkPurchased(e, item)}
+                              disabled={purchasedIds.has(item.id)}
+                              className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-all duration-[120ms] inline-flex items-center gap-1 ${
+                                purchasedIds.has(item.id)
+                                  ? "bg-green text-white cursor-default"
+                                  : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
                               }`}
                             >
-                              {formatDate(item.nextReminderDate)}
-                            </span>
-                            <span className="text-[11px] text-text-3">
-                              {dueLabel}
-                            </span>
+                              <CheckCircleIcon width={12} height={12} />
+                              {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingItem(item); }}
+                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                              aria-label="Edit item"
+                            >
+                              <PencilIcon width={13} height={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDelete(e, item.id)}
+                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-red transition-all duration-[120ms]"
+                              aria-label="Delete item"
+                            >
+                              <XIcon width={13} height={13} />
+                            </button>
                           </div>
                         </Link>
                       </li>
@@ -284,6 +437,15 @@ export default function InventoryClient() {
         <AddInventoryItemModal
           onSave={handleAdd}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {/* Edit modal */}
+      {editingItem && (
+        <AddInventoryItemModal
+          item={editingItem}
+          onSave={handleEdit}
+          onClose={() => setEditingItem(null)}
         />
       )}
     </div>

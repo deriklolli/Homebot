@@ -140,9 +140,11 @@ export default function AddProjectModal({
                   className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 >
                   <option value="">None (DIY)</option>
-                  {contractors.map((c) => (
+                  {[...contractors]
+                    .sort((a, b) => (a.company || a.name).localeCompare(b.company || b.name))
+                    .map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name} — {c.company}
+                      {c.company || c.name}
                     </option>
                   ))}
                 </select>

@@ -36,7 +36,7 @@ export default function AddContractorModal({
 
   const companyRef = useRef<HTMLInputElement>(null);
 
-  const isValid = form.company.trim() !== "" && form.specialty !== "";
+  const isValid = (form.company.trim() !== "" || form.name.trim() !== "") && form.specialty !== "";
 
   // Auto-focus name field on mount
   useEffect(() => {
@@ -119,12 +119,11 @@ export default function AddContractorModal({
           {/* Company */}
           <label className="flex flex-col gap-1.5">
             <span className="text-[13px] font-medium text-text-primary">
-              Company Name <span className="text-red">*</span>
+              Company Name
             </span>
             <input
               ref={companyRef}
               type="text"
-              required
               value={form.company}
               onChange={(e) => setForm({ ...form, company: e.target.value })}
               className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
@@ -135,7 +134,7 @@ export default function AddContractorModal({
           {/* Name */}
           <label className="flex flex-col gap-1.5">
             <span className="text-[13px] font-medium text-text-primary">
-              Contact Name
+              Contact Name {!form.company.trim() && <span className="text-red">*</span>}
             </span>
             <input
               type="text"
