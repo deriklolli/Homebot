@@ -33,8 +33,10 @@ function badge(days: number): { label: string; bg: string; color: string } {
 
 export function buildInventoryAlertEmail(
   userName: string,
-  items: AlertEmailItem[]
+  items: AlertEmailItem[],
+  siteUrl?: string
 ): string {
+  const logoUrl = siteUrl ? `${siteUrl}/icon-512.png` : "";
   const rows = items
     .map((item) => {
       const b = badge(item.daysUntil);
@@ -67,9 +69,9 @@ export function buildInventoryAlertEmail(
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
         <!-- Header -->
         <tr>
-          <td style="padding:24px 24px 16px;border-bottom:1px solid #efece9;">
-            <span style="font-size:20px;font-weight:700;color:#FF692D;">HOMEBOT</span>
-            <span style="font-size:14px;color:#84827f;margin-left:8px;">Inventory Alert</span>
+          <td align="center" style="padding:28px 24px 20px;border-bottom:1px solid #efece9;">
+            ${logoUrl ? `<img src="${logoUrl}" alt="HOMEBOT" width="120" height="120" style="display:block;margin:0 auto 12px;width:120px;height:120px;border-radius:14px;" />` : ""}
+            <span style="display:block;font-size:20px;font-weight:700;color:#FF692D;">Home Inventory Alert</span>
           </td>
         </tr>
         <!-- Body -->

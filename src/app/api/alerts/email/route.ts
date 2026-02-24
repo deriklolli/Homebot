@@ -137,7 +137,10 @@ export async function GET(req: NextRequest) {
       purchase_url: item.purchase_url,
     }));
 
-    const html = buildInventoryAlertEmail(userName, enrichedItems);
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined;
+    const html = buildInventoryAlertEmail(userName, enrichedItems, siteUrl);
 
     try {
       await resend.emails.send({
