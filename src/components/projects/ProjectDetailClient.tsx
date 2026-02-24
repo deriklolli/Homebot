@@ -97,41 +97,41 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes, invoicesRes] = await Promise.all([
         supabase
           .from("projects")
-          .select("id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
+          .select("id, user_id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
           .eq("id", id)
           .returns<DbProject[]>()
           .single(),
         supabase
           .from("contractors")
-          .select("id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
+          .select("id, user_id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
           .order("created_at", { ascending: false })
           .returns<DbContractor[]>(),
         supabase
           .from("project_events")
-          .select("id, project_id, title, event_date, event_time, created_at")
+          .select("id, user_id, project_id, title, event_date, event_time, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectEvent[]>(),
         supabase
           .from("project_notes")
-          .select("id, project_id, content, created_at")
+          .select("id, user_id, project_id, content, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectNote[]>(),
         supabase
           .from("project_images")
-          .select("id, project_id, storage_path, caption, created_at")
+          .select("id, user_id, project_id, storage_path, caption, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectImage[]>(),
         supabase
           .from("home_assets")
-          .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
         supabase
           .from("project_invoices")
-          .select("id, project_id, storage_path, file_name, file_type, amount, created_at")
+          .select("id, user_id, project_id, storage_path, file_name, file_type, amount, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectInvoice[]>(),

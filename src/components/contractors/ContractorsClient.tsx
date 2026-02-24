@@ -24,7 +24,7 @@ export default function ContractorsClient() {
     async function fetchContractors() {
       const { data, error } = await supabase
         .from("contractors")
-        .select("id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
+        .select("id, user_id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
         .order("created_at", { ascending: false })
         .returns<DbContractor[]>();
 

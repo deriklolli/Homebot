@@ -114,7 +114,7 @@ export default function InventoryClient() {
     async function fetchItems() {
       const { data, error } = await supabase
         .from("inventory_items")
-        .select("id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, created_at")
+        .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, created_at")
         .order("next_reminder_date", { ascending: true })
         .returns<DbInventoryItem[]>();
 

@@ -37,17 +37,17 @@ export default function ServicesClient() {
       const [svcResult, conResult, assetResult] = await Promise.all([
         supabase
           .from("services")
-          .select("id, name, provider, contractor_id, cost, frequency_months, last_service_date, next_service_date, home_asset_id, phone, notes, created_at")
+          .select("id, user_id, name, provider, contractor_id, cost, frequency_months, last_service_date, next_service_date, home_asset_id, phone, notes, created_at")
           .order("next_service_date", { ascending: true })
           .returns<DbService[]>(),
         supabase
           .from("contractors")
-          .select("id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
+          .select("id, user_id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
           .order("company", { ascending: true })
           .returns<DbContractor[]>(),
         supabase
           .from("home_assets")
-          .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
       ]);

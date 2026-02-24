@@ -2,6 +2,7 @@ import { createBrowserClient } from "@supabase/ssr";
 
 export interface DbContractor {
   id: string;
+  user_id: string;
   name: string;
   company: string;
   phone: string;
@@ -16,6 +17,7 @@ export interface DbContractor {
 
 export interface DbProject {
   id: string;
+  user_id: string;
   name: string;
   description: string;
   contractor_id: string | null;
@@ -30,6 +32,7 @@ export interface DbProject {
 
 export interface DbProjectEvent {
   id: string;
+  user_id: string;
   project_id: string;
   title: string;
   event_date: string;
@@ -39,6 +42,7 @@ export interface DbProjectEvent {
 
 export interface DbProjectNote {
   id: string;
+  user_id: string;
   project_id: string;
   content: string;
   created_at: string;
@@ -46,6 +50,7 @@ export interface DbProjectNote {
 
 export interface DbInventoryItem {
   id: string;
+  user_id: string;
   name: string;
   description: string;
   frequency_months: number;
@@ -60,6 +65,7 @@ export interface DbInventoryItem {
 
 export interface DbService {
   id: string;
+  user_id: string;
   name: string;
   provider: string;
   contractor_id: string | null;
@@ -75,6 +81,7 @@ export interface DbService {
 
 export interface DbProjectImage {
   id: string;
+  user_id: string;
   project_id: string;
   storage_path: string;
   caption: string;
@@ -83,6 +90,7 @@ export interface DbProjectImage {
 
 export interface DbProjectInvoice {
   id: string;
+  user_id: string;
   project_id: string;
   storage_path: string;
   file_name: string;
@@ -93,6 +101,7 @@ export interface DbProjectInvoice {
 
 export interface DbTask {
   id: string;
+  user_id: string;
   title: string;
   completed: boolean;
   created_at: string;
@@ -100,6 +109,7 @@ export interface DbTask {
 
 export interface DbHomeAsset {
   id: string;
+  user_id: string;
   name: string;
   category: string;
   make: string;

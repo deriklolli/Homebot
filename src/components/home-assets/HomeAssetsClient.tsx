@@ -39,7 +39,7 @@ export default function HomeAssetsClient() {
     async function fetchAssets() {
       const { data, error } = await supabase
         .from("home_assets")
-        .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+        .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
         .order("name", { ascending: true })
         .returns<DbHomeAsset[]>();
 

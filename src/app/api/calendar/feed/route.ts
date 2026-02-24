@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 interface DbCalendarEvent {
   id: string;
@@ -48,27 +48,40 @@ function nextDay(dateStr: string): string {
   return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const userId = req.nextUrl.searchParams.get("userId");
+  if (!userId) {
+    return NextResponse.json({ error: "userId is required" }, { status: 400 });
+  }
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    serviceRoleKey
   );
 
   const { data: events, error } = await supabase
     .from("project_events")
     .select("id, title, event_date, event_time, projects(name, description, status)")
+    .eq("user_id", userId)
     .order("event_date", { ascending: true })
     .returns<DbCalendarEvent[]>();
 
   const { data: inventoryItems, error: invError } = await supabase
     .from("inventory_items")
     .select("id, name, description, next_reminder_date, frequency_months")
+    .eq("user_id", userId)
     .order("next_reminder_date", { ascending: true })
     .returns<DbInventoryItem[]>();
 
   const { data: serviceItems, error: svcError } = await supabase
     .from("services")
     .select("id, name, provider, next_service_date, frequency_months")
+    .eq("user_id", userId)
     .order("next_service_date", { ascending: true })
     .returns<DbServiceItem[]>();
 

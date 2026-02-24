@@ -42,13 +42,13 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       const [assetRes, projectsRes] = await Promise.all([
         supabase
           .from("home_assets")
-          .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
           .eq("id", id)
           .returns<DbHomeAsset[]>()
           .single(),
         supabase
           .from("projects")
-          .select("id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
+          .select("id, user_id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
           .eq("home_asset_id", id)
           .order("created_at", { ascending: false })
           .returns<DbProject[]>(),

@@ -23,7 +23,7 @@ export function dbToContractor(row: DbContractor): Contractor {
 
 export function contractorToDb(
   data: Omit<Contractor, "id" | "createdAt">
-): Omit<DbContractor, "id" | "created_at"> {
+): Omit<DbContractor, "id" | "user_id" | "created_at"> {
   return {
     name: data.name,
     company: data.company,
@@ -136,7 +136,7 @@ export function dbToInventoryItem(row: DbInventoryItem): InventoryItem {
 
 export function inventoryItemToDb(
   data: Omit<InventoryItem, "id" | "createdAt">
-): Omit<DbInventoryItem, "id" | "created_at"> {
+): Omit<DbInventoryItem, "id" | "user_id" | "created_at"> {
   return {
     name: data.name,
     description: data.description,
@@ -169,7 +169,7 @@ export function dbToService(row: DbService): Service {
 
 export function serviceToDb(
   data: Omit<Service, "id" | "createdAt">
-): Omit<DbService, "id" | "created_at"> {
+): Omit<DbService, "id" | "user_id" | "created_at"> {
   return {
     name: data.name,
     provider: data.provider,

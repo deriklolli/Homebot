@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { XIcon } from "@/components/icons";
 
 interface SubscribeModalProps {
@@ -10,11 +11,21 @@ interface SubscribeModalProps {
 export default function SubscribeModal({ onClose }: SubscribeModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState(false);
+  const [userId, setUserId] = useState<string>("");
+
+  useEffect(() => {
+    async function loadUser() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+    }
+    loadUser();
+  }, []);
 
   const feedUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/api/calendar/feed`
-      : "/api/calendar/feed";
+      ? `${window.location.origin}/api/calendar/feed?userId=${userId}`
+      : `/api/calendar/feed?userId=${userId}`;
 
   const webcalUrl = feedUrl.replace(/^https?:\/\//, "webcal://");
 
