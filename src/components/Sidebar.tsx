@@ -26,10 +26,10 @@ import { useTheme } from "./ThemeProvider";
 const navItems = [
   { href: "/", label: "Dashboard", icon: GridIcon },
   { href: "/projects", label: "Projects", icon: WrenchIcon },
-  { href: "/contractors", label: "Contractors", icon: UsersIcon },
+  { href: "/home-assets", label: "Home Assets", icon: HomeIcon },
   { href: "/inventory", label: "Home Inventory", icon: PackageIcon },
   { href: "/services", label: "Home Services", icon: ClipboardCheckIcon },
-  { href: "/home-assets", label: "Home Assets", icon: HomeIcon },
+  { href: "/contractors", label: "Contractors", icon: UsersIcon },
   { href: "/calendar", label: "Calendar", icon: CalendarIcon },
 ];
 
