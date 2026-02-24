@@ -1,12 +1,16 @@
-import heic2any from "heic2any";
-
 /**
  * Resize a blob via canvas and export as JPEG.
+ * Includes a timeout to prevent hanging on unsupported formats.
  */
 function resizeToJpeg(blob: Blob, maxWidth: number, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Image decode timed out"));
+    }, 5000);
+
     const img = new Image();
     img.onload = () => {
+      clearTimeout(timeout);
       let { width, height } = img;
       if (width > maxWidth) {
         height = Math.round((height * maxWidth) / width);
@@ -33,7 +37,10 @@ function resizeToJpeg(blob: Blob, maxWidth: number, quality: number): Promise<Bl
         quality
       );
     };
-    img.onerror = () => reject(new Error("Failed to load image"));
+    img.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error("Failed to load image"));
+    };
     img.src = URL.createObjectURL(blob);
   });
 }
@@ -50,23 +57,17 @@ function isHeic(file: File): boolean {
 
 /**
  * Compresses an image file to JPEG.
- *   1. Try client-side canvas (works for JPEG/PNG/WebP and HEIC on Safari)
- *   2. For HEIC on non-Safari browsers, convert client-side via heic2any
+ *   1. For HEIC files, skip canvas and go straight to heic2any
+ *   2. For other formats, use client-side canvas
  */
 export async function compressImage(
   file: File,
   maxWidth = 1600,
   quality = 0.8
 ): Promise<Blob> {
-  // Try native browser decoding first (handles most formats + HEIC on Safari)
-  try {
-    return await resizeToJpeg(file, maxWidth, quality);
-  } catch {
-    // Browser can't decode this format
-  }
-
-  // For HEIC/HEIF, convert client-side with heic2any
+  // For HEIC/HEIF, convert client-side with heic2any (skip canvas — most browsers can't decode it)
   if (isHeic(file)) {
+    const heic2any = (await import("heic2any")).default;
     const converted = await heic2any({
       blob: file,
       toType: "image/jpeg",
@@ -76,5 +77,6 @@ export async function compressImage(
     return resizeToJpeg(jpeg, maxWidth, quality);
   }
 
-  throw new Error(`Unsupported image format: ${file.name}`);
+  // For standard formats, use canvas directly
+  return resizeToJpeg(file, maxWidth, quality);
 }
