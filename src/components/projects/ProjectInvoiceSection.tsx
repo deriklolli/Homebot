@@ -194,7 +194,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
               <div className="flex flex-col gap-2">
                 {invoices.map((inv) => {
-                  const isImage = inv.fileType.startsWith("image/");
+                  const isPdf = inv.fileType === "application/pdf" || inv.storagePath.endsWith(".pdf");
                   const url = getPublicUrl(inv.storagePath);
 
                   return (
@@ -203,15 +203,18 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
                       className="flex items-center gap-3 rounded-[var(--radius-sm)] hover:bg-border/50 cursor-pointer group transition-colors duration-[120ms] p-1.5"
                       onClick={() => window.open(url, "_blank")}
                     >
-                      {isImage ? (
-                        <img
-                          src={url}
-                          alt="Invoice"
-                          className="w-[52px] h-[52px] object-cover rounded-[var(--radius-sm)] border border-border shrink-0"
-                        />
-                      ) : (
-                        <div className="w-[52px] h-[52px] rounded-[var(--radius-sm)] border border-border bg-border/40 flex items-center justify-center shrink-0">
+                      {isPdf ? (
+                        <div className="w-[52px] h-[52px] rounded-[var(--radius-md)] border border-border bg-border/40 flex items-center justify-center shrink-0">
                           <InvoiceIcon width={22} height={22} className="text-text-3" />
+                        </div>
+                      ) : (
+                        <div className="relative w-[52px] h-[52px] rounded-[var(--radius-md)] overflow-hidden border border-border hover:border-accent transition-all duration-[160ms] shrink-0">
+                          <img
+                            src={url}
+                            alt="Invoice"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
