@@ -15,7 +15,7 @@ export interface ProjectInvoiceSectionHandle {
 interface ProjectInvoiceSectionProps {
   projectId: string;
   invoices: ProjectInvoice[];
-  onInvoicesChange: (invoices: ProjectInvoice[]) => void;
+  onInvoicesChange: (invoices: ProjectInvoice[] | ((prev: ProjectInvoice[]) => ProjectInvoice[])) => void;
 }
 
 const BUCKET = "project-invoices";
@@ -59,7 +59,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
           .eq("id", invoiceId);
 
         // Use functional updater to avoid stale closure over invoices
-        (onInvoicesChange as (fn: (prev: ProjectInvoice[]) => ProjectInvoice[]) => void)(
+        onInvoicesChange(
           (prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, amount } : inv))
         );
       }
