@@ -6,7 +6,7 @@ import { supabase, type DbProjectInvoice } from "@/lib/supabase";
 import { dbToProjectInvoice } from "@/lib/mappers";
 import { compressImage } from "@/lib/compress-image";
 import { extractInvoiceTotal } from "@/lib/extract-invoice-total";
-import { InvoiceSolidIcon, XIcon } from "@/components/icons";
+import { InvoiceSolidIcon, InvoiceIcon, XIcon } from "@/components/icons";
 
 export interface ProjectInvoiceSectionHandle {
   triggerUpload: () => void;
@@ -192,7 +192,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
               Invoices
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-2">
                 {invoices.map((inv) => {
                   const isImage = inv.fileType.startsWith("image/");
                   const url = getPublicUrl(inv.storagePath);
@@ -200,46 +200,46 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
                   return (
                     <div
                       key={inv.id}
-                      className="relative group cursor-pointer"
+                      className="flex items-center gap-3 rounded-[var(--radius-sm)] hover:bg-border/50 cursor-pointer group transition-colors duration-[120ms] p-1.5"
                       onClick={() => window.open(url, "_blank")}
                     >
                       {isImage ? (
                         <img
                           src={url}
                           alt="Invoice"
-                          className="w-[80px] h-[80px] object-cover rounded-[var(--radius-md)] border border-border"
+                          className="w-[52px] h-[52px] object-cover rounded-[var(--radius-sm)] border border-border shrink-0"
                         />
                       ) : (
-                        <div className="w-[80px] h-[80px] rounded-[var(--radius-md)] border border-border bg-border/50 flex flex-col items-center justify-center gap-1">
-                          <span className="text-[11px] font-bold text-text-3 uppercase">PDF</span>
+                        <div className="w-[52px] h-[52px] rounded-[var(--radius-sm)] border border-border bg-border/40 flex items-center justify-center shrink-0">
+                          <InvoiceIcon width={22} height={22} className="text-text-3" />
                         </div>
                       )}
-                      {scanningIds.has(inv.id) ? (
-                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5 rounded-b-[var(--radius-md)]">
-                          Scanning...
-                        </span>
-                      ) : inv.amount !== null ? (
-                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-semibold text-center py-0.5 rounded-b-[var(--radius-md)]">
-                          {formatAmount(inv.amount)}
-                        </span>
-                      ) : null}
+                      <div className="flex-1 min-w-0">
+                        {scanningIds.has(inv.id) ? (
+                          <span className="text-[12px] text-text-3 italic">Scanning for total...</span>
+                        ) : inv.amount !== null ? (
+                          <span className="text-[15px] font-semibold text-text-primary">
+                            {formatAmount(inv.amount)}
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-text-4">No total detected</span>
+                        )}
+                      </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(inv);
                         }}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-surface border border-border shadow-sm flex items-center justify-center text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms]"
+                        className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms] shrink-0"
                         aria-label="Delete invoice"
                       >
-                        <XIcon width={10} height={10} />
+                        <XIcon width={14} height={14} />
                       </button>
                     </div>
                   );
                 })}
                 {uploading && (
-                  <div className="w-[80px] h-[80px] rounded-[var(--radius-md)] border border-border bg-border/30 flex items-center justify-center">
-                    <span className="text-[10px] text-text-3">Uploading...</span>
-                  </div>
+                  <p className="text-[12px] text-text-3 px-1.5 py-2">Uploading...</p>
                 )}
               </div>
             </div>
