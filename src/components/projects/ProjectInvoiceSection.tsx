@@ -81,10 +81,14 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
       const amount = await extractInvoiceTotal(file);
 
       if (amount !== null) {
-        await supabase
+        const { error: updateError } = await supabase
           .from("project_invoices")
           .update({ amount } as Record<string, unknown>)
           .eq("id", invoiceId);
+
+        if (updateError) {
+          console.error("Failed to save invoice amount:", updateError);
+        }
 
         onInvoicesChange(
           (prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, amount } : inv))
