@@ -1,18 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import twilio from "twilio";
+import { Resend } from "resend";
+import { buildInventoryAlertEmail, type AlertEmailItem } from "@/lib/email-templates";
 
 interface DbInventoryAlert {
   id: string;
   name: string;
   next_reminder_date: string;
+  purchase_url: string;
   user_id: string;
 }
 
-interface DbSmsPref {
+interface DbNotificationPref {
   user_id: string;
-  sms_enabled: boolean;
-  sms_phone: string | null;
+  email_enabled: boolean;
 }
 
 function daysUntil(dateStr: string): number {
@@ -20,22 +21,6 @@ function daysUntil(dateStr: string): number {
   today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr + "T00:00:00");
   return Math.round((target.getTime() - today.getTime()) / 86_400_000);
-}
-
-function buildMessage(items: DbInventoryAlert[]): string {
-  const lines = items.map((item) => {
-    const days = daysUntil(item.next_reminder_date);
-    let label: string;
-    if (days < 0) {
-      label = `${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} overdue`;
-    } else if (days === 0) {
-      label = "due today";
-    } else {
-      label = `due in ${days} day${days !== 1 ? "s" : ""}`;
-    }
-    return `- ${item.name} (${label})`;
-  });
-  return `HOMEBOT Inventory Alert:\n${lines.join("\n")}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -49,13 +34,11 @@ export async function GET(req: NextRequest) {
   }
 
   // Check required env vars
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
-
-  if (!accountSid || !authToken || !twilioPhone) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "HOMEBOT <onboarding@resend.dev>";
+  if (!resendApiKey) {
     return NextResponse.json(
-      { error: "Missing Twilio configuration" },
+      { error: "Missing RESEND_API_KEY" },
       { status: 500 }
     );
   }
@@ -73,7 +56,7 @@ export async function GET(req: NextRequest) {
     serviceRoleKey
   );
 
-  // Query inventory items due within 7 days or overdue
+  // Query all inventory items due within 7 days or overdue
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const sevenDaysOut = new Date(today);
@@ -82,12 +65,13 @@ export async function GET(req: NextRequest) {
 
   const { data: items, error } = await supabase
     .from("inventory_items")
-    .select("id, name, next_reminder_date, user_id")
+    .select("id, name, next_reminder_date, purchase_url, user_id")
     .lte("next_reminder_date", cutoff)
     .order("next_reminder_date", { ascending: true })
     .returns<DbInventoryAlert[]>();
 
   if (error) {
+    console.error("Failed to fetch inventory items:", error);
     return NextResponse.json(
       { error: "Failed to fetch inventory items" },
       { status: 500 }
@@ -106,63 +90,65 @@ export async function GET(req: NextRequest) {
     itemsByUser.set(item.user_id, existing);
   }
 
-  // Fetch SMS preferences for affected users
+  // Fetch notification preferences for affected users
   const userIds = [...itemsByUser.keys()];
   const { data: prefs } = await supabase
     .from("notification_preferences")
-    .select("user_id, sms_enabled, sms_phone")
+    .select("user_id, email_enabled")
     .in("user_id", userIds)
-    .returns<DbSmsPref[]>();
+    .returns<DbNotificationPref[]>();
 
-  const prefMap = new Map<string, DbSmsPref>();
+  const prefMap = new Map<string, boolean>();
   for (const p of prefs || []) {
-    prefMap.set(p.user_id, p);
+    prefMap.set(p.user_id, p.email_enabled);
   }
 
-  // Backward compat: if no preferences exist and ALERT_PHONE_NUMBER is set,
-  // send all alerts to that number (legacy single-user behavior)
-  const legacyPhone = process.env.ALERT_PHONE_NUMBER;
-  if (prefMap.size === 0 && legacyPhone) {
-    const allItems = [...itemsByUser.values()].flat();
-    const message = buildMessage(allItems);
-    try {
-      const client = twilio(accountSid, authToken);
-      await client.messages.create({
-        body: message,
-        from: twilioPhone,
-        to: legacyPhone,
-      });
-      return NextResponse.json({ sent: true, count: allItems.length, mode: "legacy" });
-    } catch (err) {
-      console.error("Twilio SMS error:", err);
-      return NextResponse.json(
-        { error: "Failed to send SMS" },
-        { status: 500 }
-      );
-    }
-  }
-
-  // Send per-user SMS to users who opted in
-  const client = twilio(accountSid, authToken);
+  // Send per-user emails
+  const resend = new Resend(resendApiKey);
   const results: { userId: string; success: boolean; error?: string }[] = [];
 
   for (const [userId, userItems] of itemsByUser) {
-    const pref = prefMap.get(userId);
-    // Default: SMS disabled unless user explicitly enabled it
-    if (!pref?.sms_enabled || !pref.sms_phone) {
+    // Default to email enabled if no preference row exists
+    const emailEnabled = prefMap.get(userId) ?? true;
+    if (!emailEnabled) {
+      results.push({ userId, success: false, error: "email disabled" });
       continue;
     }
 
-    const message = buildMessage(userItems);
+    // Get user email from Supabase Auth
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.admin.getUserById(userId);
+
+    if (userError || !user?.email) {
+      results.push({ userId, success: false, error: "no email found" });
+      continue;
+    }
+
+    const userName =
+      (user.user_metadata?.full_name as string) ||
+      user.email.split("@")[0];
+
+    const enrichedItems: AlertEmailItem[] = userItems.map((item) => ({
+      name: item.name,
+      next_reminder_date: item.next_reminder_date,
+      daysUntil: daysUntil(item.next_reminder_date),
+      purchase_url: item.purchase_url,
+    }));
+
+    const html = buildInventoryAlertEmail(userName, enrichedItems);
+
     try {
-      await client.messages.create({
-        body: message,
-        from: twilioPhone,
-        to: pref.sms_phone,
+      await resend.emails.send({
+        from: fromEmail,
+        to: user.email,
+        subject: `HOMEBOT: ${enrichedItems.length} inventory item${enrichedItems.length !== 1 ? "s" : ""} need${enrichedItems.length === 1 ? "s" : ""} attention`,
+        html,
       });
       results.push({ userId, success: true });
     } catch (err) {
-      console.error(`Twilio SMS error for ${userId}:`, err);
+      console.error(`Resend email error for ${userId}:`, err);
       results.push({ userId, success: false, error: "send failed" });
     }
   }
@@ -170,7 +156,7 @@ export async function GET(req: NextRequest) {
   const successCount = results.filter((r) => r.success).length;
   return NextResponse.json({
     sent: successCount > 0,
-    smsSent: successCount,
+    emailsSent: successCount,
     details: results,
   });
 }

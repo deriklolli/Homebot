@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/alerts/email",
+      "schedule": "0 9 * * *"
+    },
+    {
       "path": "/api/alerts/sms",
       "schedule": "0 9 * * *"
     }

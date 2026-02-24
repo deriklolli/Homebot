@@ -135,6 +135,15 @@ export interface DbHomeSnapshot {
   created_at: string;
 }
 
+export interface DbNotificationPreference {
+  id: string;
+  user_id: string;
+  email_enabled: boolean;
+  sms_enabled: boolean;
+  sms_phone: string | null;
+  created_at: string;
+}
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
