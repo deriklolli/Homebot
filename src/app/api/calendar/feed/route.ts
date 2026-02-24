@@ -184,7 +184,6 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="homebot-projects.ics"',
       "Cache-Control": "no-cache, no-store, must-revalidate",
     },
   });

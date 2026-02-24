@@ -16,6 +16,8 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
       ? `${window.location.origin}/api/calendar/feed`
       : "/api/calendar/feed";
 
+  const webcalUrl = feedUrl.replace(/^https?:\/\//, "webcal://");
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -55,9 +57,25 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
         {/* Body */}
         <div className="p-5 flex flex-col gap-4">
           <p className="text-[13px] text-text-2 leading-relaxed">
-            Copy this URL and add it as a calendar subscription in Google
-            Calendar or any other calendar app that supports iCal feeds.
+            Add your HOMEBOT schedule to your calendar so project
+            appointments, inventory reminders, and service dates stay in sync.
           </p>
+
+          {/* Quick add button */}
+          <a
+            href={webcalUrl}
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-semibold hover:brightness-110 transition-all duration-[120ms]"
+          >
+            <CalendarIcon />
+            Add to Calendar
+          </a>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-[11px] text-text-4">or copy the feed URL</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
 
           {/* URL + Copy */}
           <div className="flex gap-2">
@@ -71,31 +89,27 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
             />
             <button
               onClick={handleCopy}
-              className="inline-flex items-center px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] shrink-0"
+              className="inline-flex items-center px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] shrink-0"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
 
-          {/* Instructions */}
+          {/* Manual instructions */}
           <div className="bg-bg rounded-[var(--radius-sm)] p-3">
             <p className="text-[12px] font-medium text-text-primary mb-2">
-              How to subscribe in Google Calendar:
+              Manual setup:
             </p>
             <ol className="text-[12px] text-text-3 space-y-1 list-decimal list-inside">
-              <li>Open Google Calendar on desktop</li>
+              <li>Open your calendar app&apos;s subscription settings</li>
               <li>
-                Click the <strong>+</strong> next to &ldquo;Other
-                calendars&rdquo;
+                Look for <strong>Add by URL</strong>, <strong>From URL</strong>,
+                or <strong>Subscribe</strong>
               </li>
-              <li>
-                Select <strong>From URL</strong>
-              </li>
-              <li>Paste the URL above and click &ldquo;Add calendar&rdquo;</li>
+              <li>Paste the feed URL above and confirm</li>
             </ol>
             <p className="text-[11px] text-text-4 mt-2">
-              Note: Google Calendar refreshes subscribed feeds every 12–24
-              hours.
+              Most calendar apps refresh subscribed feeds every 12–24 hours.
             </p>
           </div>
         </div>
@@ -103,3 +117,15 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
     </div>
   );
 }
+
+function CalendarIcon() {
+  return (
+    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
