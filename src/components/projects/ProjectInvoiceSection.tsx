@@ -6,6 +6,7 @@ import { supabase, type DbProjectInvoice } from "@/lib/supabase";
 import { dbToProjectInvoice } from "@/lib/mappers";
 import { compressImage } from "@/lib/compress-image";
 import { extractInvoiceTotal } from "@/lib/extract-invoice-total";
+import { renderPdfThumbnail } from "@/lib/pdf-thumbnail";
 import { InvoiceSolidIcon, InvoiceIcon, XIcon } from "@/components/icons";
 
 export interface ProjectInvoiceSectionHandle {
@@ -19,7 +20,6 @@ interface ProjectInvoiceSectionProps {
 }
 
 const BUCKET = "project-invoices";
-const SIGNED_URL_EXPIRY = 3600; // 1 hour
 
 function formatAmount(amount: number): string {
   return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -36,37 +36,42 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
       triggerUpload: () => fileInputRef.current?.click(),
     }));
 
-    // Fetch signed URLs for all image invoices on mount / when invoices change
+    // Generate thumbnails for invoices that don't have one yet
     useEffect(() => {
-      async function fetchSignedUrls() {
-        const imageInvoices = invoices.filter(
-          (inv) => !inv.fileType?.startsWith("application/pdf") && !inv.storagePath.endsWith(".pdf")
-        );
+      async function fetchThumbnails() {
+        const need = invoices.filter((inv) => !thumbnailUrls[inv.id]);
+        if (need.length === 0) return;
 
-        // Only fetch URLs we don't already have (skip local blob URLs)
-        const needUrls = imageInvoices.filter((inv) => !thumbnailUrls[inv.id]);
-        if (needUrls.length === 0) return;
+        for (const inv of need) {
+          try {
+            const isPdf = inv.fileType === "application/pdf" || inv.storagePath.endsWith(".pdf");
 
-        const paths = needUrls.map((inv) => inv.storagePath);
-        const { data, error } = await supabase.storage
-          .from(BUCKET)
-          .createSignedUrls(paths, SIGNED_URL_EXPIRY);
+            if (isPdf) {
+              // Download the PDF and render first page as thumbnail
+              const { data, error } = await supabase.storage
+                .from(BUCKET)
+                .download(inv.storagePath);
 
-        if (error || !data) return;
+              if (error || !data) continue;
 
-        const newUrls: Record<string, string> = {};
-        data.forEach((item, i) => {
-          if (item.signedUrl) {
-            newUrls[needUrls[i].id] = item.signedUrl;
+              const dataUrl = await renderPdfThumbnail(await data.arrayBuffer());
+              setThumbnailUrls((prev) => ({ ...prev, [inv.id]: dataUrl }));
+            } else {
+              // For images, use a signed URL
+              const { data, error } = await supabase.storage
+                .from(BUCKET)
+                .createSignedUrl(inv.storagePath, 3600);
+
+              if (error || !data?.signedUrl) continue;
+              setThumbnailUrls((prev) => ({ ...prev, [inv.id]: data.signedUrl }));
+            }
+          } catch {
+            // Silently skip — will show fallback icon
           }
-        });
-
-        if (Object.keys(newUrls).length > 0) {
-          setThumbnailUrls((prev) => ({ ...prev, ...newUrls }));
         }
       }
 
-      fetchSignedUrls();
+      fetchThumbnails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [invoices]);
 
@@ -81,7 +86,6 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
           .update({ amount } as Record<string, unknown>)
           .eq("id", invoiceId);
 
-        // Use functional updater to avoid stale closure over invoices
         onInvoicesChange(
           (prev) => prev.map((inv) => (inv.id === invoiceId ? { ...inv, amount } : inv))
         );
@@ -157,8 +161,14 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
           newInvoices.push(invoice);
           filesToScan.push({ id: invoice.id, file });
 
-          // Create a local blob URL for immediate thumbnail display
-          if (!isPdf) {
+          // Create immediate local thumbnail
+          if (isPdf) {
+            try {
+              localUrls[invoice.id] = await renderPdfThumbnail(file);
+            } catch {
+              // Will fall back to icon
+            }
+          } else {
             localUrls[invoice.id] = URL.createObjectURL(uploadBlob);
           }
         } catch (err) {
@@ -174,7 +184,6 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
         const updated = [...invoices, ...newInvoices];
         onInvoicesChange(updated);
 
-        // Scan for totals in the background after state update
         for (const { id, file } of filesToScan) {
           scanAndUpdateAmount(id, file);
         }
@@ -242,7 +251,6 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
               <div className="flex flex-col gap-2">
                 {invoices.map((inv) => {
-                  const isPdf = inv.fileType === "application/pdf" || inv.storagePath.endsWith(".pdf");
                   const thumbUrl = thumbnailUrls[inv.id];
 
                   return (
@@ -251,11 +259,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
                       className="flex items-center gap-3 rounded-[var(--radius-sm)] hover:bg-border/50 cursor-pointer group transition-colors duration-[120ms] p-1.5"
                       onClick={() => window.open(getFileUrl(inv), "_blank")}
                     >
-                      {isPdf ? (
-                        <div className="w-[52px] h-[52px] rounded-[var(--radius-md)] border border-border bg-border/40 flex items-center justify-center shrink-0">
-                          <InvoiceIcon width={22} height={22} className="text-text-3" />
-                        </div>
-                      ) : thumbUrl ? (
+                      {thumbUrl ? (
                         <div className="relative w-[52px] h-[52px] rounded-[var(--radius-md)] overflow-hidden border border-border hover:border-accent transition-all duration-[160ms] shrink-0">
                           <img
                             src={thumbUrl}
