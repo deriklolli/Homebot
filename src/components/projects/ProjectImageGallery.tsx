@@ -152,7 +152,7 @@ const ProjectImageGallery = forwardRef<ProjectImageGalleryHandle, ProjectImageGa
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,.heic,.heif"
         multiple
         onChange={handleUpload}
         className="hidden"
