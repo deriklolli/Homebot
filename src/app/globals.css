@@ -119,6 +119,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* All buttons should show pointer cursor (override Tailwind preflight) */
+@layer base {
+  button, [role="button"] {
+    cursor: pointer;
+  }
+}
+
 /* Accessible focus ring (skip form fields that style their own focus) */
 :focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--color-accent);
