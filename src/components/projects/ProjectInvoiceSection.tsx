@@ -249,55 +249,53 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
               Invoices
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">
-              <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2">
                 {invoices.map((inv) => {
                   const thumbUrl = thumbnailUrls[inv.id];
 
                   return (
                     <div
                       key={inv.id}
-                      className="flex items-center gap-3 rounded-[var(--radius-sm)] hover:bg-border/50 cursor-pointer group transition-colors duration-[120ms] p-1.5"
+                      className="relative aspect-square rounded-[var(--radius-md)] overflow-hidden group cursor-pointer border border-border hover:border-accent hover:scale-105 transition-all duration-[160ms] ease-out"
                       onClick={() => window.open(getFileUrl(inv), "_blank")}
                     >
                       {thumbUrl ? (
-                        <div className="relative w-[52px] h-[52px] rounded-[var(--radius-md)] overflow-hidden border border-border hover:border-accent transition-all duration-[160ms] shrink-0">
-                          <img
-                            src={thumbUrl}
-                            alt="Invoice"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                        <img
+                          src={thumbUrl}
+                          alt="Invoice"
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
-                        <div className="w-[52px] h-[52px] rounded-[var(--radius-md)] border border-border bg-border/40 flex items-center justify-center shrink-0 animate-pulse">
+                        <div className="w-full h-full bg-border/40 flex items-center justify-center animate-pulse">
                           <InvoiceIcon width={22} height={22} className="text-text-4" />
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        {scanningIds.has(inv.id) ? (
-                          <span className="text-[12px] text-text-3 italic">Scanning for total...</span>
-                        ) : inv.amount !== null ? (
-                          <span className="text-[15px] font-semibold text-text-primary">
-                            {formatAmount(inv.amount)}
-                          </span>
-                        ) : (
-                          <span className="text-[12px] text-text-4">No total detected</span>
-                        )}
-                      </div>
+                      {scanningIds.has(inv.id) ? (
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5">
+                          Scanning...
+                        </span>
+                      ) : inv.amount !== null ? (
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] font-semibold text-center py-0.5">
+                          {formatAmount(inv.amount)}
+                        </span>
+                      ) : null}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(inv);
                         }}
-                        className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms] shrink-0"
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms] hover:bg-red"
                         aria-label="Delete invoice"
                       >
-                        <XIcon width={14} height={14} />
+                        <XIcon width={12} height={12} />
                       </button>
                     </div>
                   );
                 })}
                 {uploading && (
-                  <p className="text-[12px] text-text-3 px-1.5 py-2">Uploading...</p>
+                  <div className="aspect-square rounded-[var(--radius-md)] border border-border bg-border/30 flex items-center justify-center">
+                    <span className="text-[10px] text-text-3">Uploading...</span>
+                  </div>
                 )}
               </div>
             </div>
