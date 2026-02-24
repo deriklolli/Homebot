@@ -35,6 +35,7 @@ export interface ProjectInvoice {
   storagePath: string;
   fileName: string;
   fileType: string;
+  amount: number | null;
   createdAt: string;
 }
 

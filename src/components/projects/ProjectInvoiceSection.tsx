@@ -5,6 +5,7 @@ import { type ProjectInvoice } from "@/lib/projects-data";
 import { supabase, type DbProjectInvoice } from "@/lib/supabase";
 import { dbToProjectInvoice } from "@/lib/mappers";
 import { compressImage } from "@/lib/compress-image";
+import { extractInvoiceTotal } from "@/lib/extract-invoice-total";
 import { InvoiceSolidIcon, InvoiceIcon, XIcon } from "@/components/icons";
 
 export interface ProjectInvoiceSectionHandle {
@@ -32,14 +33,44 @@ function formatDate(iso: string): string {
   });
 }
 
+function formatAmount(amount: number): string {
+  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInvoiceSectionProps>(
   function ProjectInvoiceSection({ projectId, invoices, onInvoicesChange }, ref) {
     const [uploading, setUploading] = useState(false);
+    const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => ({
       triggerUpload: () => fileInputRef.current?.click(),
     }));
+
+    async function scanAndUpdateAmount(invoiceId: string, file: File) {
+      setScanningIds((prev) => new Set(prev).add(invoiceId));
+
+      const amount = await extractInvoiceTotal(file);
+
+      if (amount !== null) {
+        await supabase
+          .from("project_invoices")
+          .update({ amount } as Record<string, unknown>)
+          .eq("id", invoiceId);
+
+        onInvoicesChange(
+          invoices.map((inv) =>
+            inv.id === invoiceId ? { ...inv, amount } : inv
+          )
+        );
+      }
+
+      setScanningIds((prev) => {
+        const next = new Set(prev);
+        next.delete(invoiceId);
+        return next;
+      });
+    }
 
     async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
       const files = e.target.files;
@@ -47,6 +78,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
 
       setUploading(true);
       const newInvoices: ProjectInvoice[] = [];
+      const filesToScan: { id: string; file: File }[] = [];
 
       for (const file of Array.from(files)) {
         try {
@@ -98,14 +130,22 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
             continue;
           }
 
-          newInvoices.push(dbToProjectInvoice(rows[0]));
+          const invoice = dbToProjectInvoice(rows[0]);
+          newInvoices.push(invoice);
+          filesToScan.push({ id: invoice.id, file });
         } catch (err) {
           console.error("Invoice processing failed:", err);
         }
       }
 
       if (newInvoices.length > 0) {
-        onInvoicesChange([...invoices, ...newInvoices]);
+        const updated = [...invoices, ...newInvoices];
+        onInvoicesChange(updated);
+
+        // Scan for totals in the background after state update
+        for (const { id, file } of filesToScan) {
+          scanAndUpdateAmount(id, file);
+        }
       }
 
       setUploading(false);
@@ -164,6 +204,13 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
                     <span className="text-[13px] text-text-primary font-medium truncate flex-1">
                       {inv.fileName}
                     </span>
+                    {scanningIds.has(inv.id) ? (
+                      <span className="text-[11px] text-text-3 italic shrink-0">Scanning...</span>
+                    ) : inv.amount !== null ? (
+                      <span className="text-[13px] font-semibold text-green shrink-0">
+                        {formatAmount(inv.amount)}
+                      </span>
+                    ) : null}
                     <span className="text-[10px] text-text-4 shrink-0">
                       {formatDate(inv.createdAt)}
                     </span>

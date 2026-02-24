@@ -113,6 +113,7 @@ export function dbToProjectInvoice(row: DbProjectInvoice): ProjectInvoice {
     storagePath: row.storage_path,
     fileName: row.file_name,
     fileType: row.file_type,
+    amount: row.amount,
     createdAt: row.created_at,
   };
 }

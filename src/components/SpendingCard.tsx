@@ -101,7 +101,7 @@ export default function SpendingCard() {
 
   useEffect(() => {
     async function fetchSpending() {
-      const [projectsRes, servicesRes, inventoryRes] = await Promise.all([
+      const [projectsRes, servicesRes, inventoryRes, invoicesRes] = await Promise.all([
         supabase
           .from("projects")
           .select("total_cost, completed_at")
@@ -117,6 +117,10 @@ export default function SpendingCard() {
           .select("cost, last_ordered_date")
           .not("last_ordered_date", "is", null)
           .not("cost", "is", null),
+        supabase
+          .from("project_invoices")
+          .select("amount, created_at")
+          .not("amount", "is", null),
       ]);
 
       const result: SpendingEntry[] = [];
@@ -147,6 +151,16 @@ export default function SpendingCard() {
             date: row.last_ordered_date.split("T")[0],
             amount: row.cost,
             category: "inventory",
+          });
+        }
+      }
+
+      if (!invoicesRes.error && invoicesRes.data) {
+        for (const row of invoicesRes.data) {
+          result.push({
+            date: row.created_at.split("T")[0],
+            amount: row.amount,
+            category: "projects",
           });
         }
       }

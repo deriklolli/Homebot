@@ -87,6 +87,7 @@ export interface DbProjectInvoice {
   storage_path: string;
   file_name: string;
   file_type: string;
+  amount: number | null;
   created_at: string;
 }
 
