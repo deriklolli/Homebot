@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { formatDateLong, formatDateTime, formatTime } from "@/lib/date-utils";
 import {
   PROJECT_STATUSES,
   type Project,
@@ -63,30 +64,8 @@ const STATUS_BADGE: Record<ProjectStatus, string> = {
   Completed: "bg-green-light text-green",
 };
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+const formatDate = formatDateLong;
 
-function formatDateTime(isoStr: string): string {
-  const d = new Date(isoStr);
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatTime(timeStr: string): string {
-  const [h, m] = timeStr.split(":").map(Number);
-  const period = h >= 12 ? "PM" : "AM";
-  const hour12 = h % 12 || 12;
-  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
-}
 
 export default function ProjectDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -118,41 +97,41 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes, invoicesRes] = await Promise.all([
         supabase
           .from("projects")
-          .select("*")
+          .select("id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
           .eq("id", id)
           .returns<DbProject[]>()
           .single(),
         supabase
           .from("contractors")
-          .select("*")
+          .select("id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
           .order("created_at", { ascending: false })
           .returns<DbContractor[]>(),
         supabase
           .from("project_events")
-          .select("*")
+          .select("id, project_id, title, event_date, event_time, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectEvent[]>(),
         supabase
           .from("project_notes")
-          .select("*")
+          .select("id, project_id, content, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectNote[]>(),
         supabase
           .from("project_images")
-          .select("*")
+          .select("id, project_id, storage_path, caption, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectImage[]>(),
         supabase
           .from("home_assets")
-          .select("*")
+          .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
         supabase
           .from("project_invoices")
-          .select("*")
+          .select("id, project_id, storage_path, file_name, file_type, amount, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectInvoice[]>(),

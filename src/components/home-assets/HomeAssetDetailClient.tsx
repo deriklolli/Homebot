@@ -14,15 +14,8 @@ import {
 } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
 import { affiliateUrl } from "@/lib/utils";
+import { formatDateLong as formatDate } from "@/lib/date-utils";
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 function warrantyPill(dateStr: string | null): { label: string; color: string } | null {
   if (!dateStr) return null;
@@ -49,13 +42,13 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       const [assetRes, projectsRes] = await Promise.all([
         supabase
           .from("home_assets")
-          .select("*")
+          .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
           .eq("id", id)
           .returns<DbHomeAsset[]>()
           .single(),
         supabase
           .from("projects")
-          .select("*")
+          .select("id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
           .eq("home_asset_id", id)
           .order("created_at", { ascending: false })
           .returns<DbProject[]>(),

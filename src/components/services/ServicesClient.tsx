@@ -6,17 +6,10 @@ import type { Contractor } from "@/lib/contractors-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
 import { supabase, type DbService, type DbContractor, type DbHomeAsset } from "@/lib/supabase";
 import { dbToService, serviceToDb, dbToContractor, contractorToDb, dbToHomeAsset } from "@/lib/mappers";
+import { formatDateShort as formatDate } from "@/lib/date-utils";
 import { PlusIcon, SearchIcon } from "@/components/icons";
 import AddServiceModal from "./AddServiceModal";
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 function daysUntil(dateStr: string): number {
   const today = new Date();
@@ -44,17 +37,17 @@ export default function ServicesClient() {
       const [svcResult, conResult, assetResult] = await Promise.all([
         supabase
           .from("services")
-          .select("*")
+          .select("id, name, provider, contractor_id, cost, frequency_months, last_service_date, next_service_date, home_asset_id, phone, notes, created_at")
           .order("next_service_date", { ascending: true })
           .returns<DbService[]>(),
         supabase
           .from("contractors")
-          .select("*")
+          .select("id, name, company, phone, email, specialty, rating, notes, website, logo_url, created_at")
           .order("company", { ascending: true })
           .returns<DbContractor[]>(),
         supabase
           .from("home_assets")
-          .select("*")
+          .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
       ]);

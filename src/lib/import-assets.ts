@@ -1,4 +1,3 @@
-import Papa from "papaparse";
 import { CATEGORY_OPTIONS, type AssetCategory, type HomeAsset } from "./home-assets-data";
 
 /* ------------------------------------------------------------------ */
@@ -151,6 +150,7 @@ export async function parseFile(file: File): Promise<RawRow[]> {
   }
 
   // CSV
+  const Papa = (await import("papaparse")).default;
   return new Promise((resolve, reject) => {
     Papa.parse<RawRow>(file, {
       header: true,

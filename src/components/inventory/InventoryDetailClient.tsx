@@ -15,15 +15,7 @@ import {
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+import { formatDateLong as formatDate } from "@/lib/date-utils";
 
 function daysUntil(dateStr: string): number {
   const today = new Date();
@@ -50,7 +42,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
     async function fetchItem() {
       const { data, error } = await supabase
         .from("inventory_items")
-        .select("*")
+        .select("id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, created_at")
         .eq("id", id)
         .returns<DbInventoryItem[]>()
         .single();

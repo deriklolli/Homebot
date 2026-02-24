@@ -9,6 +9,88 @@ import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon, CheckCircleIcon } from "
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
 
+/* ------------------------------------------------------------------ */
+/*  Shared row component for urgent & non-urgent inventory items       */
+/* ------------------------------------------------------------------ */
+
+function InventoryItemRow({
+  item,
+  purchasedIds,
+  onMarkPurchased,
+  dueLabel,
+  badgeClass,
+  extraInfo,
+}: {
+  item: InventoryItem;
+  purchasedIds: Set<string>;
+  onMarkPurchased: (e: React.MouseEvent, item: InventoryItem) => void;
+  dueLabel: string;
+  badgeClass: string;
+  extraInfo?: React.ReactNode;
+}) {
+  return (
+    <li className="border-b border-border last:border-b-0">
+      <Link
+        href={`/inventory/${item.id}`}
+        className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+      >
+        {item.thumbnailUrl ? (
+          <img
+            src={item.thumbnailUrl}
+            alt={item.name}
+            className="w-10 h-10 rounded-full object-cover shrink-0 bg-border"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
+            <ApplianceIcon width={18} height={18} className="text-white" strokeWidth={1.5} />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          {extraInfo ?? (
+            <span className="text-[13px] font-semibold text-text-primary truncate block">
+              {item.name}
+            </span>
+          )}
+          {item.description && (
+            <p className="text-[12px] text-text-3 truncate">
+              {item.description}
+            </p>
+          )}
+        </div>
+        <span
+          className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${badgeClass}`}
+        >
+          {dueLabel}
+        </span>
+        <div className="flex items-center gap-1.5 shrink-0 w-full pl-[52px] sm:w-auto sm:pl-0 sm:ml-2">
+          <a
+            href={buyNowUrl(item.name, item.purchaseUrl)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          >
+            Buy Now
+          </a>
+          <button
+            type="button"
+            onClick={(e) => onMarkPurchased(e, item)}
+            disabled={purchasedIds.has(item.id)}
+            className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-all duration-[120ms] inline-flex items-center gap-1 ${
+              purchasedIds.has(item.id)
+                ? "bg-green text-white cursor-default"
+                : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
+            }`}
+          >
+            <CheckCircleIcon width={12} height={12} />
+            {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
+          </button>
+        </div>
+      </Link>
+    </li>
+  );
+}
+
 function daysUntil(dateStr: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -32,7 +114,7 @@ export default function InventoryClient() {
     async function fetchItems() {
       const { data, error } = await supabase
         .from("inventory_items")
-        .select("*")
+        .select("id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, created_at")
         .order("next_reminder_date", { ascending: true })
         .returns<DbInventoryItem[]>();
 
@@ -195,65 +277,14 @@ export default function InventoryClient() {
                       : `in ${days} day${days !== 1 ? "s" : ""}`;
 
                     return (
-                      <li key={item.id} className="border-b border-border last:border-b-0">
-                        <Link
-                          href={`/inventory/${item.id}`}
-                          className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
-                        >
-                          {item.thumbnailUrl ? (
-                            <img
-                              src={item.thumbnailUrl}
-                              alt={item.name}
-                              className="w-10 h-10 rounded-full object-cover shrink-0 bg-border"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
-                              <ApplianceIcon width={18} height={18} className="text-white" strokeWidth={1.5} />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <span className="text-[13px] font-semibold text-text-primary truncate block">
-                              {item.name}
-                            </span>
-                            {item.description && (
-                              <p className="text-[12px] text-text-3 truncate">
-                                {item.description}
-                              </p>
-                            )}
-                          </div>
-                          <span
-                            className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${
-                              isOverdue ? "bg-red text-white" : "bg-accent-light text-accent"
-                            }`}
-                          >
-                            {dueLabel}
-                          </span>
-                          <div className="flex items-center gap-1.5 shrink-0 w-full pl-[52px] sm:w-auto sm:pl-0 sm:ml-2">
-                            <a
-                              href={buyNowUrl(item.name, item.purchaseUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-                            >
-                              Buy Now
-                            </a>
-                            <button
-                              type="button"
-                              onClick={(e) => handleMarkPurchased(e, item)}
-                              disabled={purchasedIds.has(item.id)}
-                              className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-all duration-[120ms] inline-flex items-center gap-1 ${
-                                purchasedIds.has(item.id)
-                                  ? "bg-green text-white cursor-default"
-                                  : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
-                              }`}
-                            >
-                              <CheckCircleIcon width={12} height={12} />
-                              {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
-                            </button>
-                          </div>
-                        </Link>
-                      </li>
+                      <InventoryItemRow
+                        key={item.id}
+                        item={item}
+                        purchasedIds={purchasedIds}
+                        onMarkPurchased={handleMarkPurchased}
+                        dueLabel={dueLabel}
+                        badgeClass={isOverdue ? "bg-red text-white" : "bg-accent-light text-accent"}
+                      />
                     );
                   })}
                 </ul>
@@ -274,70 +305,24 @@ export default function InventoryClient() {
                     const dueLabel = `in ${days} day${days !== 1 ? "s" : ""}`;
 
                     return (
-                      <li key={item.id} className="border-b border-border last:border-b-0">
-                        <Link
-                          href={`/inventory/${item.id}`}
-                          className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
-                        >
-                          {item.thumbnailUrl ? (
-                            <img
-                              src={item.thumbnailUrl}
-                              alt={item.name}
-                              className="w-10 h-10 rounded-full object-cover shrink-0 bg-border"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
-                              <ApplianceIcon width={18} height={18} className="text-white" strokeWidth={1.5} />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-[13px] font-semibold text-text-primary truncate">
-                                {item.name}
-                              </span>
-                              <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
-                                {frequencyLabel(item.frequencyMonths)}
-                              </span>
-                            </div>
-                            {item.description && (
-                              <p className="text-[12px] text-text-3 truncate">
-                                {item.description}
-                              </p>
-                            )}
+                      <InventoryItemRow
+                        key={item.id}
+                        item={item}
+                        purchasedIds={purchasedIds}
+                        onMarkPurchased={handleMarkPurchased}
+                        dueLabel={dueLabel}
+                        badgeClass={isSoon ? "bg-accent-light text-accent" : "bg-border text-text-3"}
+                        extraInfo={
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-[13px] font-semibold text-text-primary truncate">
+                              {item.name}
+                            </span>
+                            <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
+                              {frequencyLabel(item.frequencyMonths)}
+                            </span>
                           </div>
-                          <span
-                            className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${
-                              isSoon ? "bg-accent-light text-accent" : "bg-border text-text-3"
-                            }`}
-                          >
-                            {dueLabel}
-                          </span>
-                          <div className="flex items-center gap-1.5 shrink-0 w-full pl-[52px] sm:w-auto sm:pl-0 sm:ml-2">
-                            <a
-                              href={buyNowUrl(item.name, item.purchaseUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-                            >
-                              Buy Now
-                            </a>
-                            <button
-                              type="button"
-                              onClick={(e) => handleMarkPurchased(e, item)}
-                              disabled={purchasedIds.has(item.id)}
-                              className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-all duration-[120ms] inline-flex items-center gap-1 ${
-                                purchasedIds.has(item.id)
-                                  ? "bg-green text-white cursor-default"
-                                  : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
-                              }`}
-                            >
-                              <CheckCircleIcon width={12} height={12} />
-                              {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
-                            </button>
-                          </div>
-                        </Link>
-                      </li>
+                        }
+                      />
                     );
                   })}
                 </ul>

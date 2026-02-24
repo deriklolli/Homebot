@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { formatDateShort as formatDate, formatTime } from "@/lib/date-utils";
 import { CalendarSolidIcon, ChevronRightIcon } from "@/components/icons";
 
 interface UpcomingEvent {
@@ -15,22 +16,6 @@ interface UpcomingEvent {
   contractor_company: string | null;
   contractor_name: string | null;
   contractor_phone: string | null;
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatTime(timeStr: string): string {
-  const [h, m] = timeStr.split(":").map(Number);
-  const period = h >= 12 ? "PM" : "AM";
-  const hour12 = h % 12 || 12;
-  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
 export default function UpcomingAppointments() {

@@ -39,7 +39,7 @@ export default function HomeAssetsClient() {
     async function fetchAssets() {
       const { data, error } = await supabase
         .from("home_assets")
-        .select("*")
+        .select("id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
         .order("name", { ascending: true })
         .returns<DbHomeAsset[]>();
 
@@ -138,7 +138,7 @@ export default function HomeAssetsClient() {
           className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
         >
           <UploadIcon width={14} height={14} />
-          Import
+          Import CSV
         </button>
       </header>
 
