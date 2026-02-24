@@ -1,3 +1,5 @@
+import heic2any from "heic2any";
+
 /**
  * Resize a blob via canvas and export as JPEG.
  */
@@ -36,41 +38,43 @@ function resizeToJpeg(blob: Blob, maxWidth: number, quality: number): Promise<Bl
   });
 }
 
-/**
- * Send the file to the server for conversion via sharp.
- * Handles HEIC and any other format the browser can't decode.
- */
-async function serverConvert(file: File): Promise<Blob> {
-  const form = new FormData();
-  form.append("file", file);
-
-  const res = await fetch("/api/convert-image", { method: "POST", body: form });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Server conversion failed: ${res.status}`);
-  }
-
-  return res.blob();
+function isHeic(file: File): boolean {
+  const name = file.name.toLowerCase();
+  return (
+    name.endsWith(".heic") ||
+    name.endsWith(".heif") ||
+    file.type === "image/heic" ||
+    file.type === "image/heif"
+  );
 }
 
 /**
  * Compresses an image file to JPEG.
  *   1. Try client-side canvas (works for JPEG/PNG/WebP and HEIC on Safari)
- *   2. Fall back to server-side sharp conversion (handles all formats including HEIC)
+ *   2. For HEIC on non-Safari browsers, convert client-side via heic2any
  */
 export async function compressImage(
   file: File,
   maxWidth = 1600,
   quality = 0.8
 ): Promise<Blob> {
-  // Try native browser decoding first
+  // Try native browser decoding first (handles most formats + HEIC on Safari)
   try {
     return await resizeToJpeg(file, maxWidth, quality);
   } catch {
-    // Browser can't decode this format (e.g. HEIC on Chrome)
+    // Browser can't decode this format
   }
 
-  // Fall back to server-side conversion via sharp
-  return serverConvert(file);
+  // For HEIC/HEIF, convert client-side with heic2any
+  if (isHeic(file)) {
+    const converted = await heic2any({
+      blob: file,
+      toType: "image/jpeg",
+      quality,
+    });
+    const jpeg = Array.isArray(converted) ? converted[0] : converted;
+    return resizeToJpeg(jpeg, maxWidth, quality);
+  }
+
+  throw new Error(`Unsupported image format: ${file.name}`);
 }
