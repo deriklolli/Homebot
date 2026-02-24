@@ -19,6 +19,7 @@ export interface DbProject {
   name: string;
   description: string;
   contractor_id: string | null;
+  home_asset_id: string | null;
   notes: string;
   status: string;
   total_cost: number | null;
@@ -66,6 +67,7 @@ export interface DbService {
   frequency_months: number;
   last_service_date: string | null;
   next_service_date: string;
+  home_asset_id: string | null;
   phone: string;
   notes: string;
   created_at: string;
@@ -97,7 +99,7 @@ export interface DbHomeAsset {
   warranty_expiration: string | null;
   location: string;
   notes: string;
-  image_url: string;
+  product_url: string;
   created_at: string;
 }
 

@@ -11,6 +11,7 @@ export interface Service {
   frequencyMonths: number;
   lastServiceDate: string | null;
   nextServiceDate: string;
+  homeAssetId: string | null;
   phone: string;
   notes: string;
   createdAt: string;

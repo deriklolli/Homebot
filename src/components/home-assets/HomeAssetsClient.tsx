@@ -209,17 +209,9 @@ export default function HomeAssetsClient() {
                               href={`/home-assets/${asset.id}`}
                               className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
                             >
-                              {asset.imageUrl ? (
-                                <img
-                                  src={asset.imageUrl}
-                                  alt={asset.name}
-                                  className="w-10 h-10 rounded-full object-cover shrink-0 bg-border"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
-                                  <HomeIcon width={18} height={18} className="text-white" />
-                                </div>
-                              )}
+                              <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                                <HomeIcon width={18} height={18} className="text-white" />
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
                                   <span className="text-[13px] font-semibold text-text-primary truncate">

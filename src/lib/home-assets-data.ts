@@ -82,6 +82,6 @@ export interface HomeAsset {
   warrantyExpiration: string | null;
   location: string;
   notes: string;
-  imageUrl: string;
+  productUrl: string;
   createdAt: string;
 }

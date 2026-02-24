@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { type Project, type ProjectStatus } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
-import { supabase, type DbProject, type DbContractor } from "@/lib/supabase";
-import { dbToProject, dbToContractor, projectToDb } from "@/lib/mappers";
+import { type HomeAsset } from "@/lib/home-assets-data";
+import { supabase, type DbProject, type DbContractor, type DbHomeAsset } from "@/lib/supabase";
+import { dbToProject, dbToContractor, dbToHomeAsset, projectToDb } from "@/lib/mappers";
 import { PlusIcon } from "@/components/icons";
 import ProjectCard from "./ProjectCard";
 import ProjectSearchFilterBar from "./ProjectSearchFilterBar";
@@ -13,6 +14,7 @@ import AddProjectModal from "./AddProjectModal";
 export default function ProjectsClient() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<
@@ -22,7 +24,7 @@ export default function ProjectsClient() {
 
   useEffect(() => {
     async function fetchData() {
-      const [projectsRes, contractorsRes] = await Promise.all([
+      const [projectsRes, contractorsRes, assetsRes] = await Promise.all([
         supabase
           .from("projects")
           .select("*")
@@ -33,6 +35,11 @@ export default function ProjectsClient() {
           .select("*")
           .order("created_at", { ascending: false })
           .returns<DbContractor[]>(),
+        supabase
+          .from("home_assets")
+          .select("*")
+          .order("name", { ascending: true })
+          .returns<DbHomeAsset[]>(),
       ]);
 
       if (projectsRes.error) {
@@ -45,6 +52,12 @@ export default function ProjectsClient() {
         console.error("Failed to fetch contractors:", contractorsRes.error);
       } else {
         setContractors(contractorsRes.data.map(dbToContractor));
+      }
+
+      if (assetsRes.error) {
+        console.error("Failed to fetch home assets:", assetsRes.error);
+      } else {
+        setHomeAssets(assetsRes.data.map(dbToHomeAsset));
       }
 
       setLoading(false);
@@ -185,6 +198,7 @@ export default function ProjectsClient() {
       {modalOpen && (
         <AddProjectModal
           contractors={contractors}
+          homeAssets={homeAssets}
           onSave={handleAdd}
           onClose={() => setModalOpen(false)}
         />

@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { type Service, FREQUENCY_OPTIONS } from "@/lib/services-data";
 import type { Contractor } from "@/lib/contractors-data";
-import { supabase, type DbService, type DbContractor } from "@/lib/supabase";
-import { dbToService, serviceToDb, dbToContractor, contractorToDb } from "@/lib/mappers";
+import type { HomeAsset } from "@/lib/home-assets-data";
+import { supabase, type DbService, type DbContractor, type DbHomeAsset } from "@/lib/supabase";
+import { dbToService, serviceToDb, dbToContractor, contractorToDb, dbToHomeAsset } from "@/lib/mappers";
 import { PlusIcon, SearchIcon } from "@/components/icons";
 import AddServiceModal from "./AddServiceModal";
 
@@ -32,6 +33,7 @@ function frequencyLabel(months: number): string {
 export default function ServicesClient() {
   const [services, setServices] = useState<Service[]>([]);
   const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,7 +41,7 @@ export default function ServicesClient() {
 
   useEffect(() => {
     async function fetchData() {
-      const [svcResult, conResult] = await Promise.all([
+      const [svcResult, conResult, assetResult] = await Promise.all([
         supabase
           .from("services")
           .select("*")
@@ -50,6 +52,11 @@ export default function ServicesClient() {
           .select("*")
           .order("company", { ascending: true })
           .returns<DbContractor[]>(),
+        supabase
+          .from("home_assets")
+          .select("*")
+          .order("name", { ascending: true })
+          .returns<DbHomeAsset[]>(),
       ]);
 
       if (svcResult.error) {
@@ -59,6 +66,9 @@ export default function ServicesClient() {
       }
       if (!conResult.error && conResult.data) {
         setContractors(conResult.data.map(dbToContractor));
+      }
+      if (!assetResult.error && assetResult.data) {
+        setHomeAssets(assetResult.data.map(dbToHomeAsset));
       }
       setLoading(false);
     }
@@ -278,6 +288,7 @@ export default function ServicesClient() {
       {modalOpen && (
         <AddServiceModal
           contractors={contractors}
+          homeAssets={homeAssets}
           onSave={handleAdd}
           onContractorAdded={handleContractorAdded}
           onClose={() => setModalOpen(false)}
@@ -289,6 +300,7 @@ export default function ServicesClient() {
         <AddServiceModal
           service={editingService}
           contractors={contractors}
+          homeAssets={homeAssets}
           onSave={handleEdit}
           onDelete={handleDelete}
           onContractorAdded={handleContractorAdded}

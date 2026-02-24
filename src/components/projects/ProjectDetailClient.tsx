@@ -12,6 +12,7 @@ import {
   type ProjectImage,
 } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
+import { type HomeAsset } from "@/lib/home-assets-data";
 import {
   supabase,
   type DbProject,
@@ -19,10 +20,12 @@ import {
   type DbProjectEvent,
   type DbProjectNote,
   type DbProjectImage,
+  type DbHomeAsset,
 } from "@/lib/supabase";
 import {
   dbToProject,
   dbToContractor,
+  dbToHomeAsset,
   contractorToDb,
   projectToDb,
   dbToProjectEvent,
@@ -84,6 +87,7 @@ function formatTime(timeStr: string): string {
 export default function ProjectDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [events, setEvents] = useState<ProjectEvent[]>([]);
   const [notes, setNotes] = useState<ProjectNote[]>([]);
@@ -105,7 +109,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
   useEffect(() => {
     async function fetchData() {
-      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes] = await Promise.all([
+      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes] = await Promise.all([
         supabase
           .from("projects")
           .select("*")
@@ -135,6 +139,11 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectImage[]>(),
+        supabase
+          .from("home_assets")
+          .select("*")
+          .order("name", { ascending: true })
+          .returns<DbHomeAsset[]>(),
       ]);
 
       if (projectRes.error || !projectRes.data) {
@@ -157,6 +166,10 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
       if (imagesRes.data) {
         setImages(imagesRes.data.map(dbToProjectImage));
+      }
+
+      if (assetsRes.data) {
+        setHomeAssets(assetsRes.data.map(dbToHomeAsset));
       }
 
       setLoading(false);
@@ -734,6 +747,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         <AddProjectModal
           project={project}
           contractors={contractors}
+          homeAssets={homeAssets}
           onSave={handleEdit}
           onClose={() => setEditModalOpen(false)}
         />

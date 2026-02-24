@@ -26,7 +26,7 @@ export default function AddHomeAssetModal({
   const [purchaseDate, setPurchaseDate] = useState(asset?.purchaseDate ?? "");
   const [warrantyExpiration, setWarrantyExpiration] = useState(asset?.warrantyExpiration ?? "");
   const [location, setLocation] = useState(asset?.location ?? "");
-  const [imageUrl, setImageUrl] = useState(asset?.imageUrl ?? "");
+  const [productUrl, setProductUrl] = useState(asset?.productUrl ?? "");
   const [notes, setNotes] = useState(asset?.notes ?? "");
   const nameRef = useRef<HTMLInputElement>(null);
   const isValid = name.trim() !== "";
@@ -56,7 +56,7 @@ export default function AddHomeAssetModal({
       purchaseDate: purchaseDate || null,
       warrantyExpiration: warrantyExpiration || null,
       location: location.trim(),
-      imageUrl: imageUrl.trim(),
+      productUrl: productUrl.trim(),
       notes: notes.trim(),
     });
   }
@@ -201,17 +201,17 @@ export default function AddHomeAssetModal({
             />
           </label>
 
-          {/* Image URL */}
+          {/* Product URL */}
           <label className="flex flex-col gap-1.5">
             <span className="text-[13px] font-medium text-text-primary">
-              Image URL
+              Product URL
             </span>
             <input
               type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              value={productUrl}
+              onChange={(e) => setProductUrl(e.target.value)}
               className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-              placeholder="Right-click product image → Copy image address"
+              placeholder="https://www.amazon.com/..."
             />
           </label>
 

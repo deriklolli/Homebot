@@ -34,6 +34,7 @@ export interface Project {
   name: string;
   description: string;
   contractorId: string | null;
+  homeAssetId: string | null;
   notes: string;
   status: ProjectStatus;
   totalCost: number | null;

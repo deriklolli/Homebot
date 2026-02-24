@@ -43,6 +43,7 @@ export function dbToProject(row: DbProject): Project {
     name: row.name,
     description: row.description,
     contractorId: row.contractor_id,
+    homeAssetId: row.home_asset_id,
     notes: row.notes,
     status: row.status as Project["status"],
     totalCost: row.total_cost,
@@ -81,6 +82,7 @@ export function projectToDb(
   name: string;
   description: string;
   contractor_id: string | null;
+  home_asset_id: string | null;
   notes: string;
   status: string;
 } {
@@ -88,6 +90,7 @@ export function projectToDb(
     name: data.name,
     description: data.description,
     contractor_id: data.contractorId,
+    home_asset_id: data.homeAssetId,
     notes: data.notes,
     status: data.status,
   };
@@ -145,6 +148,7 @@ export function dbToService(row: DbService): Service {
     frequencyMonths: row.frequency_months,
     lastServiceDate: row.last_service_date,
     nextServiceDate: row.next_service_date,
+    homeAssetId: row.home_asset_id,
     phone: row.phone,
     notes: row.notes,
     createdAt: row.created_at,
@@ -162,6 +166,7 @@ export function serviceToDb(
     frequency_months: data.frequencyMonths,
     last_service_date: data.lastServiceDate,
     next_service_date: data.nextServiceDate,
+    home_asset_id: data.homeAssetId,
     phone: data.phone,
     notes: data.notes,
   };
@@ -193,7 +198,7 @@ export function dbToHomeAsset(row: DbHomeAsset): HomeAsset {
     warrantyExpiration: row.warranty_expiration,
     location: row.location,
     notes: row.notes,
-    imageUrl: row.image_url,
+    productUrl: row.product_url,
     createdAt: row.created_at,
   };
 }
@@ -210,7 +215,7 @@ export function homeAssetToDb(
   warranty_expiration: string | null;
   location: string;
   notes: string;
-  image_url: string;
+  product_url: string;
 } {
   return {
     name: data.name,
@@ -222,7 +227,7 @@ export function homeAssetToDb(
     warranty_expiration: data.warrantyExpiration,
     location: data.location,
     notes: data.notes,
-    image_url: data.imageUrl,
+    product_url: data.productUrl,
   };
 }
 

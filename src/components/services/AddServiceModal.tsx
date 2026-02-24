@@ -3,12 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { FREQUENCY_OPTIONS, type Service } from "@/lib/services-data";
 import type { Contractor } from "@/lib/contractors-data";
+import type { HomeAsset } from "@/lib/home-assets-data";
 import { XIcon, ChevronDownIcon, TrashIcon } from "@/components/icons";
 import AddContractorModal from "@/components/contractors/AddContractorModal";
 
 interface AddServiceModalProps {
   service?: Service;
   contractors: Contractor[];
+  homeAssets?: HomeAsset[];
   onSave: (data: Omit<Service, "id" | "createdAt">) => void;
   onDelete?: () => void;
   onContractorAdded: (data: Omit<Contractor, "id" | "createdAt">) => Promise<Contractor>;
@@ -35,6 +37,7 @@ function computeNextServiceDate(
 export default function AddServiceModal({
   service,
   contractors,
+  homeAssets = [],
   onSave,
   onDelete,
   onContractorAdded,
@@ -52,6 +55,7 @@ export default function AddServiceModal({
     service?.lastServiceDate ?? ""
   );
   const [phone, setPhone] = useState(service?.phone ?? "");
+  const [homeAssetId, setHomeAssetId] = useState(service?.homeAssetId ?? "");
   const [notes, setNotes] = useState(service?.notes ?? "");
   const [showContractorModal, setShowContractorModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -103,6 +107,7 @@ export default function AddServiceModal({
       frequencyMonths,
       lastServiceDate: lastServiceDate || null,
       nextServiceDate,
+      homeAssetId: homeAssetId || null,
       phone: phone.trim(),
       notes: notes.trim(),
     });
@@ -171,6 +176,32 @@ export default function AddServiceModal({
                 <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
               </div>
             </label>
+
+            {/* Home Asset */}
+            {homeAssets.length > 0 && (
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-medium text-text-primary">
+                  Home Asset
+                </span>
+                <div className="relative">
+                  <select
+                    value={homeAssetId}
+                    onChange={(e) => setHomeAssetId(e.target.value)}
+                    className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                  >
+                    <option value="">None</option>
+                    {[...homeAssets]
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+                </div>
+              </label>
+            )}
 
             {/* Cost & Frequency */}
             <div className="flex gap-3">
