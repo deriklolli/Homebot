@@ -8,17 +8,7 @@ import { WrenchIcon, ChevronRightIcon } from "@/components/icons";
 interface CurrentProject {
   id: string;
   name: string;
-  scheduledDate: string;
   contractorCompany: string | null;
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 export default function CurrentProjects() {
@@ -29,15 +19,14 @@ export default function CurrentProjects() {
     async function fetchProjects() {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, name, scheduled_date, contractors(company)")
+        .select("id, name, contractors(company)")
         .eq("status", "In Progress")
-        .order("scheduled_date", { ascending: true })
+        .order("created_at", { ascending: false })
         .limit(5)
         .returns<
           {
             id: string;
             name: string;
-            scheduled_date: string;
             contractors: { company: string } | null;
           }[]
         >();
@@ -47,7 +36,6 @@ export default function CurrentProjects() {
           data.map((row) => ({
             id: row.id,
             name: row.name,
-            scheduledDate: row.scheduled_date,
             contractorCompany: row.contractors?.company ?? null,
           }))
         );
@@ -95,7 +83,7 @@ export default function CurrentProjects() {
             <li key={p.id}>
               <Link
                 href={`/projects/${p.id}`}
-                className="grid grid-cols-[32px_1fr_auto_auto] items-center gap-2 px-5 py-[9px] border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
+                className="grid grid-cols-[32px_1fr_auto] items-center gap-2 px-5 py-[9px] border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
               >
                 <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
                   <WrenchIcon width={16} height={16} className="text-accent" />
@@ -110,9 +98,6 @@ export default function CurrentProjects() {
                     </span>
                   )}
                 </div>
-                <span className="text-[13px] font-medium text-text-primary whitespace-nowrap shrink-0">
-                  {formatDate(p.scheduledDate)}
-                </span>
                 <ChevronRightIcon className="text-text-4 shrink-0" />
               </Link>
             </li>

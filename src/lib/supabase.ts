@@ -19,7 +19,6 @@ export interface DbProject {
   name: string;
   description: string;
   contractor_id: string | null;
-  scheduled_date: string;
   notes: string;
   status: string;
   total_cost: number | null;
@@ -84,6 +83,21 @@ export interface DbTask {
   id: string;
   title: string;
   completed: boolean;
+  created_at: string;
+}
+
+export interface DbHomeAsset {
+  id: string;
+  name: string;
+  category: string;
+  make: string;
+  model: string;
+  serial_number: string;
+  purchase_date: string | null;
+  warranty_expiration: string | null;
+  location: string;
+  notes: string;
+  image_url: string;
   created_at: string;
 }
 

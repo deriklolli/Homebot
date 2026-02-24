@@ -186,7 +186,6 @@ export default function SpendingCard() {
   }
 
   const total = categoryTotals.projects + categoryTotals.inventory + categoryTotals.services;
-  const periodLabel = view === "month" ? "this month" : "this year";
 
   return (
     <div className="p-5">
@@ -200,10 +199,7 @@ export default function SpendingCard() {
               <span className="text-text-3 text-sm font-normal">Loading...</span>
             ) : (
               <>
-                ${total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
-                <span className="text-sm font-normal text-text-3">
-                  {periodLabel}
-                </span>
+                ${total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </>
             )}
           </p>

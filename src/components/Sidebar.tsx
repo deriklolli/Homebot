@@ -13,6 +13,7 @@ import {
   PackageIcon,
   ClipboardCheckIcon,
   CalendarIcon,
+  HomeIcon,
   GearIcon,
   HelpCircleIcon,
   ChevronDownIcon,
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/contractors", label: "Contractors", icon: UsersIcon },
   { href: "/inventory", label: "Home Inventory", icon: PackageIcon },
   { href: "/services", label: "Home Services", icon: ClipboardCheckIcon },
+  { href: "/home-assets", label: "Home Assets", icon: HomeIcon },
   { href: "/calendar", label: "Calendar", icon: CalendarIcon },
 ];
 

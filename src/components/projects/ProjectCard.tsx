@@ -6,15 +6,6 @@ const STATUS_BADGE: Record<ProjectStatus, string> = {
   Completed: "bg-green-light text-green",
 };
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 export default function ProjectCard({
   project,
   contractorCompany,
@@ -47,14 +38,6 @@ export default function ProjectCard({
 
           {/* Details */}
           <div className="flex flex-col gap-1.5 pt-3 border-t border-border">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-text-4 uppercase tracking-wide">
-                Scheduled
-              </span>
-              <span className="text-[12px] text-text-2">
-                {formatDate(project.scheduledDate)}
-              </span>
-            </div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-text-4 uppercase tracking-wide">
                 Contractor

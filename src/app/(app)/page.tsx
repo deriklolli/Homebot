@@ -18,9 +18,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Full-width alerts */}
-      <article className="bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[0_1px_4px_rgba(224,49,49,0.15),0_2px_8px_rgba(224,49,49,0.1)] overflow-hidden hover:shadow-[0_4px_16px_rgba(224,49,49,0.18),0_2px_6px_rgba(224,49,49,0.12)] transition-shadow duration-200 mb-4">
-        <HomeAlerts />
-      </article>
+      <HomeAlerts />
 
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
@@ -33,7 +31,7 @@ export default function DashboardPage() {
             <CurrentProjects />
           </Card>
           <Card>
-            <HomeSnapshot />
+            <UpcomingAppointments />
           </Card>
         </div>
 
@@ -43,7 +41,7 @@ export default function DashboardPage() {
             <SpendingCard />
           </Card>
           <Card>
-            <UpcomingAppointments />
+            <HomeSnapshot />
           </Card>
         </div>
       </div>

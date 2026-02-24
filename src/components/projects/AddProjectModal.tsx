@@ -19,10 +19,6 @@ interface AddProjectModalProps {
   onClose: () => void;
 }
 
-function todayString(): string {
-  return new Date().toISOString().split("T")[0];
-}
-
 export default function AddProjectModal({
   project,
   contractors,
@@ -35,7 +31,6 @@ export default function AddProjectModal({
     name: project?.name ?? "",
     description: project?.description ?? "",
     contractorId: project?.contractorId ?? "",
-    scheduledDate: project?.scheduledDate ?? todayString(),
     status: (project?.status ?? "In Progress") as ProjectStatus,
     notes: project?.notes ?? "",
   });
@@ -62,7 +57,6 @@ export default function AddProjectModal({
       name: form.name.trim(),
       description: form.description.trim(),
       contractorId: form.contractorId || null,
-      scheduledDate: form.scheduledDate,
       status: form.status,
       notes: form.notes.trim(),
     });
@@ -124,49 +118,31 @@ export default function AddProjectModal({
             />
           </label>
 
-          {/* Contractor + Date row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Contractor */}
-            <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-text-primary">
-                Contractor
-              </span>
-              <div className="relative">
-                <select
-                  value={form.contractorId}
-                  onChange={(e) =>
-                    setForm({ ...form, contractorId: e.target.value })
-                  }
-                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-                >
-                  <option value="">None (DIY)</option>
-                  {[...contractors]
-                    .sort((a, b) => (a.company || a.name).localeCompare(b.company || b.name))
-                    .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.company || c.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
-              </div>
-            </label>
-
-            {/* Scheduled Date */}
-            <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-text-primary">
-                Scheduled Date
-              </span>
-              <input
-                type="date"
-                value={form.scheduledDate}
+          {/* Contractor */}
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-medium text-text-primary">
+              Contractor
+            </span>
+            <div className="relative">
+              <select
+                value={form.contractorId}
                 onChange={(e) =>
-                  setForm({ ...form, scheduledDate: e.target.value })
+                  setForm({ ...form, contractorId: e.target.value })
                 }
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-              />
-            </label>
-          </div>
+                className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              >
+                <option value="">None (DIY)</option>
+                {[...contractors]
+                  .sort((a, b) => (a.company || a.name).localeCompare(b.company || b.name))
+                  .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.company || c.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+            </div>
+          </label>
 
           {/* Status */}
           <label className="flex flex-col gap-1.5">

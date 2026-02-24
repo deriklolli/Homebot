@@ -1,8 +1,9 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbInventoryItem, DbService, DbHomeSnapshot } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbInventoryItem, DbService, DbHomeSnapshot, DbHomeAsset } from "./supabase";
 import type { Contractor } from "./contractors-data";
 import type { Project, ProjectEvent, ProjectNote, ProjectImage } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
 import type { Service } from "./services-data";
+import type { HomeAsset } from "./home-assets-data";
 
 export function dbToContractor(row: DbContractor): Contractor {
   return {
@@ -42,7 +43,6 @@ export function dbToProject(row: DbProject): Project {
     name: row.name,
     description: row.description,
     contractorId: row.contractor_id,
-    scheduledDate: row.scheduled_date,
     notes: row.notes,
     status: row.status as Project["status"],
     totalCost: row.total_cost,
@@ -81,7 +81,6 @@ export function projectToDb(
   name: string;
   description: string;
   contractor_id: string | null;
-  scheduled_date: string;
   notes: string;
   status: string;
 } {
@@ -89,7 +88,6 @@ export function projectToDb(
     name: data.name,
     description: data.description,
     contractor_id: data.contractorId,
-    scheduled_date: data.scheduledDate,
     notes: data.notes,
     status: data.status,
   };
@@ -181,6 +179,51 @@ export interface HomeSnapshot {
   valueTrend: "up" | "down" | null;
   lastScrapedAt: string;
   createdAt: string;
+}
+
+export function dbToHomeAsset(row: DbHomeAsset): HomeAsset {
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category as HomeAsset["category"],
+    make: row.make,
+    model: row.model,
+    serialNumber: row.serial_number,
+    purchaseDate: row.purchase_date,
+    warrantyExpiration: row.warranty_expiration,
+    location: row.location,
+    notes: row.notes,
+    imageUrl: row.image_url,
+    createdAt: row.created_at,
+  };
+}
+
+export function homeAssetToDb(
+  data: Omit<HomeAsset, "id" | "createdAt">
+): {
+  name: string;
+  category: string;
+  make: string;
+  model: string;
+  serial_number: string;
+  purchase_date: string | null;
+  warranty_expiration: string | null;
+  location: string;
+  notes: string;
+  image_url: string;
+} {
+  return {
+    name: data.name,
+    category: data.category,
+    make: data.make,
+    model: data.model,
+    serial_number: data.serialNumber,
+    purchase_date: data.purchaseDate,
+    warranty_expiration: data.warrantyExpiration,
+    location: data.location,
+    notes: data.notes,
+    image_url: data.imageUrl,
+  };
 }
 
 export function dbToHomeSnapshot(row: DbHomeSnapshot): HomeSnapshot {

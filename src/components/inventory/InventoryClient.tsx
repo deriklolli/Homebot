@@ -5,7 +5,7 @@ import Link from "next/link";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { supabase, type DbInventoryItem } from "@/lib/supabase";
 import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
-import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon, CheckCircleIcon, PencilIcon, XIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon, CheckCircleIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
 
@@ -26,7 +26,6 @@ export default function InventoryClient() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -121,58 +120,6 @@ export default function InventoryClient() {
         .sort((a, b) => a.nextReminderDate.localeCompare(b.nextReminderDate))
     );
     setPurchasedIds((prev) => new Set(prev).add(item.id));
-  }
-
-  async function handleEdit(data: Omit<InventoryItem, "id" | "createdAt">) {
-    if (!editingItem) return;
-
-    let thumbnailUrl = data.thumbnailUrl;
-    if (!thumbnailUrl && data.purchaseUrl && data.purchaseUrl !== editingItem.purchaseUrl) {
-      try {
-        const res = await fetch("/api/scrape-thumbnail", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: data.purchaseUrl }),
-        });
-        const json = (await res.json()) as { thumbnailUrl: string };
-        thumbnailUrl = json.thumbnailUrl ?? "";
-      } catch {
-        // keep empty
-      }
-    }
-
-    const { data: rows, error } = await supabase
-      .from("inventory_items")
-      .update(inventoryItemToDb({ ...data, thumbnailUrl }) as Record<string, unknown>)
-      .eq("id", editingItem.id)
-      .select()
-      .returns<DbInventoryItem[]>();
-
-    if (error) {
-      console.error("Failed to update item:", error);
-      return;
-    }
-    setItems(
-      items
-        .map((i) => (i.id === editingItem.id ? dbToInventoryItem(rows[0]) : i))
-        .sort((a, b) => a.nextReminderDate.localeCompare(b.nextReminderDate))
-    );
-    setEditingItem(null);
-  }
-
-  async function handleDelete(e: React.MouseEvent, itemId: string) {
-    e.preventDefault();
-    e.stopPropagation();
-    const { error } = await supabase
-      .from("inventory_items")
-      .delete()
-      .eq("id", itemId);
-
-    if (error) {
-      console.error("Failed to delete item:", error);
-      return;
-    }
-    setItems(items.filter((i) => i.id !== itemId));
   }
 
   return (
@@ -304,22 +251,6 @@ export default function InventoryClient() {
                               <CheckCircleIcon width={12} height={12} />
                               {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
                             </button>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingItem(item); }}
-                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-                              aria-label="Edit item"
-                            >
-                              <PencilIcon width={13} height={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => handleDelete(e, item.id)}
-                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-red transition-all duration-[120ms]"
-                              aria-label="Delete item"
-                            >
-                              <XIcon width={13} height={13} />
-                            </button>
                           </div>
                         </Link>
                       </li>
@@ -404,22 +335,6 @@ export default function InventoryClient() {
                               <CheckCircleIcon width={12} height={12} />
                               {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
                             </button>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditingItem(item); }}
-                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-                              aria-label="Edit item"
-                            >
-                              <PencilIcon width={13} height={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => handleDelete(e, item.id)}
-                              className="hidden sm:block p-1.5 rounded-[var(--radius-sm)] text-text-4 hover:bg-border hover:text-red transition-all duration-[120ms]"
-                              aria-label="Delete item"
-                            >
-                              <XIcon width={13} height={13} />
-                            </button>
                           </div>
                         </Link>
                       </li>
@@ -437,15 +352,6 @@ export default function InventoryClient() {
         <AddInventoryItemModal
           onSave={handleAdd}
           onClose={() => setModalOpen(false)}
-        />
-      )}
-
-      {/* Edit modal */}
-      {editingItem && (
-        <AddInventoryItemModal
-          item={editingItem}
-          onSave={handleEdit}
-          onClose={() => setEditingItem(null)}
         />
       )}
     </div>
