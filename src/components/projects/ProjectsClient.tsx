@@ -180,6 +180,11 @@ export default function ProjectsClient() {
                   ? contractorMap.get(p.contractorId)?.company ?? null
                   : null
               }
+              contractorLogoUrl={
+                p.contractorId
+                  ? contractorMap.get(p.contractorId)?.logoUrl ?? null
+                  : null
+              }
             />
           ))}
         </div>
