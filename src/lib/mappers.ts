@@ -1,6 +1,6 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbInventoryItem, DbService, DbHomeSnapshot, DbHomeAsset } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbHomeSnapshot, DbHomeAsset } from "./supabase";
 import type { Contractor } from "./contractors-data";
-import type { Project, ProjectEvent, ProjectNote, ProjectImage } from "./projects-data";
+import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
 import type { Service } from "./services-data";
 import type { HomeAsset } from "./home-assets-data";
@@ -102,6 +102,17 @@ export function dbToProjectImage(row: DbProjectImage): ProjectImage {
     projectId: row.project_id,
     storagePath: row.storage_path,
     caption: row.caption,
+    createdAt: row.created_at,
+  };
+}
+
+export function dbToProjectInvoice(row: DbProjectInvoice): ProjectInvoice {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    storagePath: row.storage_path,
+    fileName: row.file_name,
+    fileType: row.file_type,
     createdAt: row.created_at,
   };
 }

@@ -10,6 +10,7 @@ import {
   type ProjectEvent,
   type ProjectNote,
   type ProjectImage,
+  type ProjectInvoice,
 } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
 import { type HomeAsset } from "@/lib/home-assets-data";
@@ -20,6 +21,7 @@ import {
   type DbProjectEvent,
   type DbProjectNote,
   type DbProjectImage,
+  type DbProjectInvoice,
   type DbHomeAsset,
 } from "@/lib/supabase";
 import {
@@ -31,6 +33,7 @@ import {
   dbToProjectEvent,
   dbToProjectNote,
   dbToProjectImage,
+  dbToProjectInvoice,
 } from "@/lib/mappers";
 
 type TimelineItem =
@@ -53,6 +56,7 @@ import AddProjectModal from "./AddProjectModal";
 import CompleteProjectModal from "./CompleteProjectModal";
 import AddEventModal from "./AddEventModal";
 import ProjectImageGallery, { type ProjectImageGalleryHandle } from "./ProjectImageGallery";
+import ProjectInvoiceSection, { type ProjectInvoiceSectionHandle } from "./ProjectInvoiceSection";
 
 const STATUS_BADGE: Record<ProjectStatus, string> = {
   "In Progress": "bg-accent-light text-accent",
@@ -92,6 +96,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [events, setEvents] = useState<ProjectEvent[]>([]);
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [images, setImages] = useState<ProjectImage[]>([]);
+  const [invoices, setInvoices] = useState<ProjectInvoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -106,10 +111,11 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const statusRef = useRef<HTMLDivElement>(null);
   const addMenuRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<ProjectImageGalleryHandle>(null);
+  const invoiceSectionRef = useRef<ProjectInvoiceSectionHandle>(null);
 
   useEffect(() => {
     async function fetchData() {
-      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes] = await Promise.all([
+      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes, invoicesRes] = await Promise.all([
         supabase
           .from("projects")
           .select("*")
@@ -144,6 +150,12 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .select("*")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
+        supabase
+          .from("project_invoices")
+          .select("*")
+          .eq("project_id", id)
+          .order("created_at", { ascending: true })
+          .returns<DbProjectInvoice[]>(),
       ]);
 
       if (projectRes.error || !projectRes.data) {
@@ -170,6 +182,10 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
       if (assetsRes.data) {
         setHomeAssets(assetsRes.data.map(dbToHomeAsset));
+      }
+
+      if (invoicesRes.data) {
+        setInvoices(invoicesRes.data.map(dbToProjectInvoice));
       }
 
       setLoading(false);
@@ -525,6 +541,15 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 >
                   Add Photos
                 </button>
+                <button
+                  onClick={() => {
+                    invoiceSectionRef.current?.triggerUpload();
+                    setAddMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                >
+                  Add Invoice
+                </button>
               </div>
             )}
           </div>
@@ -667,6 +692,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         projectId={project.id}
         images={images}
         onImagesChange={setImages}
+      />
+
+      {/* Invoices */}
+      <ProjectInvoiceSection
+        ref={invoiceSectionRef}
+        projectId={project.id}
+        invoices={invoices}
+        onInvoicesChange={setInvoices}
       />
 
       {/* Completion details */}

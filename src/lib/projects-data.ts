@@ -29,6 +29,15 @@ export interface ProjectImage {
   createdAt: string;
 }
 
+export interface ProjectInvoice {
+  id: string;
+  projectId: string;
+  storagePath: string;
+  fileName: string;
+  fileType: string;
+  createdAt: string;
+}
+
 export interface Project {
   id: string;
   name: string;
