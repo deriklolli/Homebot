@@ -7,6 +7,7 @@ export interface ProjectCalendarEvent {
   title: string;
   eventDate: string;
   eventTime?: string | null;
+  eventEndTime?: string | null;
   projectId: string;
   projectName: string;
   projectStatus: ProjectStatus;
@@ -115,9 +116,9 @@ export default function CalendarGrid({
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   return (
-    <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden flex flex-col" style={{ height: "calc(100vh - 200px)", minHeight: 400 }}>
       {/* Day headers */}
-      <div className="grid grid-cols-7 border-b border-border">
+      <div className="grid grid-cols-7 border-b border-border shrink-0">
         {DAY_HEADERS.map((d) => (
           <div
             key={d}
@@ -129,7 +130,7 @@ export default function CalendarGrid({
       </div>
 
       {/* Day cells */}
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 flex-1 overflow-y-auto">
         {cells.map((cell, idx) => {
           const dateStr = `${cell.dateObj.getFullYear()}-${String(cell.dateObj.getMonth() + 1).padStart(2, "0")}-${String(cell.dateObj.getDate()).padStart(2, "0")}`;
           const dayEvents = eventMap.get(dateStr) ?? [];
@@ -195,7 +196,7 @@ export default function CalendarGrid({
                       key={e.id}
                       href={`/projects/${e.projectId}`}
                       className={`block px-1.5 py-0.5 text-[10px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${STATUS_PILL[e.projectStatus]}`}
-                      title={`${e.projectName}: ${e.title}${e.eventTime ? ` at ${formatShortTime(e.eventTime)}` : ""}`}
+                      title={`${e.projectName}: ${e.title}${e.eventTime ? ` at ${formatShortTime(e.eventTime)}${e.eventEndTime ? `–${formatShortTime(e.eventEndTime)}` : ""}` : ""}`}
                     >
                       {e.eventTime && (
                         <span className="opacity-70">{formatShortTime(e.eventTime)} </span>

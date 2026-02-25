@@ -109,7 +109,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .returns<DbContractor[]>(),
         supabase
           .from("project_events")
-          .select("id, user_id, project_id, title, event_date, event_time, created_at")
+          .select("id, user_id, project_id, title, event_date, event_time, event_end_time, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectEvent[]>(),
@@ -347,6 +347,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     title: string;
     eventDate: string;
     eventTime: string | null;
+    eventEndTime: string | null;
     contractorId: string | null;
   }) {
     const { data: rows, error } = await supabase
@@ -356,6 +357,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         title: data.title,
         event_date: data.eventDate,
         event_time: data.eventTime,
+        event_end_time: data.eventEndTime,
       } as Record<string, unknown>)
       .select()
       .returns<DbProjectEvent[]>();
@@ -392,6 +394,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     title: string;
     eventDate: string;
     eventTime: string | null;
+    eventEndTime: string | null;
     contractorId: string | null;
   }) {
     if (!editingEvent) return;
@@ -402,6 +405,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         title: data.title,
         event_date: data.eventDate,
         event_time: data.eventTime,
+        event_end_time: data.eventEndTime,
       } as Record<string, unknown>)
       .eq("id", editingEvent.id)
       .select()
@@ -657,7 +661,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                   {item.data.title}
                 </span>
                 <span className="text-[13px] text-text-3">
-                  {formatDate(item.data.eventDate)}{item.data.eventTime ? ` at ${formatTime(item.data.eventTime)}` : ""}
+                  {formatDate(item.data.eventDate)}{item.data.eventTime ? ` at ${formatTime(item.data.eventTime)}${item.data.eventEndTime ? ` – ${formatTime(item.data.eventEndTime)}` : ""}` : ""}
                 </span>
                 {contractor && (
                   <>

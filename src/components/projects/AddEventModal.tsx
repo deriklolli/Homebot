@@ -11,13 +11,14 @@ interface EventData {
   title: string;
   eventDate: string;
   eventTime: string | null;
+  eventEndTime: string | null;
   contractorId: string | null;
 }
 
 interface AddEventModalProps {
   contractors: Contractor[];
   defaultContractorId: string | null;
-  event?: { id: string; title: string; eventDate: string; eventTime: string | null };
+  event?: { id: string; title: string; eventDate: string; eventTime: string | null; eventEndTime: string | null };
   onSave: (data: EventData) => void;
   onContractorAdded: (data: Omit<Contractor, "id" | "createdAt">) => Promise<Contractor>;
   onClose: () => void;
@@ -39,6 +40,7 @@ export default function AddEventModal({
   const [title, setTitle] = useState(event?.title ?? "");
   const [eventDate, setEventDate] = useState(event?.eventDate ?? todayString());
   const [eventTime, setEventTime] = useState(event?.eventTime ?? "");
+  const [eventEndTime, setEventEndTime] = useState(event?.eventEndTime ?? "");
   const [contractorId, setContractorId] = useState<string | null>(
     defaultContractorId
   );
@@ -65,6 +67,7 @@ export default function AddEventModal({
       title: title.trim(),
       eventDate,
       eventTime: eventTime || null,
+      eventEndTime: eventEndTime || null,
       contractorId: contractorId || null,
     });
   }
@@ -140,25 +143,44 @@ export default function AddEventModal({
             </select>
           </label>
 
-          {/* Date & Time */}
+          {/* Date */}
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-medium text-text-primary">
+              Date <span className="text-red">*</span>
+            </span>
+            <DatePicker
+              value={eventDate}
+              onChange={setEventDate}
+              required
+            />
+          </label>
+
+          {/* Start & End Time */}
           <div className="flex gap-3">
             <label className="flex flex-col gap-1.5 flex-1">
               <span className="text-[13px] font-medium text-text-primary">
-                Date <span className="text-red">*</span>
-              </span>
-              <DatePicker
-                value={eventDate}
-                onChange={setEventDate}
-                required
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 w-[130px]">
-              <span className="text-[13px] font-medium text-text-primary">
-                Time
+                Start Time
               </span>
               <TimePicker
                 value={eventTime}
-                onChange={setEventTime}
+                onChange={(val) => {
+                  setEventTime(val);
+                  // Auto-set end time to 1 hour after start if end time is empty or before start
+                  if (val && (!eventEndTime || eventEndTime <= val)) {
+                    const [h, m] = val.split(":").map(Number);
+                    const endH = Math.min(h + 1, 23);
+                    setEventEndTime(`${String(endH).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+                  }
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5 flex-1">
+              <span className="text-[13px] font-medium text-text-primary">
+                End Time
+              </span>
+              <TimePicker
+                value={eventEndTime}
+                onChange={setEventEndTime}
               />
             </label>
           </div>

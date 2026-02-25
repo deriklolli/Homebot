@@ -11,6 +11,7 @@ export interface ProjectEvent {
   title: string;
   eventDate: string;
   eventTime: string | null;
+  eventEndTime: string | null;
   createdAt: string;
 }
 

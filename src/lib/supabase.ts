@@ -37,6 +37,7 @@ export interface DbProjectEvent {
   title: string;
   event_date: string;
   event_time: string | null;
+  event_end_time: string | null;
   created_at: string;
 }
 

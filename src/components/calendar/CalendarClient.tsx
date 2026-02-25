@@ -19,6 +19,7 @@ interface DbCalendarEvent {
   title: string;
   event_date: string;
   event_time: string | null;
+  event_end_time: string | null;
   project_id: string;
   projects: {
     id: string;
@@ -51,7 +52,7 @@ export default function CalendarClient() {
       const [projectRes, inventoryRes, serviceRes] = await Promise.all([
         supabase
           .from("project_events")
-          .select("id, title, event_date, event_time, project_id, projects(id, name, status)")
+          .select("id, title, event_date, event_time, event_end_time, project_id, projects(id, name, status)")
           .order("event_date", { ascending: true })
           .returns<DbCalendarEvent[]>(),
         supabase
@@ -76,6 +77,7 @@ export default function CalendarClient() {
             title: e.title,
             eventDate: e.event_date,
             eventTime: e.event_time,
+            eventEndTime: e.event_end_time,
             projectId: e.projects.id,
             projectName: e.projects.name,
             projectStatus: e.projects.status as ProjectStatus,

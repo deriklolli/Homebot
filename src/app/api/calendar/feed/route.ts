@@ -6,6 +6,7 @@ interface DbCalendarEvent {
   title: string;
   event_date: string;
   event_time: string | null;
+  event_end_time: string | null;
   projects: {
     name: string;
     description: string;
@@ -69,7 +70,7 @@ export async function GET(req: NextRequest) {
 
   const { data: events, error } = await supabase
     .from("project_events")
-    .select("id, title, event_date, event_time, projects(name, description, status)")
+    .select("id, title, event_date, event_time, event_end_time, projects(name, description, status)")
     .eq("user_id", userId)
     .order("event_date", { ascending: true })
     .returns<DbCalendarEvent[]>();
@@ -114,10 +115,19 @@ export async function GET(req: NextRequest) {
       // Timed event: DTSTART/DTEND with TZID so calendar apps use correct timezone
       const timeStr = e.event_time.replace(/:/g, "");
       const startDateTime = `${formatIcalDate(e.event_date)}T${timeStr}00`;
-      const [h, m] = e.event_time.split(":").map(Number);
-      const endH = h + 1;
-      const endTime = `${String(endH).padStart(2, "0")}${String(m).padStart(2, "0")}00`;
-      const endDateTime = `${formatIcalDate(e.event_date)}T${endTime}`;
+
+      // Use actual end time if available, otherwise default to start + 1 hour
+      let endDateTime: string;
+      if (e.event_end_time) {
+        const endTimeStr = e.event_end_time.replace(/:/g, "");
+        endDateTime = `${formatIcalDate(e.event_date)}T${endTimeStr}00`;
+      } else {
+        const [h, m] = e.event_time.split(":").map(Number);
+        const endH = h + 1;
+        const endTime = `${String(endH).padStart(2, "0")}${String(m).padStart(2, "0")}00`;
+        endDateTime = `${formatIcalDate(e.event_date)}T${endTime}`;
+      }
+
       lines.push(`DTSTART;TZID=${tz}:${startDateTime}`);
       lines.push(`DTEND;TZID=${tz}:${endDateTime}`);
     } else {

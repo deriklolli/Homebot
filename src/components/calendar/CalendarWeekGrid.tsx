@@ -9,7 +9,7 @@ const STATUS_PILL: Record<ProjectStatus, string> = {
 };
 
 const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7am–9pm
+const HOURS = Array.from({ length: 24 }, (_, i) => i); // 12am–11pm
 
 interface CalendarWeekGridProps {
   currentDate: Date;
@@ -74,11 +74,14 @@ function EventPill({ event }: { event: CalendarEvent }) {
       </Link>
     );
   }
+  const timeLabel = event.eventTime
+    ? `${formatLongTime(event.eventTime)}${event.eventEndTime ? ` – ${formatLongTime(event.eventEndTime)}` : ""}`
+    : "";
   return (
     <Link
       href={`/projects/${event.projectId}`}
       className={`block px-1.5 py-1 text-[11px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${STATUS_PILL[event.projectStatus]}`}
-      title={`${event.projectName}: ${event.title}${event.eventTime ? ` at ${formatLongTime(event.eventTime)}` : ""}`}
+      title={`${event.projectName}: ${event.title}${timeLabel ? ` at ${timeLabel}` : ""}`}
     >
       {event.eventTime && (
         <span className="opacity-70">{formatShortTime(event.eventTime)} </span>
@@ -125,16 +128,16 @@ export default function CalendarWeekGrid({
     return { timed, allDay };
   }
 
-  const START_HOUR = 7;
-  const END_HOUR = 21;
+  const START_HOUR = 0;
+  const END_HOUR = 24;
   const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60;
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to ~8 AM on mount so the grid starts in a useful position
+  // Auto-scroll to ~7 AM on mount so the grid starts in a useful position
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = 60; // 1 hour past 7 AM
+      scrollRef.current.scrollTop = 7 * 60; // 7 AM
     }
   }, []);
 
@@ -224,15 +227,22 @@ export default function CalendarWeekGrid({
               >
                 {timed.map((e) => {
                   if (e.type !== "project" || !e.eventTime) return null;
-                  const minutes = timeToMinutes(e.eventTime);
-                  const top = minutes - START_HOUR * 60;
+                  const startMinutes = timeToMinutes(e.eventTime);
+                  const top = startMinutes - START_HOUR * 60;
                   if (top < 0 || top >= TOTAL_MINUTES) return null;
+
+                  // Calculate height from duration (end time - start time), min 24px
+                  let height: number | undefined;
+                  if (e.eventEndTime) {
+                    const endMinutes = timeToMinutes(e.eventEndTime);
+                    height = Math.max(endMinutes - startMinutes, 24);
+                  }
 
                   return (
                     <div
                       key={e.id}
-                      className="absolute left-0.5 right-0.5"
-                      style={{ top: `${top}px` }}
+                      className="absolute left-0.5 right-0.5 overflow-hidden"
+                      style={{ top: `${top}px`, ...(height ? { height: `${height}px` } : {}) }}
                     >
                       <EventPill event={e} />
                     </div>
