@@ -42,6 +42,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
   const [notFound, setNotFound] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [reminderReset, setReminderReset] = useState(false);
   const [productOptions, setProductOptions] = useState<ConsumableProduct[]>([]);
 
   useEffect(() => {
@@ -166,6 +167,35 @@ export default function InventoryDetailClient({ id }: { id: string }) {
     }
     setItem(dbToInventoryItem(rows[0]));
     setEditModalOpen(false);
+  }
+
+  async function handleResetReminder() {
+    if (!item) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
+
+    const nextReminder = new Date(today);
+    nextReminder.setMonth(nextReminder.getMonth() + item.frequencyMonths);
+    const nextReminderStr = nextReminder.toISOString().split("T")[0];
+
+    const { data: rows, error } = await supabase
+      .from("inventory_items")
+      .update({
+        last_ordered_date: todayStr,
+        next_reminder_date: nextReminderStr,
+      })
+      .eq("id", item.id)
+      .select()
+      .returns<DbInventoryItem[]>();
+
+    if (error) {
+      console.error("Failed to reset reminder:", error);
+      return;
+    }
+    setItem(dbToInventoryItem(rows[0]));
+    setReminderReset(true);
+    setTimeout(() => setReminderReset(false), 2000);
   }
 
   async function handleDelete() {
@@ -311,6 +341,18 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               >
                 {dueLabel}
               </span>
+              <button
+                type="button"
+                onClick={handleResetReminder}
+                disabled={reminderReset}
+                className={`block text-[12px] mt-1 ${
+                  reminderReset
+                    ? "text-green font-medium cursor-default"
+                    : "text-accent hover:underline"
+                }`}
+              >
+                {reminderReset ? "Reminder Reset!" : "Reset Reminder"}
+              </button>
             </div>
 
             {/* Last Ordered */}
