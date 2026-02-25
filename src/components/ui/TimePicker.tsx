@@ -59,7 +59,7 @@ export default function TimePicker({
     setPos({
       top: rect.bottom + 4,
       left: rect.left,
-      width: Math.max(rect.width, 160),
+      width: rect.width,
     });
   }, []);
 
@@ -153,7 +153,7 @@ export default function TimePicker({
             style={{
               top: pos.top,
               left: pos.left,
-              minWidth: pos.width,
+              width: pos.width,
             }}
           >
             {/* Clear option */}
