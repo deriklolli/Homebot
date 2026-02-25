@@ -182,7 +182,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const timeline: TimelineItem[] = [
     ...events.map((e) => ({ type: "event" as const, data: e, createdAt: e.createdAt })),
     ...notes.map((n) => ({ type: "note" as const, data: n, createdAt: n.createdAt })),
-  ].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   // Close status popover on outside click
   useEffect(() => {

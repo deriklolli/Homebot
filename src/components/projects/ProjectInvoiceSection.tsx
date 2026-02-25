@@ -8,6 +8,7 @@ import { compressImage } from "@/lib/compress-image";
 import { extractInvoiceTotal } from "@/lib/extract-invoice-total";
 import { renderPdfThumbnail } from "@/lib/pdf-thumbnail";
 import { InvoiceSolidIcon, InvoiceIcon, XIcon } from "@/components/icons";
+import { formatDateShort } from "@/lib/date-utils";
 
 export interface ProjectInvoiceSectionHandle {
   triggerUpload: () => void;
@@ -285,10 +286,13 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
                           <XIcon width={12} height={12} />
                         </button>
                       </div>
+                      <span className="text-[10px] text-text-4 text-center mt-1">
+                        {formatDateShort(inv.createdAt)}
+                      </span>
                       {scanningIds.has(inv.id) ? (
-                        <span className="text-[10px] text-text-3 italic text-center mt-1">Scanning...</span>
+                        <span className="text-[10px] text-text-3 italic text-center">Scanning...</span>
                       ) : inv.amount !== null ? (
-                        <div className="flex flex-col items-center mt-1">
+                        <div className="flex flex-col items-center">
                           <span className="text-[9px] text-text-4">Invoice Total:</span>
                           <span className="text-[11px] font-semibold text-green">{formatAmount(inv.amount)}</span>
                         </div>
