@@ -48,6 +48,7 @@ export default function DatePicker({
   className,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<"days" | "months">("days");
   const [viewYear, setViewYear] = useState(() => {
     if (value) {
       const [y] = value.split("-").map(Number);
@@ -94,6 +95,7 @@ export default function DatePicker({
   // Open popover
   const handleOpen = useCallback(() => {
     updatePosition();
+    setView("days");
     setOpen(true);
   }, [updatePosition]);
 
@@ -251,70 +253,133 @@ export default function DatePicker({
               minWidth: 280,
             }}
           >
-            {/* Month/Year navigation */}
-            <div className="flex items-center justify-between mb-2">
-              <button
-                type="button"
-                onClick={prevMonth}
-                className="p-1.5 rounded-[var(--radius-sm)] hover:bg-border/60 text-text-3 hover:text-text-primary transition-colors duration-[120ms]"
-                aria-label="Previous month"
-              >
-                <ChevronLeftIcon width={14} height={14} />
-              </button>
-              <span className="text-[13px] font-semibold text-text-primary">
-                {MONTH_NAMES[viewMonth]} {viewYear}
-              </span>
-              <button
-                type="button"
-                onClick={nextMonth}
-                className="p-1.5 rounded-[var(--radius-sm)] hover:bg-border/60 text-text-3 hover:text-text-primary transition-colors duration-[120ms]"
-                aria-label="Next month"
-              >
-                <ChevronRightIcon width={14} height={14} />
-              </button>
-            </div>
-
-            {/* Day headers */}
-            <div className="grid grid-cols-7 mb-1">
-              {DAY_HEADERS.map((d) => (
-                <div
-                  key={d}
-                  className="flex items-center justify-center h-8 text-[11px] font-medium text-text-3"
-                >
-                  {d}
-                </div>
-              ))}
-            </div>
-
-            {/* Day grid */}
-            <div className="grid grid-cols-7">
-              {cells.map((cell, i) => {
-                const cellStr = toDateStr(cell.year, cell.month, cell.day);
-                const isSelected = cellStr === value;
-                const isToday = cellStr === todayStr;
-
-                return (
+            {view === "days" ? (
+              <>
+                {/* Month/Year navigation */}
+                <div className="flex items-center justify-between mb-2">
                   <button
-                    key={i}
                     type="button"
-                    onClick={() => handleSelect(cell)}
-                    className={cn(
-                      "flex items-center justify-center w-8 h-8 mx-auto text-[12px] rounded-full transition-colors duration-[120ms]",
-                      cell.isCurrentMonth
-                        ? "text-text-primary"
-                        : "text-text-4",
-                      isSelected
-                        ? "bg-accent text-white font-medium"
-                        : isToday
-                          ? "ring-1 ring-accent text-accent font-medium"
-                          : "hover:bg-accent/10"
-                    )}
+                    onClick={prevMonth}
+                    className="p-1.5 rounded-[var(--radius-sm)] hover:bg-border/60 text-text-3 hover:text-text-primary transition-colors duration-[120ms]"
+                    aria-label="Previous month"
                   >
-                    {cell.day}
+                    <ChevronLeftIcon width={14} height={14} />
                   </button>
-                );
-              })}
-            </div>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setView("months"); }}
+                    className="text-[13px] font-semibold text-text-primary hover:text-accent transition-colors duration-[120ms]"
+                  >
+                    {MONTH_NAMES[viewMonth]} {viewYear}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextMonth}
+                    className="p-1.5 rounded-[var(--radius-sm)] hover:bg-border/60 text-text-3 hover:text-text-primary transition-colors duration-[120ms]"
+                    aria-label="Next month"
+                  >
+                    <ChevronRightIcon width={14} height={14} />
+                  </button>
+                </div>
+
+                {/* Day headers */}
+                <div className="grid grid-cols-7 mb-1">
+                  {DAY_HEADERS.map((d) => (
+                    <div
+                      key={d}
+                      className="flex items-center justify-center h-8 text-[11px] font-medium text-text-3"
+                    >
+                      {d}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Day grid */}
+                <div className="grid grid-cols-7">
+                  {cells.map((cell, i) => {
+                    const cellStr = toDateStr(cell.year, cell.month, cell.day);
+                    const isSelected = cellStr === value;
+                    const isToday = cellStr === todayStr;
+
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelect(cell)}
+                        className={cn(
+                          "flex items-center justify-center w-8 h-8 mx-auto text-[12px] rounded-full transition-colors duration-[120ms]",
+                          cell.isCurrentMonth
+                            ? "text-text-primary"
+                            : "text-text-4",
+                          isSelected
+                            ? "bg-accent text-white font-medium"
+                            : isToday
+                              ? "ring-1 ring-accent text-accent font-medium"
+                              : "hover:bg-accent/10"
+                        )}
+                      >
+                        {cell.day}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Year navigation */}
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setViewYear((y) => y - 1); }}
+                    className="p-1.5 rounded-[var(--radius-sm)] hover:bg-border/60 text-text-3 hover:text-text-primary transition-colors duration-[120ms]"
+                    aria-label="Previous year"
+                  >
+                    <ChevronLeftIcon width={14} height={14} />
+                  </button>
+                  <span className="text-[13px] font-semibold text-text-primary">
+                    {viewYear}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setViewYear((y) => y + 1); }}
+                    className="p-1.5 rounded-[var(--radius-sm)] hover:bg-border/60 text-text-3 hover:text-text-primary transition-colors duration-[120ms]"
+                    aria-label="Next year"
+                  >
+                    <ChevronRightIcon width={14} height={14} />
+                  </button>
+                </div>
+
+                {/* Month grid */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {SHORT_MONTHS.map((label, idx) => {
+                    const isCurrent = idx === viewMonth && viewYear === new Date().getFullYear() && idx === new Date().getMonth();
+                    const isActive = idx === viewMonth;
+
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setViewMonth(idx);
+                          setView("days");
+                        }}
+                        className={cn(
+                          "py-2 text-[12px] font-medium rounded-[var(--radius-sm)] transition-colors duration-[120ms]",
+                          isActive
+                            ? "bg-accent text-white"
+                            : isCurrent
+                              ? "ring-1 ring-accent text-accent hover:bg-accent/10"
+                              : "text-text-primary hover:bg-accent/10"
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
             {/* Footer */}
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
