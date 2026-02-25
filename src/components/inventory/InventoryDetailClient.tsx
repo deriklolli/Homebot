@@ -443,18 +443,6 @@ export default function InventoryDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      {/* Notes */}
-      {item.notes && (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
-          <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-2">
-            Notes
-          </span>
-          <p className="text-[14px] text-text-primary leading-relaxed whitespace-pre-wrap">
-            {item.notes}
-          </p>
-        </div>
-      )}
-
       {/* Delete confirmation */}
       {confirmDelete && (
         <div className="mt-4 flex items-center gap-3 bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[var(--shadow-card)] px-5 py-3">

@@ -24,7 +24,7 @@ function warrantyPill(dateStr: string | null): { label: string; color: string } 
   today.setHours(0, 0, 0, 0);
   const expiry = new Date(dateStr + "T00:00:00");
   const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays < 0) return { label: "Expired", color: "bg-red-light text-red" };
+  if (diffDays < 0) return { label: "Warranty Expired", color: "bg-red-light text-red" };
   if (diffDays <= 90) return { label: `${diffDays}d left`, color: "bg-accent-light text-accent" };
   return { label: "Active", color: "bg-green-light text-green" };
 }
