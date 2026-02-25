@@ -375,23 +375,6 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               </span>
             </div>
 
-            {/* Purchase URL — hidden when recommended products are shown */}
-            {item.purchaseUrl && productOptions.length === 0 && (
-              <div className="col-span-2">
-                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-                  Purchase Link
-                </span>
-                <a
-                  href={buyNowUrl(item.name, item.purchaseUrl)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[13px] text-accent hover:underline"
-                >
-                  Purchase Here
-                </a>
-              </div>
-            )}
-
             {/* Description */}
             {item.description && (
               <div className="col-span-2">
@@ -406,6 +389,45 @@ export default function InventoryDetailClient({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      {/* Purchase URL product card */}
+      {item.purchaseUrl && (
+        <a
+          href={buyNowUrl(item.name, item.purchaseUrl)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block mb-5 max-w-sm bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200"
+        >
+          <div className="p-5">
+            <div className="flex items-start gap-3">
+              {item.thumbnailUrl ? (
+                <img
+                  src={item.thumbnailUrl}
+                  alt={item.name}
+                  className="w-18 h-18 rounded-full object-cover bg-border border border-border shrink-0"
+                />
+              ) : (
+                <div className="w-18 h-18 rounded-full bg-border shrink-0 flex items-center justify-center">
+                  <ApplianceIcon width={32} height={32} className="text-text-4" strokeWidth={1.5} />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-semibold text-text-primary">
+                  {item.name}
+                </p>
+                {item.cost != null && (
+                  <p className="text-[12px] text-text-3">
+                    ${item.cost}
+                  </p>
+                )}
+                <span className="inline-block mt-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium">
+                  Buy Now
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+      )}
 
       {/* Recommended Products — shown for items linked to a home asset */}
       {productOptions.length > 0 && (
