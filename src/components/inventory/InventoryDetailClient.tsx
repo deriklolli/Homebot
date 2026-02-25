@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase";
-import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
+import { dbToInventoryItem, inventoryItemToDb, dbToHomeAsset } from "@/lib/mappers";
+import { type HomeAsset } from "@/lib/home-assets-data";
 import {
   ChevronLeftIcon,
   PencilIcon,
@@ -44,6 +45,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [reminderReset, setReminderReset] = useState(false);
   const [productOptions, setProductOptions] = useState<ConsumableProduct[]>([]);
+  const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
 
   useEffect(() => {
     async function fetchItem() {
@@ -70,6 +72,16 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       }
     }
     fetchItem();
+
+    // Fetch home assets for the edit modal dropdown
+    supabase
+      .from("home_assets")
+      .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+      .order("name", { ascending: true })
+      .returns<DbHomeAsset[]>()
+      .then(({ data }) => {
+        if (data) setHomeAssets(data.map(dbToHomeAsset));
+      });
   }, [id]);
 
   async function fetchProductOptions(homeAssetId: string, itemName: string) {
@@ -327,7 +339,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 {formatDate(item.nextReminderDate)}
               </span>
               {isOverdue ? (
-                <span className="inline-block mt-1 px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-red text-white">
+                <span className="block mt-1 px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-red text-white w-fit">
                   {dueLabel}
                 </span>
               ) : (
@@ -472,6 +484,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       {editModalOpen && (
         <AddInventoryItemModal
           item={item}
+          homeAssets={homeAssets}
           onSave={handleEdit}
           onClose={() => setEditModalOpen(false)}
         />

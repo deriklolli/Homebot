@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase";
-import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
+import { dbToInventoryItem, inventoryItemToDb, dbToHomeAsset } from "@/lib/mappers";
+import { type HomeAsset } from "@/lib/home-assets-data";
 import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
@@ -85,27 +86,40 @@ export default function InventoryClient() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [assetLabels, setAssetLabels] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
-    async function fetchItems() {
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, created_at")
-        .order("next_reminder_date", { ascending: true })
-        .returns<DbInventoryItem[]>();
+    async function fetchData() {
+      const [itemsResult, assetsResult] = await Promise.all([
+        supabase
+          .from("inventory_items")
+          .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, created_at")
+          .order("next_reminder_date", { ascending: true })
+          .returns<DbInventoryItem[]>(),
+        supabase
+          .from("home_assets")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .order("name", { ascending: true })
+          .returns<DbHomeAsset[]>(),
+      ]);
 
-      if (error) {
-        console.error("Failed to fetch inventory items:", error);
+      if (itemsResult.error) {
+        console.error("Failed to fetch inventory items:", itemsResult.error);
       } else {
-        const mapped = data.map(dbToInventoryItem);
+        const mapped = itemsResult.data.map(dbToInventoryItem);
         setItems(mapped);
         fetchAssetLabels(mapped);
         backfillThumbnails(mapped);
       }
+
+      if (!assetsResult.error && assetsResult.data) {
+        setHomeAssets(assetsResult.data.map(dbToHomeAsset));
+      }
+
       setLoading(false);
     }
-    fetchItems();
+    fetchData();
   }, []);
 
   async function fetchAssetLabels(inventoryItems: InventoryItem[]) {
@@ -386,6 +400,7 @@ export default function InventoryClient() {
       {/* Add modal */}
       {modalOpen && (
         <AddInventoryItemModal
+          homeAssets={homeAssets}
           onSave={handleAdd}
           onClose={() => setModalOpen(false)}
         />
