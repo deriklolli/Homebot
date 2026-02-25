@@ -7,6 +7,7 @@ import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase
 import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
 import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
+import { buyNowUrl } from "@/lib/utils";
 /* ------------------------------------------------------------------ */
 /*  Shared row component for urgent & non-urgent inventory items       */
 /* ------------------------------------------------------------------ */
@@ -100,6 +101,7 @@ export default function InventoryClient() {
         const mapped = data.map(dbToInventoryItem);
         setItems(mapped);
         fetchAssetLabels(mapped);
+        backfillThumbnails(mapped);
       }
       setLoading(false);
     }
@@ -127,6 +129,89 @@ export default function InventoryClient() {
       labels.set(asset.id, label);
     }
     setAssetLabels(labels);
+  }
+
+  async function backfillThumbnails(inventoryItems: InventoryItem[]) {
+    // Find items linked to an asset that have no thumbnail
+    const needsThumbnail = inventoryItems.filter(
+      (i) => i.homeAssetId && !i.thumbnailUrl
+    );
+    if (needsThumbnail.length === 0) return;
+
+    // Get unique asset IDs and fetch their make+model+category+name
+    const assetIds = [...new Set(needsThumbnail.map((i) => i.homeAssetId))] as string[];
+    const { data: assets } = await supabase
+      .from("home_assets")
+      .select("id, name, category, make, model")
+      .in("id", assetIds)
+      .returns<Pick<DbHomeAsset, "id" | "name" | "category" | "make" | "model">[]>();
+
+    if (!assets) return;
+
+    // Build a map of assetId → asset data
+    const assetMap = new Map(assets.map((a) => [a.id, a]));
+
+    // Batch fetch cached suggestions
+    const pairs = assets
+      .filter((a) => a.make && a.model)
+      .map((a) => ({ make: a.make, model: a.model }));
+    if (pairs.length === 0) return;
+
+    let results: Record<string, Array<{ consumable: string; products: Array<{ searchTerm: string }> }>> = {};
+    try {
+      const res = await fetch("/api/suggest-consumables", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batch: pairs }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        results = json.results ?? {};
+      }
+    } catch {
+      return;
+    }
+
+    // For each item, find the matching product and scrape its thumbnail
+    for (const item of needsThumbnail) {
+      const asset = assetMap.get(item.homeAssetId!);
+      if (!asset?.make || !asset?.model) continue;
+
+      const key = `${asset.make.toLowerCase()}|${asset.model.toLowerCase()}`;
+      const suggestions = results[key];
+      if (!suggestions) continue;
+
+      const match = suggestions.find(
+        (s) => s.consumable.toLowerCase() === item.name.toLowerCase()
+      );
+      const searchTerm = match?.products[0]?.searchTerm;
+      if (!searchTerm) continue;
+
+      // Fire-and-forget: scrape thumbnail, persist, and update state
+      const amazonUrl = buyNowUrl(searchTerm);
+      fetch("/api/scrape-thumbnail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: amazonUrl }),
+      })
+        .then((res) => res.json())
+        .then((json: { thumbnailUrl?: string }) => {
+          if (!json.thumbnailUrl) return;
+          // Persist to DB
+          supabase
+            .from("inventory_items")
+            .update({ thumbnail_url: json.thumbnailUrl })
+            .eq("id", item.id)
+            .then(() => {});
+          // Update local state
+          setItems((prev) =>
+            prev.map((i) =>
+              i.id === item.id ? { ...i, thumbnailUrl: json.thumbnailUrl! } : i
+            )
+          );
+        })
+        .catch(() => {});
+    }
   }
 
   const filtered = items.filter((item) => {

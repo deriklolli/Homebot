@@ -323,24 +323,22 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
                 Next Reminder
               </span>
-              <span
-                className={`text-[14px] font-semibold ${
-                  isOverdue
-                    ? "text-red"
-                    : isSoon
-                      ? "text-accent"
-                      : "text-text-primary"
-                }`}
-              >
+              <span className="text-[14px] font-semibold text-text-primary">
                 {formatDate(item.nextReminderDate)}
               </span>
-              <span
-                className={`block text-[12px] mt-0.5 ${
-                  isOverdue ? "text-red font-medium" : "text-text-3"
-                }`}
-              >
-                {dueLabel}
-              </span>
+              {isOverdue ? (
+                <span className="inline-block mt-1 px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-red text-white">
+                  {dueLabel}
+                </span>
+              ) : (
+                <span
+                  className={`block text-[12px] mt-0.5 ${
+                    isSoon ? "text-accent font-medium" : "text-text-3"
+                  }`}
+                >
+                  {dueLabel}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={handleResetReminder}

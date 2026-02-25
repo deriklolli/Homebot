@@ -112,11 +112,41 @@ export default function HomeAssetsClient() {
           }));
 
         if (itemsToInsert.length > 0) {
-          const { error } = await supabase
+          const { data: inserted, error } = await supabase
             .from("inventory_items")
-            .insert(itemsToInsert as Record<string, unknown>[]);
+            .insert(itemsToInsert as Record<string, unknown>[])
+            .select("id, name")
+            .returns<Pick<DbInventoryItem, "id" | "name">[]>();
           if (error) {
             console.error("Failed to auto-create inventory items:", error);
+          }
+
+          // Fire-and-forget: scrape thumbnails for newly created items
+          if (inserted) {
+            for (const row of inserted) {
+              const match = suggestions.find(
+                (s) => s.consumable.toLowerCase() === row.name.toLowerCase()
+              );
+              const searchTerm = match?.products[0]?.searchTerm;
+              if (!searchTerm) continue;
+              const amazonUrl = buyNowUrl(searchTerm);
+              fetch("/api/scrape-thumbnail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: amazonUrl }),
+              })
+                .then((res) => res.json())
+                .then((json: { thumbnailUrl?: string }) => {
+                  if (json.thumbnailUrl) {
+                    supabase
+                      .from("inventory_items")
+                      .update({ thumbnail_url: json.thumbnailUrl })
+                      .eq("id", row.id)
+                      .then(() => {});
+                  }
+                })
+                .catch(() => {});
+            }
           }
         }
       })
