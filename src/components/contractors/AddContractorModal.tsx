@@ -5,6 +5,7 @@ import {
   type Contractor,
 } from "@/lib/contractors-data";
 import { XIcon, StarFilledIcon, ChevronDownIcon, TrashIcon } from "@/components/icons";
+import PhoneInput from "@/components/ui/PhoneInput";
 
 interface AddContractorModalProps {
   contractor?: Contractor;
@@ -151,12 +152,9 @@ export default function AddContractorModal({
               <span className="text-[13px] font-medium text-text-primary">
                 Phone
               </span>
-              <input
-                type="tel"
+              <PhoneInput
                 value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-                placeholder="(555) 555-0100"
+                onChange={(val) => setForm({ ...form, phone: val })}
               />
             </label>
             <label className="flex flex-col gap-1.5">

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { SunIcon, MoonIcon, MailIcon, PhoneIcon } from "@/components/icons";
 import { supabase, type DbNotificationPreference } from "@/lib/supabase";
+import PhoneInput from "@/components/ui/PhoneInput";
 
 type ThemeOption = "light" | "dark" | "system";
 
@@ -161,12 +162,10 @@ export default function SettingsPage() {
             {/* Phone input (visible when SMS enabled) */}
             {smsEnabled && (
               <div className="ml-[52px]">
-                <input
-                  type="tel"
-                  placeholder="+1 (555) 123-4567"
+                <PhoneInput
                   value={smsPhone}
-                  onChange={(e) => setSmsPhone(e.target.value)}
-                  className="w-full max-w-[260px] px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+                  onChange={setSmsPhone}
+                  className="w-full max-w-[260px]"
                 />
               </div>
             )}
