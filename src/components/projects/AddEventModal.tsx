@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { type Contractor } from "@/lib/contractors-data";
 import { XIcon } from "@/components/icons";
+import DatePicker from "@/components/ui/DatePicker";
 import AddContractorModal from "@/components/contractors/AddContractorModal";
 
 interface AddEventModalProps {
@@ -139,12 +140,10 @@ export default function AddEventModal({
               <span className="text-[13px] font-medium text-text-primary">
                 Date <span className="text-red">*</span>
               </span>
-              <input
-                type="date"
-                required
+              <DatePicker
                 value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                onChange={setEventDate}
+                required
               />
             </label>
             <label className="flex flex-col gap-1.5 w-[130px]">

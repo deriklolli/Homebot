@@ -5,6 +5,7 @@ import { FREQUENCY_OPTIONS, type Service } from "@/lib/services-data";
 import type { Contractor } from "@/lib/contractors-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
 import { XIcon, ChevronDownIcon, TrashIcon } from "@/components/icons";
+import DatePicker from "@/components/ui/DatePicker";
 import AddContractorModal from "@/components/contractors/AddContractorModal";
 
 interface AddServiceModalProps {
@@ -242,11 +243,9 @@ export default function AddServiceModal({
               <span className="text-[13px] font-medium text-text-primary">
                 Last Service Date
               </span>
-              <input
-                type="date"
+              <DatePicker
                 value={lastServiceDate}
-                onChange={(e) => setLastServiceDate(e.target.value)}
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                onChange={setLastServiceDate}
               />
             </label>
 

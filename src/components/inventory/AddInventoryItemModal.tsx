@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FREQUENCY_OPTIONS, type InventoryItem } from "@/lib/inventory-data";
 import { XIcon } from "@/components/icons";
+import DatePicker from "@/components/ui/DatePicker";
 
 interface AddInventoryItemModalProps {
   item?: InventoryItem;
@@ -157,11 +158,9 @@ export default function AddInventoryItemModal({
               <span className="text-[13px] font-medium text-text-primary">
                 Last Ordered
               </span>
-              <input
-                type="date"
+              <DatePicker
                 value={lastOrderedDate}
-                onChange={(e) => setLastOrderedDate(e.target.value)}
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                onChange={setLastOrderedDate}
               />
             </label>
           </div>

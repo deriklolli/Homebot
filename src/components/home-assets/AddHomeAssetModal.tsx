@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { CATEGORY_OPTIONS, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
 import { XIcon } from "@/components/icons";
+import DatePicker from "@/components/ui/DatePicker";
 
 interface AddHomeAssetModalProps {
   asset?: HomeAsset;
@@ -167,22 +168,18 @@ export default function AddHomeAssetModal({
               <span className="text-[13px] font-medium text-text-primary">
                 Purchase / Install Date
               </span>
-              <input
-                type="date"
+              <DatePicker
                 value={purchaseDate}
-                onChange={(e) => setPurchaseDate(e.target.value)}
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                onChange={setPurchaseDate}
               />
             </label>
             <label className="flex flex-col gap-1.5 flex-1">
               <span className="text-[13px] font-medium text-text-primary">
                 Warranty Expiration
               </span>
-              <input
-                type="date"
+              <DatePicker
                 value={warrantyExpiration}
-                onChange={(e) => setWarrantyExpiration(e.target.value)}
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                onChange={setWarrantyExpiration}
               />
             </label>
           </div>
