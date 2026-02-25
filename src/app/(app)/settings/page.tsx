@@ -18,6 +18,9 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [propertyName, setPropertyName] = useState("");
+  const [savingProperty, setSavingProperty] = useState(false);
+  const [savedProperty, setSavedProperty] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [smsEnabled, setSmsEnabled] = useState(false);
   const [smsPhone, setSmsPhone] = useState("");
@@ -32,6 +35,7 @@ export default function SettingsPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
       setUserEmail(user.email ?? null);
+      setPropertyName((user.user_metadata?.property_name as string) ?? "");
 
       const { data } = await supabase
         .from("notification_preferences")
@@ -48,6 +52,17 @@ export default function SettingsPage() {
     }
     load();
   }, []);
+
+  async function handleSaveProperty() {
+    setSavingProperty(true);
+    setSavedProperty(false);
+    await supabase.auth.updateUser({
+      data: { property_name: propertyName || null },
+    });
+    setSavingProperty(false);
+    setSavedProperty(true);
+    setTimeout(() => setSavedProperty(false), 2000);
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -82,6 +97,30 @@ export default function SettingsPage() {
           Settings
         </h1>
       </header>
+
+      {/* Property */}
+      <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mb-4">
+        <h2 className="text-sm font-semibold text-text-primary mb-1">Property</h2>
+        <p className="text-[13px] text-text-3 mb-4">
+          Name your property. This appears on the dashboard header.
+        </p>
+        <input
+          type="text"
+          value={propertyName}
+          onChange={(e) => setPropertyName(e.target.value)}
+          placeholder="e.g. 1715 Red Hawk Trail"
+          className="w-full max-w-[320px] px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+        />
+        <div className="pt-3">
+          <button
+            onClick={handleSaveProperty}
+            disabled={savingProperty}
+            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+          >
+            {savingProperty ? "Saving..." : savedProperty ? "Saved!" : "Save"}
+          </button>
+        </div>
+      </div>
 
       {/* Appearance */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5">

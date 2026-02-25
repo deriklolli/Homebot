@@ -5,15 +5,14 @@ import SpendingCard from "@/components/SpendingCard";
 import HomeSnapshot from "@/components/HomeSnapshot";
 import CurrentProjects from "@/components/CurrentProjects";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
+import PropertyName from "@/components/PropertyName";
 
 export default function DashboardPage() {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       {/* Page Header */}
       <header className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
-          1715 Red Hawk Trail
-        </h1>
+        <PropertyName />
         <ThemeToggleButton />
       </header>
 
