@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { FREQUENCY_OPTIONS, type InventoryItem } from "@/lib/inventory-data";
 import { XIcon } from "@/components/icons";
 import DatePicker from "@/components/ui/DatePicker";
+import CurrencyInput from "@/components/ui/CurrencyInput";
 
 interface AddInventoryItemModalProps {
   item?: InventoryItem;
@@ -175,14 +176,9 @@ export default function AddInventoryItemModal({
             <span className="text-[13px] font-medium text-text-primary">
               Cost
             </span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
+            <CurrencyInput
               value={cost}
-              onChange={(e) => setCost(e.target.value)}
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-              placeholder="$0.00"
+              onChange={setCost}
             />
           </label>
 

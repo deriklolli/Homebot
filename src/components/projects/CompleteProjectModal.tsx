@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Project } from "@/lib/projects-data";
 import { XIcon, StarFilledIcon, DollarIcon } from "@/components/icons";
+import CurrencyInput from "@/components/ui/CurrencyInput";
 
 interface CompleteProjectModalProps {
   project: Project;
@@ -74,15 +75,10 @@ export default function CompleteProjectModal({
               <DollarIcon width={13} height={13} className="text-text-3" />
               Total Cost <span className="text-red">*</span>
             </span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              required
+            <CurrencyInput
               value={totalCost}
-              onChange={(e) => setTotalCost(e.target.value)}
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-              placeholder="0.00"
+              onChange={setTotalCost}
+              required
               autoFocus
             />
           </label>

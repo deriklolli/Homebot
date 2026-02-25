@@ -6,6 +6,7 @@ import type { Contractor } from "@/lib/contractors-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
 import { XIcon, ChevronDownIcon, TrashIcon } from "@/components/icons";
 import DatePicker from "@/components/ui/DatePicker";
+import CurrencyInput from "@/components/ui/CurrencyInput";
 import AddContractorModal from "@/components/contractors/AddContractorModal";
 
 interface AddServiceModalProps {
@@ -215,14 +216,9 @@ export default function AddServiceModal({
                 <span className="text-[13px] font-medium text-text-primary">
                   Cost
                 </span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                <CurrencyInput
                   value={cost}
-                  onChange={(e) => setCost(e.target.value)}
-                  className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-                  placeholder="0.00"
+                  onChange={setCost}
                 />
               </label>
               <label className="flex flex-col gap-1.5 flex-1">
