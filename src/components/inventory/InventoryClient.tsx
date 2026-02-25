@@ -5,26 +5,20 @@ import Link from "next/link";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase";
 import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
-import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon, CheckCircleIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
-import { buyNowUrl } from "@/lib/utils";
-
 /* ------------------------------------------------------------------ */
 /*  Shared row component for urgent & non-urgent inventory items       */
 /* ------------------------------------------------------------------ */
 
 function InventoryItemRow({
   item,
-  purchasedIds,
-  onMarkPurchased,
   dueLabel,
   badgeClass,
   extraInfo,
   assetLabel,
 }: {
   item: InventoryItem;
-  purchasedIds: Set<string>;
-  onMarkPurchased: (e: React.MouseEvent, item: InventoryItem) => void;
   dueLabel: string;
   badgeClass: string;
   extraInfo?: React.ReactNode;
@@ -34,7 +28,7 @@ function InventoryItemRow({
     <li className="border-b border-border last:border-b-0">
       <Link
         href={`/inventory/${item.id}`}
-        className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+        className="flex items-center gap-x-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
       >
         {item.thumbnailUrl ? (
           <img
@@ -68,30 +62,6 @@ function InventoryItemRow({
         >
           {dueLabel}
         </span>
-        <div className="flex items-center gap-1.5 shrink-0 w-full pl-[52px] sm:w-auto sm:pl-0 sm:ml-2">
-          <a
-            href={buyNowUrl(item.name, item.purchaseUrl)}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-          >
-            Buy Now
-          </a>
-          <button
-            type="button"
-            onClick={(e) => onMarkPurchased(e, item)}
-            disabled={purchasedIds.has(item.id)}
-            className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-all duration-[120ms] inline-flex items-center gap-1 ${
-              purchasedIds.has(item.id)
-                ? "bg-green text-white cursor-default"
-                : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
-            }`}
-          >
-            <CheckCircleIcon width={12} height={12} />
-            {purchasedIds.has(item.id) ? "Purchased!" : "Mark as Purchased"}
-          </button>
-        </div>
       </Link>
     </li>
   );
@@ -114,7 +84,6 @@ export default function InventoryClient() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
   const [assetLabels, setAssetLabels] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
@@ -143,16 +112,19 @@ export default function InventoryClient() {
 
     const { data } = await supabase
       .from("home_assets")
-      .select("id, name, model")
+      .select("id, name, make, model, location")
       .in("id", assetIds)
-      .returns<Pick<DbHomeAsset, "id" | "name" | "model">[]>();
+      .returns<Pick<DbHomeAsset, "id" | "name" | "make" | "model" | "location">[]>();
 
     if (!data) return;
 
     const labels = new Map<string, string>();
     for (const asset of data) {
-      const parts = [asset.name, asset.model].filter(Boolean);
-      labels.set(asset.id, `For ${parts.join(" - ")}`);
+      const assetName = [asset.make, asset.name].filter(Boolean).join(" ");
+      let label = `For ${assetName}`;
+      if (asset.model) label += ` - ${asset.model}`;
+      if (asset.location) label += `, ${asset.location}`;
+      labels.set(asset.id, label);
     }
     setAssetLabels(labels);
   }
@@ -198,39 +170,6 @@ export default function InventoryClient() {
       )
     );
     setModalOpen(false);
-  }
-
-  async function handleMarkPurchased(e: React.MouseEvent, item: InventoryItem) {
-    e.preventDefault();
-    e.stopPropagation();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().split("T")[0];
-
-    const nextReminder = new Date(today);
-    nextReminder.setMonth(nextReminder.getMonth() + item.frequencyMonths);
-    const nextReminderStr = nextReminder.toISOString().split("T")[0];
-
-    const { data: rows, error } = await supabase
-      .from("inventory_items")
-      .update({
-        last_ordered_date: todayStr,
-        next_reminder_date: nextReminderStr,
-      })
-      .eq("id", item.id)
-      .select()
-      .returns<DbInventoryItem[]>();
-
-    if (error) {
-      console.error("Failed to mark as purchased:", error);
-      return;
-    }
-    setItems(
-      items
-        .map((i) => (i.id === item.id ? dbToInventoryItem(rows[0]) : i))
-        .sort((a, b) => a.nextReminderDate.localeCompare(b.nextReminderDate))
-    );
-    setPurchasedIds((prev) => new Set(prev).add(item.id));
   }
 
   return (
@@ -309,8 +248,6 @@ export default function InventoryClient() {
                       <InventoryItemRow
                         key={item.id}
                         item={item}
-                        purchasedIds={purchasedIds}
-                        onMarkPurchased={handleMarkPurchased}
                         dueLabel={dueLabel}
                         badgeClass={isOverdue ? "bg-red text-white" : "bg-accent-light text-accent"}
                         assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}
@@ -338,8 +275,6 @@ export default function InventoryClient() {
                       <InventoryItemRow
                         key={item.id}
                         item={item}
-                        purchasedIds={purchasedIds}
-                        onMarkPurchased={handleMarkPurchased}
                         dueLabel={dueLabel}
                         badgeClass={isSoon ? "bg-accent-light text-accent" : "bg-border text-text-3"}
                         assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}

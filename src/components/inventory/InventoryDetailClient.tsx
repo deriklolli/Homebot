@@ -399,7 +399,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
 
       {/* Recommended Products — shown for items linked to a home asset */}
       {productOptions.length > 0 && (
-        <div className="mb-5">
+        <div className="mt-[30px] mb-5">
           <h2 className="text-[15px] font-semibold text-text-primary mb-1">
             Recommended Products
           </h2>
@@ -437,6 +437,9 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                           ${product.estimatedCost}
                         </p>
                       )}
+                      <span className="inline-block mt-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium">
+                        Buy Now
+                      </span>
                     </div>
                   </div>
                 </div>
