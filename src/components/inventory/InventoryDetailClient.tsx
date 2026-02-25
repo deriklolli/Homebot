@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
-import { supabase, type DbInventoryItem } from "@/lib/supabase";
+import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase";
 import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
 import {
   ChevronLeftIcon,
@@ -12,10 +12,17 @@ import {
   TrashIcon,
   ApplianceIcon,
   CheckCircleIcon,
+  SparklesIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
 import { formatDateLong as formatDate } from "@/lib/date-utils";
+
+interface ConsumableProduct {
+  name: string;
+  estimatedCost: number | null;
+  searchTerm: string;
+}
 
 function daysUntil(dateStr: string): number {
   const today = new Date();
@@ -37,6 +44,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [purchased, setPurchased] = useState(false);
+  const [productOptions, setProductOptions] = useState<ConsumableProduct[]>([]);
 
   useEffect(() => {
     async function fetchItem() {
@@ -49,13 +57,66 @@ export default function InventoryDetailClient({ id }: { id: string }) {
 
       if (error || !data) {
         setNotFound(true);
-      } else {
-        setItem(dbToInventoryItem(data));
+        setLoading(false);
+        return;
       }
+
+      const mapped = dbToInventoryItem(data);
+      setItem(mapped);
       setLoading(false);
+
+      // If linked to a home asset, fetch product options from consumable cache
+      if (mapped.homeAssetId) {
+        fetchProductOptions(mapped.homeAssetId, mapped.name);
+      }
     }
     fetchItem();
   }, [id]);
+
+  async function fetchProductOptions(homeAssetId: string, itemName: string) {
+    // First fetch the linked home asset to get make+model
+    const { data: assetData } = await supabase
+      .from("home_assets")
+      .select("name, category, make, model")
+      .eq("id", homeAssetId)
+      .returns<Pick<DbHomeAsset, "name" | "category" | "make" | "model">[]>()
+      .single();
+
+    if (!assetData?.make || !assetData?.model) return;
+
+    // Fetch suggestions from the consumable cache
+    try {
+      const res = await fetch("/api/suggest-consumables", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: assetData.name,
+          category: assetData.category,
+          make: assetData.make,
+          model: assetData.model,
+        }),
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const suggestions = data.suggestions as Array<{
+        consumable: string;
+        products: ConsumableProduct[];
+      }> | undefined;
+
+      if (!suggestions) return;
+
+      // Find the matching consumable by name
+      const match = suggestions.find(
+        (s) => s.consumable.toLowerCase() === itemName.toLowerCase()
+      );
+      if (match?.products) {
+        setProductOptions(match.products);
+      }
+    } catch {
+      // silently fail — product options are optional
+    }
+  }
 
   async function handleEdit(data: Omit<InventoryItem, "id" | "createdAt">) {
     if (!item) return;
@@ -281,7 +342,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 Last Ordered
               </span>
               <span className="text-[14px] text-text-primary">
-                {item.lastOrderedDate ? formatDate(item.lastOrderedDate) : "—"}
+                {item.lastOrderedDate ? formatDate(item.lastOrderedDate) : "\u2014"}
               </span>
             </div>
 
@@ -316,6 +377,44 @@ export default function InventoryDetailClient({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      {/* Product Options — shown for items linked to a home asset */}
+      {productOptions.length > 0 && (
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-bg/50">
+            <SparklesIcon width={14} height={14} className="text-teal" />
+            <span className="text-[13px] font-semibold text-text-primary">
+              Product Options
+            </span>
+          </div>
+          <ul role="list">
+            {productOptions.map((product) => (
+              <li key={product.name} className="border-b border-border last:border-b-0">
+                <div className="flex items-center gap-3 px-5 py-3.5">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[13px] font-semibold text-text-primary block truncate">
+                      {product.name}
+                    </span>
+                    {product.estimatedCost != null && (
+                      <span className="text-[12px] text-text-3">
+                        ~${product.estimatedCost}
+                      </span>
+                    )}
+                  </div>
+                  <a
+                    href={buyNowUrl(product.searchTerm)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 px-3 py-1.5 rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[12px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                  >
+                    View on Amazon
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Notes */}
       {item.notes && (

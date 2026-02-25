@@ -64,7 +64,7 @@ async function handleBatch(body: BatchRequest) {
 
   // Build OR filter for all pairs
   const orConditions = pairs
-    .map((p) => `and(make.ilike.${p.make},model.ilike.${p.model})`)
+    .map((p) => `and(make.ilike."${p.make}",model.ilike."${p.model}")`)
     .join(",");
 
   const { data, error } = await service
@@ -210,16 +210,19 @@ Return ONLY the JSON array, no other text.`;
       }
     }
 
-    // Cache the result (including empty arrays) — ON CONFLICT handles race condition
-    await service.from("consumable_cache").upsert(
+    // Cache the result (including empty arrays)
+    const { error: upsertError } = await service.from("consumable_cache").upsert(
       {
-        make: make.trim(),
-        model: model.trim(),
+        make: make.trim().toLowerCase(),
+        model: model.trim().toLowerCase(),
         category: category.trim(),
         suggestions,
       },
-      { onConflict: "consumable_cache_lookup", ignoreDuplicates: true }
+      { onConflict: "make,model" }
     );
+    if (upsertError) {
+      console.error("Failed to cache suggestions:", upsertError);
+    }
 
     return NextResponse.json({ suggestions, fromCache: false });
   } catch (err) {
