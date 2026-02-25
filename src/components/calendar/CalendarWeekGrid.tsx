@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { type ProjectStatus } from "@/lib/projects-data";
 import { type CalendarEvent, formatShortTime } from "./CalendarGrid";
@@ -128,10 +129,19 @@ export default function CalendarWeekGrid({
   const END_HOUR = 21;
   const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60;
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to ~8 AM on mount so the grid starts in a useful position
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 60; // 1 hour past 7 AM
+    }
+  }, []);
+
   return (
-    <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden flex flex-col" style={{ height: "calc(100vh - 200px)", minHeight: 400 }}>
       {/* Day headers */}
-      <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+      <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border shrink-0">
         <div /> {/* Spacer for time column */}
         {weekDays.map((d, i) => {
           const ds = dateStr(d);
@@ -154,7 +164,7 @@ export default function CalendarWeekGrid({
       </div>
 
       {/* All-day events row */}
-      <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+      <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border shrink-0">
         <div className="py-1.5 px-2 text-[10px] text-text-4 text-right">
           All day
         </div>
@@ -175,62 +185,66 @@ export default function CalendarWeekGrid({
         })}
       </div>
 
-      {/* Time grid */}
-      <div className="grid grid-cols-[60px_repeat(7,1fr)] relative" style={{ height: `${TOTAL_MINUTES}px` }}>
-        {/* Time labels + horizontal lines */}
-        {HOURS.map((hour) => {
-          const top = (hour - START_HOUR) * 60;
-          return (
-            <div key={hour} className="contents">
-              <div
-                className="absolute left-0 w-[60px] text-[10px] text-text-4 text-right pr-2 -translate-y-1/2"
-                style={{ top: `${top}px` }}
-              >
-                {hour === 0 ? "12 AM" : hour < 12 ? `${hour} AM` : hour === 12 ? "12 PM" : `${hour - 12} PM`}
-              </div>
-              <div
-                className="absolute left-[60px] right-0 border-t border-border"
-                style={{ top: `${top}px` }}
-              />
-            </div>
-          );
-        })}
-
-        {/* Day columns */}
-        {weekDays.map((d, i) => {
-          const ds = dateStr(d);
-          const dayEvents = eventMap.get(ds) ?? [];
-          const { timed } = splitEvents(dayEvents);
-          const isToday = ds === todayString;
-
-          return (
-            <div
-              key={i}
-              className={`relative border-l border-border ${isToday ? "bg-accent/[0.03]" : ""}`}
-              style={{ gridColumn: i + 2 }}
-            >
-              {timed.map((e) => {
-                if (e.type !== "project" || !e.eventTime) return null;
-                const minutes = timeToMinutes(e.eventTime);
-                const top = minutes - START_HOUR * 60;
-                if (top < 0 || top >= TOTAL_MINUTES) return null;
-
-                return (
+      {/* Scrollable time grid */}
+      <div ref={scrollRef} className="overflow-y-auto flex-1">
+        <div className="grid grid-cols-[60px_repeat(7,1fr)] relative" style={{ height: `${TOTAL_MINUTES}px` }}>
+          {/* Time labels + horizontal lines (skip first hour to avoid double border) */}
+          {HOURS.map((hour) => {
+            const top = (hour - START_HOUR) * 60;
+            return (
+              <div key={hour} className="contents">
+                <div
+                  className="absolute left-0 w-[60px] text-[10px] text-text-4 text-right pr-2 -translate-y-1/2"
+                  style={{ top: `${top}px` }}
+                >
+                  {hour === 0 ? "12 AM" : hour < 12 ? `${hour} AM` : hour === 12 ? "12 PM" : `${hour - 12} PM`}
+                </div>
+                {hour !== START_HOUR && (
                   <div
-                    key={e.id}
-                    className="absolute left-0.5 right-0.5"
+                    className="absolute left-[60px] right-0 border-t border-border"
                     style={{ top: `${top}px` }}
-                  >
-                    <EventPill event={e} />
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+                  />
+                )}
+              </div>
+            );
+          })}
 
-        {/* Time column spacer */}
-        <div className="relative" style={{ gridColumn: 1, gridRow: 1 }} />
+          {/* Day columns */}
+          {weekDays.map((d, i) => {
+            const ds = dateStr(d);
+            const dayEvents = eventMap.get(ds) ?? [];
+            const { timed } = splitEvents(dayEvents);
+            const isToday = ds === todayString;
+
+            return (
+              <div
+                key={i}
+                className={`relative border-l border-border ${isToday ? "bg-accent/[0.03]" : ""}`}
+                style={{ gridColumn: i + 2 }}
+              >
+                {timed.map((e) => {
+                  if (e.type !== "project" || !e.eventTime) return null;
+                  const minutes = timeToMinutes(e.eventTime);
+                  const top = minutes - START_HOUR * 60;
+                  if (top < 0 || top >= TOTAL_MINUTES) return null;
+
+                  return (
+                    <div
+                      key={e.id}
+                      className="absolute left-0.5 right-0.5"
+                      style={{ top: `${top}px` }}
+                    >
+                      <EventPill event={e} />
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+
+          {/* Time column spacer */}
+          <div className="relative" style={{ gridColumn: 1, gridRow: 1 }} />
+        </div>
       </div>
     </div>
   );
