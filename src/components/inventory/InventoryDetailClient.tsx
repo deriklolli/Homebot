@@ -12,7 +12,6 @@ import {
   TrashIcon,
   ApplianceIcon,
   CheckCircleIcon,
-  SparklesIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
@@ -22,6 +21,7 @@ interface ConsumableProduct {
   name: string;
   estimatedCost: number | null;
   searchTerm: string;
+  thumbnailUrl?: string;
 }
 
 function daysUntil(dateStr: string): number {
@@ -112,6 +112,25 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       );
       if (match?.products) {
         setProductOptions(match.products);
+
+        // Fetch thumbnails for each product in parallel
+        const productsWithThumbs = await Promise.all(
+          match.products.map(async (product) => {
+            const amazonUrl = buyNowUrl(product.searchTerm);
+            try {
+              const thumbRes = await fetch("/api/scrape-thumbnail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: amazonUrl }),
+              });
+              const thumbJson = (await thumbRes.json()) as { thumbnailUrl: string };
+              return { ...product, thumbnailUrl: thumbJson.thumbnailUrl || undefined };
+            } catch {
+              return product;
+            }
+          })
+        );
+        setProductOptions(productsWithThumbs);
       }
     } catch {
       // silently fail — product options are optional
@@ -378,41 +397,45 @@ export default function InventoryDetailClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Product Options — shown for items linked to a home asset */}
+      {/* Recommended Products — shown for items linked to a home asset */}
       {productOptions.length > 0 && (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-bg/50">
-            <SparklesIcon width={14} height={14} className="text-teal" />
-            <span className="text-[13px] font-semibold text-text-primary">
-              Product Options
-            </span>
-          </div>
-          <ul role="list">
+        <div className="mb-5">
+          <h2 className="text-[15px] font-semibold text-text-primary mb-3">
+            Recommended Products
+          </h2>
+          <div className="flex flex-col gap-3">
             {productOptions.map((product) => (
-              <li key={product.name} className="border-b border-border last:border-b-0">
-                <div className="flex items-center gap-3 px-5 py-3.5">
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-semibold text-text-primary block truncate">
-                      {product.name}
-                    </span>
-                    {product.estimatedCost != null && (
-                      <span className="text-[12px] text-text-3">
-                        ~${product.estimatedCost}
-                      </span>
-                    )}
+              <a
+                key={product.name}
+                href={buyNowUrl(product.searchTerm)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-4 hover:shadow-[var(--shadow-hover)] transition-all duration-[120ms]"
+              >
+                {product.thumbnailUrl ? (
+                  <img
+                    src={product.thumbnailUrl}
+                    alt={product.name}
+                    className="w-16 h-16 rounded-[var(--radius-md)] object-cover bg-border shrink-0"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-[var(--radius-md)] bg-border shrink-0 flex items-center justify-center">
+                    <ApplianceIcon width={24} height={24} className="text-text-4" strokeWidth={1.5} />
                   </div>
-                  <a
-                    href={buyNowUrl(product.searchTerm)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 px-3 py-1.5 rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[12px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-                  >
-                    View on Amazon
-                  </a>
+                )}
+                <div className="flex-1 min-w-0">
+                  <span className="text-[13px] font-semibold text-text-primary block truncate">
+                    {product.name}
+                  </span>
+                  {product.estimatedCost != null && (
+                    <span className="text-[14px] font-medium text-text-primary mt-0.5 block">
+                      ${product.estimatedCost}
+                    </span>
+                  )}
                 </div>
-              </li>
+              </a>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
