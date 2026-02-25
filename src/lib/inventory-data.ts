@@ -1,4 +1,6 @@
 export const FREQUENCY_OPTIONS = [
+  { value: 0.25, label: "Weekly" },
+  { value: 0.5, label: "Bi-weekly" },
   { value: 1, label: "Every month" },
   { value: 2, label: "Every 2 months" },
   { value: 3, label: "Every 3 months" },

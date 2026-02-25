@@ -140,11 +140,15 @@ export async function GET(req: NextRequest) {
 
   const inventoryVevents = (inventoryItems ?? []).map((item) => {
     const freqLabel =
-      item.frequency_months === 1
-        ? "monthly"
-        : item.frequency_months === 12
-          ? "annually"
-          : `every ${item.frequency_months} months`;
+      item.frequency_months === 0.25
+        ? "weekly"
+        : item.frequency_months === 0.5
+          ? "bi-weekly"
+          : item.frequency_months === 1
+            ? "monthly"
+            : item.frequency_months === 12
+              ? "annually"
+              : `every ${item.frequency_months} months`;
 
     const lines = [
       "BEGIN:VEVENT",
@@ -162,11 +166,15 @@ export async function GET(req: NextRequest) {
 
   const serviceVevents = (serviceItems ?? []).map((svc) => {
     const freqLabel =
-      svc.frequency_months === 1
-        ? "monthly"
-        : svc.frequency_months === 12
-          ? "annually"
-          : `every ${svc.frequency_months} months`;
+      svc.frequency_months === 0.25
+        ? "weekly"
+        : svc.frequency_months === 0.5
+          ? "bi-weekly"
+          : svc.frequency_months === 1
+            ? "monthly"
+            : svc.frequency_months === 12
+              ? "annually"
+              : `every ${svc.frequency_months} months`;
 
     const lines = [
       "BEGIN:VEVENT",

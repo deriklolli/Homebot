@@ -99,7 +99,11 @@ export default function HomeAlerts() {
     const todayStr = today.toISOString().split("T")[0];
 
     const nextReminder = new Date(today);
-    nextReminder.setMonth(nextReminder.getMonth() + item.frequencyMonths);
+    if (item.frequencyMonths < 1) {
+      nextReminder.setDate(nextReminder.getDate() + Math.round(item.frequencyMonths * 30));
+    } else {
+      nextReminder.setMonth(nextReminder.getMonth() + item.frequencyMonths);
+    }
     const nextReminderStr = nextReminder.toISOString().split("T")[0];
 
     const { error } = await supabase

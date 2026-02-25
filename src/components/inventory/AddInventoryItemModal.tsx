@@ -20,11 +20,16 @@ function computeNextReminderDate(
   frequencyMonths: number
 ): string {
   const d = new Date(fromDate + "T00:00:00");
-  d.setMonth(d.getMonth() + frequencyMonths);
-  // Clamp to last day of target month if overflow
-  const targetMonth = (d.getMonth() + frequencyMonths) % 12;
-  if (d.getMonth() !== targetMonth) {
-    d.setDate(0); // last day of previous month
+  if (frequencyMonths < 1) {
+    // Sub-month: use day-based math (0.25 = 7 days, 0.5 = 14 days)
+    d.setDate(d.getDate() + Math.round(frequencyMonths * 30));
+  } else {
+    d.setMonth(d.getMonth() + frequencyMonths);
+    // Clamp to last day of target month if overflow
+    const targetMonth = (d.getMonth() + frequencyMonths) % 12;
+    if (d.getMonth() !== targetMonth) {
+      d.setDate(0); // last day of previous month
+    }
   }
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
