@@ -22,10 +22,14 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
     loadUser();
   }, []);
 
+  const tz = typeof window !== "undefined"
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "America/Denver";
+
   const feedUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/api/calendar/feed?userId=${userId}`
-      : `/api/calendar/feed?userId=${userId}`;
+      ? `${window.location.origin}/api/calendar/feed?userId=${userId}&tz=${encodeURIComponent(tz)}`
+      : `/api/calendar/feed?userId=${userId}&tz=${encodeURIComponent(tz)}`;
 
   const webcalUrl = feedUrl.replace(/^https?:\/\//, "webcal://");
 

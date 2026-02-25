@@ -54,6 +54,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
 
+  // Timezone for timed events (IANA name, e.g. "America/Denver")
+  const tz = req.nextUrl.searchParams.get("tz") || "America/Denver";
+
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceRoleKey) {
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
@@ -108,15 +111,15 @@ export async function GET(req: NextRequest) {
     ];
 
     if (e.event_time) {
-      // Timed event: DTSTART/DTEND with time, 1-hour default duration
+      // Timed event: DTSTART/DTEND with TZID so calendar apps use correct timezone
       const timeStr = e.event_time.replace(/:/g, "");
       const startDateTime = `${formatIcalDate(e.event_date)}T${timeStr}00`;
       const [h, m] = e.event_time.split(":").map(Number);
       const endH = h + 1;
       const endTime = `${String(endH).padStart(2, "0")}${String(m).padStart(2, "0")}00`;
       const endDateTime = `${formatIcalDate(e.event_date)}T${endTime}`;
-      lines.push(`DTSTART:${startDateTime}`);
-      lines.push(`DTEND:${endDateTime}`);
+      lines.push(`DTSTART;TZID=${tz}:${startDateTime}`);
+      lines.push(`DTEND;TZID=${tz}:${endDateTime}`);
     } else {
       // All-day event
       const startDate = formatIcalDate(e.event_date);
@@ -187,6 +190,7 @@ export async function GET(req: NextRequest) {
     "METHOD:PUBLISH",
     "X-WR-CALNAME:HOMEBOT Projects",
     "X-WR-CALDESC:Home project schedule from HOMEBOT",
+    `X-WR-TIMEZONE:${tz}`,
     ...vevents,
     ...inventoryVevents,
     ...serviceVevents,
