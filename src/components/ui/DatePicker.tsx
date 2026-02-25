@@ -200,14 +200,6 @@ export default function DatePicker({
     }
   }
 
-  function goToday(e: MouseEvent) {
-    e.preventDefault();
-    const t = new Date();
-    const dateStr = toDateStr(t.getFullYear(), t.getMonth(), t.getDate());
-    onChange(dateStr);
-    setOpen(false);
-  }
-
   function clearDate(e: MouseEvent) {
     e.preventDefault();
     onChange("");
@@ -382,15 +374,8 @@ export default function DatePicker({
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
-              <button
-                type="button"
-                onClick={goToday}
-                className="text-[12px] font-medium text-accent hover:text-accent/80 transition-colors duration-[120ms]"
-              >
-                Today
-              </button>
-              {!required && (
+            {!required && (
+              <div className="flex items-center justify-end mt-2 pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={clearDate}
@@ -398,8 +383,8 @@ export default function DatePicker({
                 >
                   Clear
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>,
           document.body
         )}
