@@ -365,8 +365,8 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               </span>
             </div>
 
-            {/* Purchase URL */}
-            {item.purchaseUrl && (
+            {/* Purchase URL — hidden when recommended products are shown */}
+            {item.purchaseUrl && productOptions.length === 0 && (
               <div className="col-span-2">
                 <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
                   Purchase Link
@@ -400,9 +400,12 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       {/* Recommended Products — shown for items linked to a home asset */}
       {productOptions.length > 0 && (
         <div className="mb-5">
-          <h2 className="text-[15px] font-semibold text-text-primary mb-3">
+          <h2 className="text-[15px] font-semibold text-text-primary mb-1">
             Recommended Products
           </h2>
+          <p className="text-[11px] text-text-4 mb-3">
+            Verify compatibility with your model before purchasing.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {productOptions.map((product) => (
               <a
@@ -426,7 +429,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-semibold text-text-primary truncate">
+                      <p className="text-[13px] font-semibold text-text-primary">
                         {product.name}
                       </p>
                       {product.estimatedCost != null && (

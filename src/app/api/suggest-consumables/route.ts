@@ -133,6 +133,8 @@ Category: ${category}
 Make: ${make}
 Model: ${model}
 
+CRITICAL: Only recommend products that are CONFIRMED COMPATIBLE with this specific make and model. Do not guess — if you are unsure whether a product fits this exact model, do not include it. Incompatible parts can damage the appliance or void the warranty.
+
 Return a JSON array where each item represents a consumable category with multiple product options the homeowner can choose from. Each item should have:
 - "consumable": the type of consumable (e.g., "Water Filter", "Salt Pellets")
 - "description": brief description of what it is and why it needs replacing
@@ -141,6 +143,8 @@ Return a JSON array where each item represents a consumable category with multip
   - "name": specific product name with size/quantity (e.g., "Morton Clean & Protect 40lb")
   - "estimatedCost": approximate cost in USD, or null if unknown
   - "searchTerm": a specific Amazon search term to find this exact product
+
+PRODUCT ORDERING: For each consumable, list the OEM product made by ${make} first (if one exists), followed by compatible third-party alternatives. Always prefer the manufacturer's own replacement parts as the first option.
 
 Only include items that genuinely need periodic replacement. Do not include the appliance itself or one-time accessories. If this asset type has no consumables, return an empty array.
 
