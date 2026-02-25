@@ -81,12 +81,24 @@ export async function POST(req: NextRequest) {
 
     const html = await res.text();
 
+    // --- Title: og:title > <title> ---
+    const ogTitleMatch =
+      html.match(
+        /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i
+      ) ??
+      html.match(
+        /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i
+      );
+    const titleTagMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = ogTitleMatch?.[1] ?? titleTagMatch?.[1]?.trim() ?? "";
+
     // --- Amazon search pages: extract product images directly ---
     if (isAmazonSearchUrl(url)) {
       const productImage = extractAmazonProductImage(html);
       return NextResponse.json({
         thumbnailUrl: productImage || "",
         logoUrl: faviconFallback,
+        title,
       });
     }
 
@@ -113,6 +125,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           thumbnailUrl: twMatch[1],
           logoUrl: twMatch[1],
+          title,
         });
       }
     }
