@@ -44,7 +44,7 @@ export default function CalendarClient() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<CalendarView>("month");
+  const [view, setView] = useState<CalendarView>("week");
   const [subscribeModalOpen, setSubscribeModalOpen] = useState(false);
 
   useEffect(() => {
@@ -140,10 +140,6 @@ export default function CalendarClient() {
     });
   }
 
-  function goToToday() {
-    setCurrentDate(new Date());
-  }
-
   // Header label
   let headerLabel: string;
   if (view === "week") {
@@ -189,12 +185,6 @@ export default function CalendarClient() {
 
       {/* Navigation */}
       <div className="flex items-center gap-3 mb-4">
-        <button
-          onClick={goToToday}
-          className="inline-flex items-center px-3 py-[5px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-        >
-          Today
-        </button>
         <button
           onClick={goToPrevious}
           className="inline-flex items-center justify-center w-7 h-7 rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
