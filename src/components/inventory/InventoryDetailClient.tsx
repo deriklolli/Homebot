@@ -12,6 +12,7 @@ import {
   PencilIcon,
   TrashIcon,
   ApplianceIcon,
+  SparklesIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
@@ -390,43 +391,60 @@ export default function InventoryDetailClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Purchase URL product card */}
-      {item.purchaseUrl && (
-        <a
-          href={buyNowUrl(item.name, item.purchaseUrl)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mb-5 max-w-sm bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200"
-        >
-          <div className="p-5">
-            <div className="flex items-start gap-3">
-              {item.thumbnailUrl ? (
-                <img
-                  src={item.thumbnailUrl}
-                  alt={item.name}
-                  className="w-18 h-18 rounded-full object-cover bg-border border border-border shrink-0"
-                />
-              ) : (
-                <div className="w-18 h-18 rounded-full bg-border shrink-0 flex items-center justify-center">
-                  <ApplianceIcon width={32} height={32} className="text-text-4" strokeWidth={1.5} />
+      {/* Purchase URL product card + tip — manual items only (not linked to a home asset) */}
+      {!item.homeAssetId && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          {item.purchaseUrl && (
+            <a
+              href={buyNowUrl(item.name, item.purchaseUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200"
+            >
+              <div className="p-5">
+                <div className="flex items-start gap-3">
+                  {item.thumbnailUrl ? (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.name}
+                      className="w-18 h-18 rounded-full object-cover bg-border border border-border shrink-0"
+                    />
+                  ) : (
+                    <div className="w-18 h-18 rounded-full bg-border shrink-0 flex items-center justify-center">
+                      <ApplianceIcon width={32} height={32} className="text-text-4" strokeWidth={1.5} />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-semibold text-text-primary">
+                      {item.name}
+                    </p>
+                    {item.cost != null && (
+                      <p className="text-[12px] text-text-3">
+                        ${item.cost}
+                      </p>
+                    )}
+                    <span className="inline-block mt-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium">
+                      Buy Now
+                    </span>
+                  </div>
                 </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-semibold text-text-primary">
-                  {item.name}
-                </p>
-                {item.cost != null && (
-                  <p className="text-[12px] text-text-3">
-                    ${item.cost}
-                  </p>
-                )}
-                <span className="inline-block mt-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium">
-                  Buy Now
-                </span>
               </div>
+            </a>
+          )}
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-accent-light shrink-0 flex items-center justify-center">
+              <SparklesIcon width={20} height={20} className="text-accent" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-text-primary mb-1">
+                Get more product options
+              </p>
+              <p className="text-[12px] text-text-3 leading-relaxed">
+                Link this item to a home asset and add a model number to get personalized product recommendations.
+              </p>
             </div>
           </div>
-        </a>
+        </div>
       )}
 
       {/* Recommended Products — shown for items linked to a home asset */}
