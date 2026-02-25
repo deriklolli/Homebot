@@ -13,6 +13,7 @@ import {
   TrashIcon,
   ApplianceIcon,
   SparklesIcon,
+  XIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
@@ -47,6 +48,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
   const [reminderReset, setReminderReset] = useState(false);
   const [productOptions, setProductOptions] = useState<ConsumableProduct[]>([]);
   const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
+  const [tipDismissed, setTipDismissed] = useState(false);
 
   useEffect(() => {
     async function fetchItem() {
@@ -391,59 +393,34 @@ export default function InventoryDetailClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Purchase URL product card + tip — manual items only (not linked to a home asset) */}
-      {!item.homeAssetId && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-          {item.purchaseUrl && (
-            <a
-              href={buyNowUrl(item.name, item.purchaseUrl)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200"
-            >
-              <div className="p-5">
-                <div className="flex items-start gap-3">
-                  {item.thumbnailUrl ? (
-                    <img
-                      src={item.thumbnailUrl}
-                      alt={item.name}
-                      className="w-18 h-18 rounded-full object-cover bg-border border border-border shrink-0"
-                    />
-                  ) : (
-                    <div className="w-18 h-18 rounded-full bg-border shrink-0 flex items-center justify-center">
-                      <ApplianceIcon width={32} height={32} className="text-text-4" strokeWidth={1.5} />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-semibold text-text-primary">
-                      {item.name}
-                    </p>
-                    {item.cost != null && (
-                      <p className="text-[12px] text-text-3">
-                        ${item.cost}
-                      </p>
-                    )}
-                    <span className="inline-block mt-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium">
-                      Buy Now
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </a>
-          )}
-          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-accent-light shrink-0 flex items-center justify-center">
-              <SparklesIcon width={20} height={20} className="text-accent" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-semibold text-text-primary mb-1">
-                Get more product options
-              </p>
-              <p className="text-[12px] text-text-3 leading-relaxed">
-                Link this item to a home asset and add a model number to get personalized product recommendations.
-              </p>
-            </div>
+      {/* Tip card — manual items only (not linked to a home asset) */}
+      {!item.homeAssetId && !tipDismissed && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setEditModalOpen(true)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setEditModalOpen(true); }}
+          className="mb-5 bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex items-start gap-3 cursor-pointer hover:shadow-[var(--shadow-hover)] transition-shadow duration-200 relative"
+        >
+          <div className="w-10 h-10 rounded-full bg-accent-light shrink-0 flex items-center justify-center">
+            <SparklesIcon width={20} height={20} className="text-accent" />
           </div>
+          <div className="min-w-0 flex-1 pr-6">
+            <p className="text-[13px] font-semibold text-text-primary mb-1">
+              Helpful Homebot Tip
+            </p>
+            <p className="text-[12px] text-text-3 leading-relaxed">
+              Did you know you can get more product options for this item? Simply connect this item to an asset with a model number.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setTipDismissed(true); }}
+            className="absolute top-4 right-4 p-1 rounded-[var(--radius-sm)] text-text-4 hover:text-text-primary hover:bg-border transition-all duration-[120ms]"
+            aria-label="Dismiss tip"
+          >
+            <XIcon width={14} height={14} />
+          </button>
         </div>
       )}
 
