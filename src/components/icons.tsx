@@ -223,6 +223,15 @@ export function CalendarIcon(props: IconProps) {
   );
 }
 
+export function ClockIcon(props: IconProps) {
+  return (
+    <svg {...defaultProps} {...props} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
 export function DollarIcon(props: IconProps) {
   return (
     <svg {...defaultProps} {...props} aria-hidden="true">
