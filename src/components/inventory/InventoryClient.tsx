@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
-import { supabase, type DbInventoryItem } from "@/lib/supabase";
+import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase";
 import { dbToInventoryItem, inventoryItemToDb } from "@/lib/mappers";
 import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon, CheckCircleIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
@@ -20,6 +20,7 @@ function InventoryItemRow({
   dueLabel,
   badgeClass,
   extraInfo,
+  assetLabel,
 }: {
   item: InventoryItem;
   purchasedIds: Set<string>;
@@ -27,6 +28,7 @@ function InventoryItemRow({
   dueLabel: string;
   badgeClass: string;
   extraInfo?: React.ReactNode;
+  assetLabel?: string;
 }) {
   return (
     <li className="border-b border-border last:border-b-0">
@@ -51,11 +53,15 @@ function InventoryItemRow({
               {item.name}
             </span>
           )}
-          {item.description && (
+          {assetLabel ? (
+            <p className="text-[12px] text-text-3 truncate">
+              {assetLabel}
+            </p>
+          ) : item.description ? (
             <p className="text-[12px] text-text-3 truncate">
               {item.description}
             </p>
-          )}
+          ) : null}
         </div>
         <span
           className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${badgeClass}`}
@@ -109,6 +115,7 @@ export default function InventoryClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [purchasedIds, setPurchasedIds] = useState<Set<string>>(new Set());
+  const [assetLabels, setAssetLabels] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     async function fetchItems() {
@@ -121,12 +128,34 @@ export default function InventoryClient() {
       if (error) {
         console.error("Failed to fetch inventory items:", error);
       } else {
-        setItems(data.map(dbToInventoryItem));
+        const mapped = data.map(dbToInventoryItem);
+        setItems(mapped);
+        fetchAssetLabels(mapped);
       }
       setLoading(false);
     }
     fetchItems();
   }, []);
+
+  async function fetchAssetLabels(inventoryItems: InventoryItem[]) {
+    const assetIds = [...new Set(inventoryItems.map((i) => i.homeAssetId).filter(Boolean))] as string[];
+    if (assetIds.length === 0) return;
+
+    const { data } = await supabase
+      .from("home_assets")
+      .select("id, name, model")
+      .in("id", assetIds)
+      .returns<Pick<DbHomeAsset, "id" | "name" | "model">[]>();
+
+    if (!data) return;
+
+    const labels = new Map<string, string>();
+    for (const asset of data) {
+      const parts = [asset.name, asset.model].filter(Boolean);
+      labels.set(asset.id, `For ${parts.join(" - ")}`);
+    }
+    setAssetLabels(labels);
+  }
 
   const filtered = items.filter((item) => {
     const q = searchQuery.toLowerCase();
@@ -284,6 +313,7 @@ export default function InventoryClient() {
                         onMarkPurchased={handleMarkPurchased}
                         dueLabel={dueLabel}
                         badgeClass={isOverdue ? "bg-red text-white" : "bg-accent-light text-accent"}
+                        assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}
                       />
                     );
                   })}
@@ -312,6 +342,7 @@ export default function InventoryClient() {
                         onMarkPurchased={handleMarkPurchased}
                         dueLabel={dueLabel}
                         badgeClass={isSoon ? "bg-accent-light text-accent" : "bg-border text-text-3"}
+                        assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}
                         extraInfo={
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-[13px] font-semibold text-text-primary truncate">

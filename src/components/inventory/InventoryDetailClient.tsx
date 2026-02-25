@@ -418,11 +418,11 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                       <img
                         src={product.thumbnailUrl}
                         alt={product.name}
-                        className="w-9 h-9 rounded-full object-cover bg-border border border-border shrink-0"
+                        className="w-18 h-18 rounded-full object-cover bg-border border border-border shrink-0"
                       />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-border shrink-0 flex items-center justify-center">
-                        <ApplianceIcon width={16} height={16} className="text-text-4" strokeWidth={1.5} />
+                      <div className="w-18 h-18 rounded-full bg-border shrink-0 flex items-center justify-center">
+                        <ApplianceIcon width={32} height={32} className="text-text-4" strokeWidth={1.5} />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
