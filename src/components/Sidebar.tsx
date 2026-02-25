@@ -128,7 +128,7 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
       <nav className="flex-1 py-2 overflow-y-auto overflow-x-hidden scrollbar-none" aria-label="Main navigation">
         <ul className="flex flex-col gap-px px-2" role="list">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
             return (
               <li key={item.href}>
                 <Link
@@ -159,7 +159,7 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
       {/* Bottom links */}
       <div className="px-2 py-2 border-t border-border flex flex-col gap-px shrink-0">
         {bottomItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
