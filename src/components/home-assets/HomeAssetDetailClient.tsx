@@ -4,18 +4,34 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { type HomeAsset } from "@/lib/home-assets-data";
+import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { type Project, type ProjectStatus } from "@/lib/projects-data";
-import { supabase, type DbHomeAsset, type DbProject } from "@/lib/supabase";
-import { dbToHomeAsset, homeAssetToDb, dbToProject } from "@/lib/mappers";
+import { supabase, type DbHomeAsset, type DbProject, type DbInventoryItem } from "@/lib/supabase";
+import { dbToHomeAsset, homeAssetToDb, dbToProject, dbToInventoryItem } from "@/lib/mappers";
 import {
   ChevronLeftIcon,
   PencilIcon,
   TrashIcon,
+  SparklesIcon,
+  PackageIcon,
 } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
+import ConsumableDetailModal from "./ConsumableDetailModal";
 import { affiliateUrl } from "@/lib/utils";
 import { formatDateLong as formatDate } from "@/lib/date-utils";
 
+interface ConsumableProduct {
+  name: string;
+  estimatedCost: number | null;
+  searchTerm: string;
+}
+
+interface ConsumableSuggestion {
+  consumable: string;
+  description: string;
+  frequencyMonths: number;
+  products: ConsumableProduct[];
+}
 
 function warrantyPill(dateStr: string | null): { label: string; color: string } | null {
   if (!dateStr) return null;
@@ -28,6 +44,11 @@ function warrantyPill(dateStr: string | null): { label: string; color: string } 
   return { label: "Active", color: "bg-green-light text-green" };
 }
 
+function frequencyLabel(months: number): string {
+  const opt = FREQUENCY_OPTIONS.find((o) => o.value === months);
+  return opt?.label ?? `Every ${months} mo`;
+}
+
 export default function HomeAssetDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const [asset, setAsset] = useState<HomeAsset | null>(null);
@@ -37,9 +58,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
+  // Consumables
+  const [suggestions, setSuggestions] = useState<ConsumableSuggestion[]>([]);
+  const [linkedInventory, setLinkedInventory] = useState<InventoryItem[]>([]);
+  const [selectedConsumable, setSelectedConsumable] = useState<ConsumableSuggestion | null>(null);
+
   useEffect(() => {
     async function fetchData() {
-      const [assetRes, projectsRes] = await Promise.all([
+      const [assetRes, projectsRes, inventoryRes] = await Promise.all([
         supabase
           .from("home_assets")
           .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
@@ -52,16 +78,32 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           .eq("home_asset_id", id)
           .order("created_at", { ascending: false })
           .returns<DbProject[]>(),
+        supabase
+          .from("inventory_items")
+          .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, created_at")
+          .eq("home_asset_id", id)
+          .order("next_reminder_date", { ascending: true })
+          .returns<DbInventoryItem[]>(),
       ]);
 
       if (assetRes.error || !assetRes.data) {
         setNotFound(true);
       } else {
-        setAsset(dbToHomeAsset(assetRes.data));
+        const assetData = dbToHomeAsset(assetRes.data);
+        setAsset(assetData);
+
+        // Fetch consumable suggestions if asset has make+model
+        if (assetData.make && assetData.model) {
+          fetchSuggestions(assetData);
+        }
       }
 
       if (projectsRes.data) {
         setProjects(projectsRes.data.map(dbToProject));
+      }
+
+      if (inventoryRes.data) {
+        setLinkedInventory(inventoryRes.data.map(dbToInventoryItem));
       }
 
       setLoading(false);
@@ -69,8 +111,31 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
     fetchData();
   }, [id]);
 
+  async function fetchSuggestions(assetData: HomeAsset) {
+    try {
+      const res = await fetch("/api/suggest-consumables", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: assetData.name,
+          category: assetData.category,
+          make: assetData.make,
+          model: assetData.model,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSuggestions(data.suggestions ?? []);
+      }
+    } catch {
+      // silently fail
+    }
+  }
+
   async function handleEdit(data: Omit<HomeAsset, "id" | "createdAt">) {
     if (!asset) return;
+
+    const makeChanged = data.make !== asset.make || data.model !== asset.model;
 
     const { data: rows, error } = await supabase
       .from("home_assets")
@@ -83,8 +148,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       console.error("Failed to update asset:", error);
       return;
     }
-    setAsset(dbToHomeAsset(rows[0]));
+    const updated = dbToHomeAsset(rows[0]);
+    setAsset(updated);
     setEditModalOpen(false);
+
+    // Re-fetch suggestions if make/model changed
+    if (makeChanged && updated.make && updated.model) {
+      fetchSuggestions(updated);
+    }
   }
 
   async function handleDelete() {
@@ -98,6 +169,19 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       return;
     }
     router.push("/home-assets");
+  }
+
+  function handleConsumableAdded() {
+    // Re-fetch linked inventory items
+    supabase
+      .from("inventory_items")
+      .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, created_at")
+      .eq("home_asset_id", id)
+      .order("next_reminder_date", { ascending: true })
+      .returns<DbInventoryItem[]>()
+      .then(({ data }) => {
+        if (data) setLinkedInventory(data.map(dbToInventoryItem));
+      });
   }
 
   if (loading) {
@@ -262,6 +346,92 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         )}
       </div>
 
+      {/* Consumables section */}
+      {suggestions.length > 0 && (
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-bg/50">
+            <SparklesIcon width={14} height={14} className="text-teal" />
+            <span className="text-[13px] font-semibold text-text-primary">
+              Consumables
+            </span>
+          </div>
+          <ul role="list">
+            {suggestions.map((s) => {
+              const isTracked = linkedInventory.some(
+                (inv) => inv.name.includes(s.consumable)
+              );
+              return (
+                <li key={s.consumable} className="border-b border-border last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedConsumable(s)}
+                    className="flex items-center gap-3 px-5 py-3.5 w-full text-left hover:bg-surface-hover transition-[background] duration-[120ms]"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-teal/10 shrink-0 flex items-center justify-center">
+                      <SparklesIcon width={14} height={14} className="text-teal" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[13px] font-semibold text-text-primary truncate block">
+                        {s.consumable}
+                      </span>
+                      <p className="text-[12px] text-text-3">
+                        {s.description}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isTracked && (
+                        <span className="px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-green-light text-green">
+                          Tracked
+                        </span>
+                      )}
+                      <span className="text-[12px] text-text-3">
+                        {frequencyLabel(s.frequencyMonths)}
+                      </span>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Linked Inventory Items */}
+      {linkedInventory.length > 0 && (
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-bg/50">
+            <PackageIcon width={14} height={14} className="text-text-3" />
+            <span className="text-[13px] font-semibold text-text-primary">
+              Tracked Inventory
+            </span>
+          </div>
+          <ul role="list">
+            {linkedInventory.map((inv) => (
+              <li key={inv.id} className="border-b border-border last:border-b-0">
+                <Link
+                  href={`/inventory/${inv.id}`}
+                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                >
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[13px] font-semibold text-text-primary truncate block">
+                      {inv.name}
+                    </span>
+                    {inv.description && (
+                      <p className="text-[12px] text-text-3 truncate">
+                        {inv.description}
+                      </p>
+                    )}
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
+                    {frequencyLabel(inv.frequencyMonths)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Notes */}
       {asset.notes && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
@@ -347,6 +517,20 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           asset={asset}
           onSave={handleEdit}
           onClose={() => setEditModalOpen(false)}
+        />
+      )}
+
+      {/* Consumable detail modal */}
+      {selectedConsumable && (
+        <ConsumableDetailModal
+          consumable={selectedConsumable.consumable}
+          description={selectedConsumable.description}
+          frequencyMonths={selectedConsumable.frequencyMonths}
+          products={selectedConsumable.products}
+          assetName={asset.name}
+          assetId={asset.id}
+          onClose={() => setSelectedConsumable(null)}
+          onAdded={handleConsumableAdded}
         />
       )}
     </div>

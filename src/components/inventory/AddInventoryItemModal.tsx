@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { FREQUENCY_OPTIONS, type InventoryItem } from "@/lib/inventory-data";
+import { computeNextReminderDate } from "@/lib/date-utils";
 import { XIcon } from "@/components/icons";
 import DatePicker from "@/components/ui/DatePicker";
 import CurrencyInput from "@/components/ui/CurrencyInput";
@@ -14,25 +15,6 @@ interface AddInventoryItemModalProps {
 
 function todayString(): string {
   return new Date().toISOString().split("T")[0];
-}
-
-function computeNextReminderDate(
-  fromDate: string,
-  frequencyMonths: number
-): string {
-  const d = new Date(fromDate + "T00:00:00");
-  if (frequencyMonths < 1) {
-    // Sub-month: use day-based math (0.25 = 7 days, 0.5 = 14 days)
-    d.setDate(d.getDate() + Math.round(frequencyMonths * 30));
-  } else {
-    d.setMonth(d.getMonth() + frequencyMonths);
-    // Clamp to last day of target month if overflow
-    const targetMonth = (d.getMonth() + frequencyMonths) % 12;
-    if (d.getMonth() !== targetMonth) {
-      d.setDate(0); // last day of previous month
-    }
-  }
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function AddInventoryItemModal({
@@ -85,6 +67,7 @@ export default function AddInventoryItemModal({
       thumbnailUrl: thumbnailUrl.trim(),
       notes: notes.trim(),
       cost: cost.trim() ? parseFloat(cost) : null,
+      homeAssetId: item?.homeAssetId ?? null,
     });
   }
 

@@ -463,6 +463,16 @@ export function AlertCircleIcon(props: IconProps) {
   );
 }
 
+export function SparklesIcon(props: IconProps) {
+  return (
+    <svg {...defaultProps} {...props} aria-hidden="true">
+      <path d="M12 2l1.09 3.26L16 6.64l-2.18 2.18.82 3.18L12 10.27 9.36 12l.82-3.18L8 6.64l2.91-1.38L12 2z" />
+      <path d="M5 15l.54 1.63 1.46.69-1.09 1.09.41 1.59L5 19.14 3.68 20l.41-1.59L3 17.32l1.46-.69L5 15z" />
+      <path d="M19 10l.54 1.63 1.46.69-1.09 1.09.41 1.59-1.32-.86-1.32.86.41-1.59-1.09-1.09 1.46-.69L19 10z" />
+    </svg>
+  );
+}
+
 export function HomebotLogo(props: IconProps) {
   return (
     <svg width={28} height={24} viewBox="0 0 28 24" fill="none" {...props} aria-hidden="true">

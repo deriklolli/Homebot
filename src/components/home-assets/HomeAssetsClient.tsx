@@ -1,13 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { type HomeAsset, type AssetCategory, CATEGORY_OPTIONS, DEFAULT_ASSETS } from "@/lib/home-assets-data";
-import { supabase, type DbHomeAsset } from "@/lib/supabase";
+import { supabase, type DbHomeAsset, type DbInventoryItem } from "@/lib/supabase";
 import { dbToHomeAsset, homeAssetToDb } from "@/lib/mappers";
-import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, UploadIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, UploadIcon, SparklesIcon } from "@/components/icons";
+import { FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import AddHomeAssetModal from "./AddHomeAssetModal";
 import ImportAssetsModal from "./ImportAssetsModal";
+import ConsumableDetailModal from "./ConsumableDetailModal";
+
+interface ConsumableProduct {
+  name: string;
+  estimatedCost: number | null;
+  searchTerm: string;
+}
+
+interface ConsumableSuggestion {
+  consumable: string;
+  description: string;
+  frequencyMonths: number;
+  products: ConsumableProduct[];
+}
 
 function warrantyStatus(dateStr: string | null): { label: string; color: string } | null {
   if (!dateStr) return null;
@@ -20,9 +35,19 @@ function warrantyStatus(dateStr: string | null): { label: string; color: string 
   return { label: "Warranty Active", color: "bg-green-light text-green" };
 }
 
+function frequencyLabel(months: number): string {
+  const opt = FREQUENCY_OPTIONS.find((o) => o.value === months);
+  return opt?.label ?? `Every ${months} mo`;
+}
+
+function cacheKey(make: string, model: string): string {
+  return `${make.toLowerCase()}|${model.toLowerCase()}`;
+}
+
 type RowItem =
   | { kind: "saved"; asset: HomeAsset }
-  | { kind: "placeholder"; name: string; category: AssetCategory };
+  | { kind: "placeholder"; name: string; category: AssetCategory }
+  | { kind: "consumable"; suggestion: ConsumableSuggestion; asset: HomeAsset; tracked: boolean };
 
 export default function HomeAssetsClient() {
   const [assets, setAssets] = useState<HomeAsset[]>([]);
@@ -35,6 +60,59 @@ export default function HomeAssetsClient() {
   const [prefillAsset, setPrefillAsset] = useState<{ name: string; category: AssetCategory } | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
+  // Consumable suggestions cache (make+model → suggestions)
+  const [suggestionsMap, setSuggestionsMap] = useState<Record<string, ConsumableSuggestion[]>>({});
+  // Set of asset IDs that already have linked inventory items
+  const [trackedAssetIds, setTrackedAssetIds] = useState<Set<string>>(new Set());
+
+  // Consumable detail modal state
+  const [selectedConsumable, setSelectedConsumable] = useState<{
+    suggestion: ConsumableSuggestion;
+    asset: HomeAsset;
+  } | null>(null);
+
+  // Fetch cached suggestions for all assets with make+model
+  const fetchSuggestions = useCallback(async (assetList: HomeAsset[]) => {
+    const pairs = assetList
+      .filter((a) => a.make && a.model)
+      .map((a) => ({ make: a.make, model: a.model }));
+
+    if (pairs.length === 0) return;
+
+    // Deduplicate
+    const unique = new Map<string, { make: string; model: string }>();
+    for (const p of pairs) {
+      unique.set(cacheKey(p.make, p.model), p);
+    }
+
+    try {
+      const res = await fetch("/api/suggest-consumables", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batch: [...unique.values()] }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSuggestionsMap((prev) => ({ ...prev, ...data.results }));
+      }
+    } catch {
+      // silently fail — suggestions are optional
+    }
+  }, []);
+
+  // Fetch inventory items linked to home assets
+  const fetchTrackedItems = useCallback(async () => {
+    const { data } = await supabase
+      .from("inventory_items")
+      .select("home_asset_id")
+      .not("home_asset_id", "is", null)
+      .returns<Pick<DbInventoryItem, "home_asset_id">[]>();
+
+    if (data) {
+      setTrackedAssetIds(new Set(data.map((d) => d.home_asset_id!)));
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchAssets() {
       const { data, error } = await supabase
@@ -46,12 +124,38 @@ export default function HomeAssetsClient() {
       if (error) {
         console.error("Failed to fetch home assets:", error);
       } else {
-        setAssets(data.map(dbToHomeAsset));
+        const mapped = data.map(dbToHomeAsset);
+        setAssets(mapped);
+        fetchSuggestions(mapped);
+        fetchTrackedItems();
       }
       setLoading(false);
     }
     fetchAssets();
-  }, []);
+  }, [fetchSuggestions, fetchTrackedItems]);
+
+  // Fire-and-forget: prime consumable cache for an asset
+  function primeSuggestionCache(asset: { name: string; category: string; make: string; model: string }) {
+    if (!asset.make || !asset.model) return;
+    fetch("/api/suggest-consumables", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: asset.name,
+        category: asset.category,
+        make: asset.make,
+        model: asset.model,
+      }),
+    })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.suggestions) {
+          const key = cacheKey(asset.make, asset.model);
+          setSuggestionsMap((prev) => ({ ...prev, [key]: data.suggestions }));
+        }
+      })
+      .catch(() => { /* ignore */ });
+  }
 
   async function handleAdd(data: Omit<HomeAsset, "id" | "createdAt">) {
     const { data: rows, error } = await supabase
@@ -64,19 +168,27 @@ export default function HomeAssetsClient() {
       console.error("Failed to add asset:", error);
       return;
     }
+    const newAsset = dbToHomeAsset(rows[0]);
     setAssets(
-      [...assets, dbToHomeAsset(rows[0])].sort((a, b) =>
+      [...assets, newAsset].sort((a, b) =>
         a.name.localeCompare(b.name)
       )
     );
     setModalOpen(false);
     setPrefillAsset(null);
+
+    // Prime the consumable cache for the new asset
+    primeSuggestionCache(data);
   }
 
   function handleImportComplete(newAssets: HomeAsset[]) {
     setAssets(
       [...assets, ...newAssets].sort((a, b) => a.name.localeCompare(b.name))
     );
+    // Prime cache for imported assets with make+model
+    for (const a of newAssets) {
+      primeSuggestionCache(a);
+    }
   }
 
   function toggleCategory(cat: string) {
@@ -88,7 +200,7 @@ export default function HomeAssetsClient() {
     });
   }
 
-  // Build rows per category: saved assets + placeholder defaults
+  // Build rows per category: saved assets + consumable rows + placeholder defaults
   const savedNamesByCategory = new Map<string, Set<string>>();
   for (const asset of assets) {
     const names = savedNamesByCategory.get(asset.category) ?? new Set();
@@ -116,6 +228,18 @@ export default function HomeAssetsClient() {
     const rows: RowItem[] = [];
     for (const asset of savedInCategory) {
       rows.push({ kind: "saved", asset });
+
+      // Add consumable rows after the parent asset
+      if (asset.make && asset.model) {
+        const key = cacheKey(asset.make, asset.model);
+        const suggestions = suggestionsMap[key];
+        if (suggestions && suggestions.length > 0) {
+          const isTracked = trackedAssetIds.has(asset.id);
+          for (const suggestion of suggestions) {
+            rows.push({ kind: "consumable", suggestion, asset, tracked: isTracked });
+          }
+        }
+      }
     }
     for (const name of defaults) {
       rows.push({ kind: "placeholder", name, category });
@@ -249,6 +373,44 @@ export default function HomeAssetsClient() {
                         );
                       }
 
+                      if (row.kind === "consumable") {
+                        const { suggestion, asset, tracked } = row;
+                        return (
+                          <li
+                            key={`consumable-${asset.id}-${suggestion.consumable}`}
+                            className="border-b border-border last:border-b-0"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setSelectedConsumable({ suggestion, asset })}
+                              className="flex items-center gap-x-3 px-5 py-3 w-full text-left cursor-pointer hover:bg-surface-hover transition-[background] duration-[120ms]"
+                            >
+                              <div className="w-10 h-10 rounded-full bg-teal/10 shrink-0 flex items-center justify-center ml-5">
+                                <SparklesIcon width={16} height={16} className="text-teal" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-[13px] font-semibold text-text-primary truncate block">
+                                  {suggestion.consumable}
+                                </span>
+                                <p className="text-[12px] text-text-3">
+                                  for {asset.name}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                {tracked && (
+                                  <span className="px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-green-light text-green">
+                                    Tracked
+                                  </span>
+                                )}
+                                <span className="text-[12px] text-text-3">
+                                  {frequencyLabel(suggestion.frequencyMonths)}
+                                </span>
+                              </div>
+                            </button>
+                          </li>
+                        );
+                      }
+
                       // Placeholder row — click to add
                       return (
                         <li key={`placeholder-${row.name}`} className="border-b border-border last:border-b-0">
@@ -297,6 +459,22 @@ export default function HomeAssetsClient() {
         <ImportAssetsModal
           onImportComplete={handleImportComplete}
           onClose={() => setImportModalOpen(false)}
+        />
+      )}
+
+      {/* Consumable detail modal */}
+      {selectedConsumable && (
+        <ConsumableDetailModal
+          consumable={selectedConsumable.suggestion.consumable}
+          description={selectedConsumable.suggestion.description}
+          frequencyMonths={selectedConsumable.suggestion.frequencyMonths}
+          products={selectedConsumable.suggestion.products}
+          assetName={selectedConsumable.asset.name}
+          assetId={selectedConsumable.asset.id}
+          onClose={() => setSelectedConsumable(null)}
+          onAdded={() => {
+            setTrackedAssetIds((prev) => new Set(prev).add(selectedConsumable.asset.id));
+          }}
         />
       )}
     </div>

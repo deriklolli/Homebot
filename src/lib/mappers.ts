@@ -131,6 +131,7 @@ export function dbToInventoryItem(row: DbInventoryItem): InventoryItem {
     thumbnailUrl: row.thumbnail_url,
     notes: row.notes,
     cost: row.cost,
+    homeAssetId: row.home_asset_id,
     createdAt: row.created_at,
   };
 }
@@ -148,6 +149,7 @@ export function inventoryItemToDb(
     thumbnail_url: data.thumbnailUrl,
     notes: data.notes,
     cost: data.cost,
+    home_asset_id: data.homeAssetId,
   };
 }
 

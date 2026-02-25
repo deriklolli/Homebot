@@ -20,5 +20,6 @@ export interface InventoryItem {
   thumbnailUrl: string;
   notes: string;
   cost: number | null;
+  homeAssetId: string | null;
   createdAt: string;
 }

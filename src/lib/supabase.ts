@@ -61,6 +61,7 @@ export interface DbInventoryItem {
   thumbnail_url: string;
   notes: string;
   cost: number | null;
+  home_asset_id: string | null;
   created_at: string;
 }
 

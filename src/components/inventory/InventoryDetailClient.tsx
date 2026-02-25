@@ -42,7 +42,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
     async function fetchItem() {
       const { data, error } = await supabase
         .from("inventory_items")
-        .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, created_at")
+        .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, created_at")
         .eq("id", id)
         .returns<DbInventoryItem[]>()
         .single();
