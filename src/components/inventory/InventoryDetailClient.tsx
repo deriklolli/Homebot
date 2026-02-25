@@ -403,35 +403,39 @@ export default function InventoryDetailClient({ id }: { id: string }) {
           <h2 className="text-[15px] font-semibold text-text-primary mb-3">
             Recommended Products
           </h2>
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {productOptions.map((product) => (
               <a
                 key={product.name}
                 href={buyNowUrl(product.searchTerm)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-4 hover:shadow-[var(--shadow-hover)] transition-all duration-[120ms]"
+                className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200"
               >
-                {product.thumbnailUrl ? (
-                  <img
-                    src={product.thumbnailUrl}
-                    alt={product.name}
-                    className="w-16 h-16 rounded-[var(--radius-md)] object-cover bg-border shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-[var(--radius-md)] bg-border shrink-0 flex items-center justify-center">
-                    <ApplianceIcon width={24} height={24} className="text-text-4" strokeWidth={1.5} />
+                <div className="p-5">
+                  <div className="flex items-start gap-3">
+                    {product.thumbnailUrl ? (
+                      <img
+                        src={product.thumbnailUrl}
+                        alt={product.name}
+                        className="w-9 h-9 rounded-full object-cover bg-border border border-border shrink-0"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-border shrink-0 flex items-center justify-center">
+                        <ApplianceIcon width={16} height={16} className="text-text-4" strokeWidth={1.5} />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-semibold text-text-primary truncate">
+                        {product.name}
+                      </p>
+                      {product.estimatedCost != null && (
+                        <p className="text-[12px] text-text-3 truncate">
+                          ${product.estimatedCost}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <span className="text-[13px] font-semibold text-text-primary block truncate">
-                    {product.name}
-                  </span>
-                  {product.estimatedCost != null && (
-                    <span className="text-[14px] font-medium text-text-primary mt-0.5 block">
-                      ${product.estimatedCost}
-                    </span>
-                  )}
                 </div>
               </a>
             ))}
