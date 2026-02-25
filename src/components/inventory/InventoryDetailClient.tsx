@@ -329,7 +329,17 @@ export default function InventoryDetailClient({ id }: { id: string }) {
         </div>
 
         {/* Details card */}
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 flex-1">
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 flex-1 relative">
+          {item.purchaseUrl && !item.homeAssetId && (
+            <a
+              href={buyNowUrl(item.name, item.purchaseUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute top-5 right-5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            >
+              Buy Now
+            </a>
+          )}
           <div className="grid grid-cols-2 gap-5">
             {/* Next Reminder */}
             <div>
@@ -364,16 +374,6 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               >
                 {reminderReset ? "Reminder Reset!" : "Reset Reminder"}
               </button>
-            </div>
-
-            {/* Last Ordered */}
-            <div>
-              <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-                Last Ordered
-              </span>
-              <span className="text-[14px] text-text-primary">
-                {item.lastOrderedDate ? formatDate(item.lastOrderedDate) : "\u2014"}
-              </span>
             </div>
 
             {/* Description */}
