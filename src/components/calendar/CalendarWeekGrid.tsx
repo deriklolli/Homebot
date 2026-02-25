@@ -47,7 +47,7 @@ function timeToMinutes(time: string): number {
   return h * 60 + m;
 }
 
-function EventPill({ event }: { event: CalendarEvent }) {
+function EventPill({ event, fill }: { event: CalendarEvent; fill?: boolean }) {
   if (event.type === "inventory") {
     return (
       <Link
@@ -80,7 +80,7 @@ function EventPill({ event }: { event: CalendarEvent }) {
   return (
     <Link
       href={`/projects/${event.projectId}`}
-      className={`block px-1.5 py-1 text-[11px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${STATUS_PILL[event.projectStatus]}`}
+      className={`block px-1.5 py-1 text-[11px] font-medium rounded-[var(--radius-sm)] hover:brightness-90 transition-all duration-[120ms] ${fill ? "h-full" : "truncate"} ${STATUS_PILL[event.projectStatus]}`}
       title={`${event.projectName}: ${event.title}${timeLabel ? ` at ${timeLabel}` : ""}`}
     >
       {event.eventTime && (
@@ -244,7 +244,7 @@ export default function CalendarWeekGrid({
                       className="absolute left-0.5 right-0.5 overflow-hidden"
                       style={{ top: `${top}px`, ...(height ? { height: `${height}px` } : {}) }}
                     >
-                      <EventPill event={e} />
+                      <EventPill event={e} fill={!!height} />
                     </div>
                   );
                 })}
