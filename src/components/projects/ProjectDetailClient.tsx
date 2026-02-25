@@ -81,6 +81,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
   const [addEventModalOpen, setAddEventModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<ProjectEvent | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [statusPopoverOpen, setStatusPopoverOpen] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -387,6 +388,52 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     setAddEventModalOpen(false);
   }
 
+  async function handleUpdateEvent(data: {
+    title: string;
+    eventDate: string;
+    eventTime: string | null;
+    contractorId: string | null;
+  }) {
+    if (!editingEvent) return;
+
+    const { data: rows, error } = await supabase
+      .from("project_events")
+      .update({
+        title: data.title,
+        event_date: data.eventDate,
+        event_time: data.eventTime,
+      } as Record<string, unknown>)
+      .eq("id", editingEvent.id)
+      .select()
+      .returns<DbProjectEvent[]>();
+
+    if (error) {
+      console.error("Failed to update event:", error);
+      return;
+    }
+
+    // Update contractor on the project if changed
+    if (data.contractorId !== project!.contractorId) {
+      const { data: projRows, error: projError } = await supabase
+        .from("projects")
+        .update({ contractor_id: data.contractorId } as Record<string, unknown>)
+        .eq("id", project!.id)
+        .select()
+        .returns<DbProject[]>();
+
+      if (!projError && projRows?.[0]) {
+        setProject(dbToProject(projRows[0]));
+      }
+    }
+
+    const updatedEvent = dbToProjectEvent(rows[0]);
+    setEvents(
+      events.map((e) => (e.id === editingEvent.id ? updatedEvent : e))
+        .sort((a, b) => a.eventDate.localeCompare(b.eventDate))
+    );
+    setEditingEvent(null);
+  }
+
   async function handleContractorAdded(
     data: Omit<Contractor, "id" | "createdAt">
   ): Promise<Contractor> {
@@ -598,7 +645,13 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               <CalendarSolidIcon width={30} height={30} className="text-accent" />
               Scheduled
             </span>
-            <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
+            <div
+              className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group cursor-pointer hover:shadow-[var(--shadow-hover)] transition-shadow duration-[120ms]"
+              onClick={() => setEditingEvent(item.data)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter") setEditingEvent(item.data); }}
+            >
               <div className="flex flex-col gap-0.5">
                 <span className="text-[13px] font-semibold text-text-primary">
                   {item.data.title}
@@ -629,7 +682,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                   Added {formatDateTime(item.data.createdAt)}
                 </span>
                 <button
-                  onClick={() => handleDeleteEvent(item.data.id)}
+                  onClick={(e) => { e.stopPropagation(); handleDeleteEvent(item.data.id); }}
                   className="text-text-4 hover:text-red opacity-0 group-hover:opacity-100 transition-all duration-[120ms]"
                   aria-label="Delete event"
                 >
@@ -783,6 +836,18 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           onSave={handleAddEvent}
           onContractorAdded={handleContractorAdded}
           onClose={() => setAddEventModalOpen(false)}
+        />
+      )}
+
+      {/* Edit event modal */}
+      {editingEvent && (
+        <AddEventModal
+          contractors={contractors}
+          defaultContractorId={project.contractorId}
+          event={editingEvent}
+          onSave={handleUpdateEvent}
+          onContractorAdded={handleContractorAdded}
+          onClose={() => setEditingEvent(null)}
         />
       )}
 

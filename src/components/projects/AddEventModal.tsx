@@ -7,15 +7,18 @@ import DatePicker from "@/components/ui/DatePicker";
 import TimePicker from "@/components/ui/TimePicker";
 import AddContractorModal from "@/components/contractors/AddContractorModal";
 
+interface EventData {
+  title: string;
+  eventDate: string;
+  eventTime: string | null;
+  contractorId: string | null;
+}
+
 interface AddEventModalProps {
   contractors: Contractor[];
   defaultContractorId: string | null;
-  onSave: (data: {
-    title: string;
-    eventDate: string;
-    eventTime: string | null;
-    contractorId: string | null;
-  }) => void;
+  event?: { id: string; title: string; eventDate: string; eventTime: string | null };
+  onSave: (data: EventData) => void;
   onContractorAdded: (data: Omit<Contractor, "id" | "createdAt">) => Promise<Contractor>;
   onClose: () => void;
 }
@@ -27,13 +30,15 @@ function todayString(): string {
 export default function AddEventModal({
   contractors,
   defaultContractorId,
+  event,
   onSave,
   onContractorAdded,
   onClose,
 }: AddEventModalProps) {
-  const [title, setTitle] = useState("");
-  const [eventDate, setEventDate] = useState(todayString());
-  const [eventTime, setEventTime] = useState("");
+  const isEditing = !!event;
+  const [title, setTitle] = useState(event?.title ?? "");
+  const [eventDate, setEventDate] = useState(event?.eventDate ?? todayString());
+  const [eventTime, setEventTime] = useState(event?.eventTime ?? "");
   const [contractorId, setContractorId] = useState<string | null>(
     defaultContractorId
   );
@@ -76,7 +81,7 @@ export default function AddEventModal({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-[15px] font-semibold text-text-primary">
-            Schedule Appointment
+            {isEditing ? "Edit Appointment" : "Schedule Appointment"}
           </h2>
           <button
             onClick={onClose}
@@ -172,7 +177,7 @@ export default function AddEventModal({
               disabled={!isValid}
               className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Schedule
+              {isEditing ? "Save Changes" : "Schedule"}
             </button>
           </div>
         </form>
