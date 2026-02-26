@@ -55,11 +55,21 @@ export default function CreateManagerForm() {
       }),
     });
 
+    const data = await res.json();
+
     if (!res.ok) {
-      const data = await res.json();
       setError(data.error || "Failed to create manager");
       setSaving(false);
       return;
+    }
+
+    // Show email status in an alert so we can debug delivery issues
+    if (data.emailError) {
+      alert(`Manager created, but email failed: ${data.emailError}`);
+    } else if (data.emailSent) {
+      alert("Manager created and invite email sent!");
+    } else {
+      alert("Manager created, but email status unknown.");
     }
 
     router.push("/superadmin/managers");
