@@ -58,6 +58,7 @@ export default function AddHomeAssetModal({
       warrantyExpiration: warrantyExpiration || null,
       location: location.trim(),
       productUrl: productUrl.trim(),
+      imageUrl: asset?.imageUrl ?? "",
       notes: notes.trim(),
     });
   }

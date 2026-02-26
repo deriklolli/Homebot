@@ -83,5 +83,6 @@ export interface HomeAsset {
   location: string;
   notes: string;
   productUrl: string;
+  imageUrl: string;
   createdAt: string;
 }

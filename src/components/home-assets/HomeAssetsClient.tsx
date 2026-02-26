@@ -54,7 +54,7 @@ export default function HomeAssetsClient() {
     async function fetchAssets() {
       const { data, error } = await supabase
         .from("home_assets")
-        .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+        .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, created_at")
         .order("name", { ascending: true })
         .returns<DbHomeAsset[]>();
 
@@ -153,6 +153,29 @@ export default function HomeAssetsClient() {
       .catch(() => { /* ignore */ });
   }
 
+  function fetchProductImage(assetId: string, make: string, model: string) {
+    fetch("/api/search-product-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ make, model }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.imageUrl) {
+          supabase
+            .from("home_assets")
+            .update({ image_url: data.imageUrl })
+            .eq("id", assetId)
+            .then(() => {
+              setAssets((prev) =>
+                prev.map((a) => (a.id === assetId ? { ...a, imageUrl: data.imageUrl } : a))
+              );
+            });
+        }
+      })
+      .catch(() => {});
+  }
+
   async function handleAdd(data: Omit<HomeAsset, "id" | "createdAt">) {
     const { data: rows, error } = await supabase
       .from("home_assets")
@@ -175,6 +198,11 @@ export default function HomeAssetsClient() {
 
     // Prime the consumable cache + auto-create inventory items
     primeSuggestionCache(data, newAsset.id);
+
+    // Auto-fetch product image if make + model are provided
+    if (data.make && data.model && !data.imageUrl) {
+      fetchProductImage(newAsset.id, data.make, data.model);
+    }
   }
 
   function handleImportComplete(newAssets: HomeAsset[]) {

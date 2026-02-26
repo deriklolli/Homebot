@@ -49,7 +49,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       const [assetRes, projectsRes, inventoryRes] = await Promise.all([
         supabase
           .from("home_assets")
-          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, created_at")
           .eq("id", id)
           .returns<DbHomeAsset[]>()
           .single(),
@@ -100,8 +100,32 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       console.error("Failed to update asset:", error);
       return;
     }
-    setAsset(dbToHomeAsset(rows[0]));
+    const updated = dbToHomeAsset(rows[0]);
+    setAsset(updated);
     setEditModalOpen(false);
+
+    // Auto-fetch product image if make + model provided and no image yet
+    const makeChanged = data.make !== asset.make || data.model !== asset.model;
+    if (data.make && data.model && (!updated.imageUrl || makeChanged)) {
+      fetch("/api/search-product-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ make: data.make, model: data.model }),
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.imageUrl) {
+            supabase
+              .from("home_assets")
+              .update({ image_url: result.imageUrl })
+              .eq("id", asset.id)
+              .then(() => {
+                setAsset((prev) => prev ? { ...prev, imageUrl: result.imageUrl } : prev);
+              });
+          }
+        })
+        .catch(() => {});
+    }
   }
 
   async function handleDelete() {
@@ -194,6 +218,18 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
       {/* Details card */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
+        {/* Product image */}
+        {asset.imageUrl && (
+          <div className="flex justify-center mb-5 pb-5 border-b border-dotted border-border-strong">
+            <img
+              src={asset.imageUrl}
+              alt={`${asset.make} ${asset.model}`}
+              className="max-h-[200px] max-w-full object-contain rounded-[var(--radius-md)]"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          </div>
+        )}
+
         {/* Row 1: Make & Model */}
         <div className="flex gap-5 pb-4 border-b border-dotted border-border-strong">
           <div className="flex-1">

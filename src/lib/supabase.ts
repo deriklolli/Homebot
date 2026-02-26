@@ -122,6 +122,7 @@ export interface DbHomeAsset {
   location: string;
   notes: string;
   product_url: string;
+  image_url: string;
   created_at: string;
 }
 

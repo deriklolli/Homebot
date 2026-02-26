@@ -215,6 +215,7 @@ export function dbToHomeAsset(row: DbHomeAsset): HomeAsset {
     location: row.location,
     notes: row.notes,
     productUrl: row.product_url,
+    imageUrl: row.image_url,
     createdAt: row.created_at,
   };
 }
@@ -232,6 +233,7 @@ export function homeAssetToDb(
   location: string;
   notes: string;
   product_url: string;
+  image_url: string;
 } {
   return {
     name: data.name,
@@ -244,6 +246,7 @@ export function homeAssetToDb(
     location: data.location,
     notes: data.notes,
     product_url: data.productUrl,
+    image_url: data.imageUrl,
   };
 }
 
