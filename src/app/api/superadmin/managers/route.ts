@@ -125,12 +125,19 @@ export async function POST(req: NextRequest) {
   }
 
   // Send invite email via Resend
-  if (process.env.RESEND_API_KEY && linkData?.properties?.action_link) {
+  let emailSent = false;
+  let emailError: string | null = null;
+
+  if (!process.env.RESEND_API_KEY) {
+    emailError = "RESEND_API_KEY not configured";
+  } else if (!linkData?.properties?.action_link) {
+    emailError = "No action_link generated";
+  } else {
     const { escapeHtml } = await import("@/lib/admin-auth");
     const safeOrgName = escapeHtml(org.name);
     const resend = new Resend(process.env.RESEND_API_KEY);
     try {
-      await resend.emails.send({
+      const result = await resend.emails.send({
         from: "HOMEBOT <onboarding@resend.dev>",
         to: email,
         subject: `You've been invited to HOMEBOT as a ${org.name.replace(/[\r\n]/g, " ")} manager`,
@@ -144,8 +151,13 @@ export async function POST(req: NextRequest) {
           </div>
         `,
       });
+      if (result.error) {
+        emailError = result.error.message;
+      } else {
+        emailSent = true;
+      }
     } catch (e) {
-      console.error("Failed to send manager invite email:", e);
+      emailError = e instanceof Error ? e.message : String(e);
     }
   }
 
@@ -157,5 +169,7 @@ export async function POST(req: NextRequest) {
       organizationId,
       organizationName: org.name,
     },
+    emailSent,
+    emailError,
   }, { status: 201 });
 }
