@@ -31,27 +31,56 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const pathname = request.nextUrl.pathname;
+
   // Unauthenticated users get redirected to /login
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/signup") &&
-    !request.nextUrl.pathname.startsWith("/auth/callback")
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/signup") &&
+    !pathname.startsWith("/auth/callback") &&
+    !pathname.startsWith("/activate")
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Authenticated users visiting /login or /signup get redirected to dashboard
-  if (
-    user &&
-    (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/signup"))
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+  if (user) {
+    const role = (user.app_metadata?.role as string) ?? "homeowner";
+
+    // Authenticated users visiting /login or /signup get redirected based on role
+    if (pathname.startsWith("/login") || pathname.startsWith("/signup")) {
+      const url = request.nextUrl.clone();
+      url.pathname = role === "superadmin" ? "/superadmin" : role === "manager" ? "/admin" : "/";
+      return NextResponse.redirect(url);
+    }
+
+    // Block non-superadmins from /superadmin routes
+    if (pathname.startsWith("/superadmin") && role !== "superadmin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+
+    // Block non-managers from /admin routes (superadmins can also access)
+    if (pathname.startsWith("/admin") && role !== "manager" && role !== "superadmin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+
+    // Redirect un-activated managed accounts to /activate
+    if (
+      user.app_metadata?.managed_by &&
+      !user.app_metadata?.activated &&
+      !pathname.startsWith("/activate") &&
+      !pathname.startsWith("/auth/callback")
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/activate";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

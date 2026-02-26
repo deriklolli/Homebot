@@ -51,8 +51,21 @@ function nextDay(dateStr: string): string {
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId");
+  const token = req.nextUrl.searchParams.get("token");
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
+  }
+
+  // Verify HMAC token to prevent IDOR — calendar URLs include a per-user token
+  const secret = process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
+  const { createHmac } = await import("crypto");
+  const expectedToken = createHmac("sha256", secret).update(userId).digest("hex").slice(0, 32);
+  if (!token || token !== expectedToken) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 403 });
   }
 
   // Timezone for timed events (IANA name, e.g. "America/Denver")

@@ -11,25 +11,27 @@ interface SubscribeModalProps {
 export default function SubscribeModal({ onClose }: SubscribeModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [copied, setCopied] = useState(false);
-  const [userId, setUserId] = useState<string>("");
+  const [feedUrl, setFeedUrl] = useState<string>("");
 
   useEffect(() => {
-    async function loadUser() {
+    async function loadFeedUrl() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      if (!user) return;
+
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Denver";
+
+      // Fetch the signed token from the server
+      const res = await fetch(`/api/calendar/token`);
+      if (!res.ok) return;
+      const { token } = await res.json();
+
+      setFeedUrl(
+        `${window.location.origin}/api/calendar/feed?userId=${user.id}&token=${token}&tz=${encodeURIComponent(tz)}`
+      );
     }
-    loadUser();
+    loadFeedUrl();
   }, []);
-
-  const tz = typeof window !== "undefined"
-    ? Intl.DateTimeFormat().resolvedOptions().timeZone
-    : "America/Denver";
-
-  const feedUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/api/calendar/feed?userId=${userId}&tz=${encodeURIComponent(tz)}`
-      : `/api/calendar/feed?userId=${userId}&tz=${encodeURIComponent(tz)}`;
 
   const webcalUrl = feedUrl.replace(/^https?:\/\//, "webcal://");
 

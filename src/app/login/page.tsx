@@ -30,7 +30,11 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/");
+    // Get the user to check role for redirect
+    const { data: { user: signedInUser } } = await supabase.auth.getUser();
+    const role = (signedInUser?.app_metadata?.role as string) ?? "homeowner";
+    const dest = role === "superadmin" ? "/superadmin" : role === "manager" ? "/admin" : "/";
+    router.push(dest);
     router.refresh();
   }
 

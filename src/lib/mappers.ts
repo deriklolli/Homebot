@@ -1,4 +1,5 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbHomeSnapshot, DbHomeAsset } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbHomeSnapshot, DbHomeAsset, DbProfile, DbOrganization } from "./supabase";
+import type { Profile, Organization } from "./admin-data";
 import type { Contractor } from "./contractors-data";
 import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
@@ -243,6 +244,27 @@ export function homeAssetToDb(
     location: data.location,
     notes: data.notes,
     product_url: data.productUrl,
+  };
+}
+
+export function dbToProfile(row: DbProfile): Profile {
+  return {
+    id: row.id,
+    role: row.role,
+    organizationId: row.organization_id,
+    managedBy: row.managed_by,
+    activatedAt: row.activated_at,
+    createdAt: row.created_at,
+  };
+}
+
+export function dbToOrganization(row: DbOrganization & { managerCount?: number; clientCount?: number }): Organization {
+  return {
+    id: row.id,
+    name: row.name,
+    managerCount: row.managerCount ?? 0,
+    clientCount: row.clientCount ?? 0,
+    createdAt: row.created_at,
   };
 }
 

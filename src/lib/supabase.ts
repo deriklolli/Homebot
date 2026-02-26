@@ -146,6 +146,21 @@ export interface DbNotificationPreference {
   created_at: string;
 }
 
+export interface DbOrganization {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface DbProfile {
+  id: string;
+  role: "homeowner" | "manager" | "superadmin";
+  organization_id: string | null;
+  managed_by: string | null;
+  activated_at: string | null;
+  created_at: string;
+}
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 

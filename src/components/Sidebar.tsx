@@ -23,7 +23,7 @@ import {
 } from "./icons";
 import { useTheme } from "./ThemeProvider";
 
-const navItems = [
+const homeownerNavItems = [
   { href: "/", label: "Dashboard", icon: GridIcon },
   { href: "/projects", label: "Projects", icon: WrenchIcon },
   { href: "/home-assets", label: "Home Assets", icon: HomeIcon },
@@ -31,6 +31,16 @@ const navItems = [
   { href: "/services", label: "Home Services", icon: ClipboardCheckIcon },
   { href: "/contractors", label: "Contractors", icon: UsersIcon },
   { href: "/calendar", label: "Calendar", icon: CalendarIcon },
+];
+
+const managerNavItems = [
+  { href: "/admin", label: "Clients", icon: UsersIcon },
+];
+
+const superadminNavItems = [
+  { href: "/superadmin", label: "Dashboard", icon: GridIcon },
+  { href: "/superadmin/organizations", label: "Organizations", icon: HomeIcon },
+  { href: "/superadmin/managers", label: "Managers", icon: UsersIcon },
 ];
 
 const bottomItems = [
@@ -100,6 +110,14 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
   function handleLinkClick() {
     onNavigate?.();
   }
+
+  const role = (user?.app_metadata?.role as string) ?? "homeowner";
+  const navItems =
+    role === "superadmin"
+      ? [...superadminNavItems, ...homeownerNavItems]
+      : role === "manager"
+        ? [...managerNavItems, ...homeownerNavItems]
+        : homeownerNavItems;
 
   const displayName =
     user?.user_metadata?.full_name ?? user?.email ?? "User";
