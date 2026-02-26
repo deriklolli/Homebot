@@ -3,15 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { BellIcon, ApplianceIcon, XIcon } from "@/components/icons";
+import { BellIcon, ClipboardCheckIcon, XIcon, CheckCircleIcon } from "@/components/icons";
 
-interface AlertItem {
+interface ServiceAlert {
   id: string;
   name: string;
-  thumbnailUrl: string;
-  purchaseUrl: string;
+  provider: string;
+  nextServiceDate: string;
   frequencyMonths: number;
-  nextReminderDate: string;
   daysUntil: number;
 }
 
@@ -22,7 +21,7 @@ function daysUntil(dateStr: string): number {
   return Math.round((target.getTime() - today.getTime()) / 86_400_000);
 }
 
-const DISMISSED_KEY = "homebot:dismissed-alerts";
+const DISMISSED_KEY = "homebot:dismissed-service-alerts";
 
 function loadDismissed(): Set<string> {
   try {
@@ -38,9 +37,10 @@ function saveDismissed(ids: Set<string>): void {
   localStorage.setItem(DISMISSED_KEY, JSON.stringify([...ids]));
 }
 
-export default function HomeAlerts() {
-  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+export default function HomeServiceAlerts() {
+  const [alerts, setAlerts] = useState<ServiceAlert[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,36 +48,31 @@ export default function HomeAlerts() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Get items due within 7 days or already overdue
       const sevenDaysOut = new Date(today);
       sevenDaysOut.setDate(sevenDaysOut.getDate() + 7);
       const cutoff = sevenDaysOut.toISOString().split("T")[0];
 
       const { data, error } = await supabase
-        .from("inventory_items")
-        .select("id, name, thumbnail_url, purchase_url, frequency_months, next_reminder_date")
-        .lte("next_reminder_date", cutoff)
-        .order("next_reminder_date", { ascending: true })
-        .returns<{ id: string; name: string; thumbnail_url: string; purchase_url: string; frequency_months: number; next_reminder_date: string }[]>();
+        .from("services")
+        .select("id, name, provider, next_service_date, frequency_months")
+        .lte("next_service_date", cutoff)
+        .order("next_service_date", { ascending: true })
+        .returns<{ id: string; name: string; provider: string; next_service_date: string; frequency_months: number }[]>();
 
       if (!error && data) {
         const fetched = data.map((row) => ({
           id: row.id,
           name: row.name,
-          thumbnailUrl: row.thumbnail_url,
-          purchaseUrl: row.purchase_url,
+          provider: row.provider,
+          nextServiceDate: row.next_service_date,
           frequencyMonths: row.frequency_months,
-          nextReminderDate: row.next_reminder_date,
-          daysUntil: daysUntil(row.next_reminder_date),
+          daysUntil: daysUntil(row.next_service_date),
         }));
         setAlerts(fetched);
 
-        // Load dismissed IDs and check if alerts have changed
         const prev = loadDismissed();
-        const alertIds = new Set(fetched.map((a) => a.id));
         const hasNew = fetched.some((a) => !prev.has(a.id));
         if (hasNew) {
-          // New alerts appeared — clear old dismissals
           setDismissed(new Set());
           saveDismissed(new Set());
         } else {
@@ -89,6 +84,36 @@ export default function HomeAlerts() {
     fetchAlerts();
   }, []);
 
+  async function handleMarkCompleted(e: React.MouseEvent, item: ServiceAlert) {
+    e.preventDefault();
+    e.stopPropagation();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
+
+    const nextService = new Date(today);
+    if (item.frequencyMonths < 1) {
+      nextService.setDate(nextService.getDate() + Math.round(item.frequencyMonths * 30));
+    } else {
+      nextService.setMonth(nextService.getMonth() + item.frequencyMonths);
+    }
+    const nextServiceStr = nextService.toISOString().split("T")[0];
+
+    const { error } = await supabase
+      .from("services")
+      .update({
+        last_service_date: todayStr,
+        next_service_date: nextServiceStr,
+      })
+      .eq("id", item.id);
+
+    if (error) {
+      console.error("Failed to mark service as completed:", error);
+      return;
+    }
+    setCompletedIds((prev) => new Set(prev).add(item.id));
+  }
+
   const visible = alerts.filter((a) => !dismissed.has(a.id));
 
   if (!loading && (alerts.length === 0 || visible.length === 0)) return null;
@@ -99,11 +124,11 @@ export default function HomeAlerts() {
         <header className="flex items-start justify-between gap-4 mb-4">
           <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
             <BellIcon width={15} height={15} className="text-accent" />
-            Home Inventory Alert
+            Home Service Alert
           </h2>
           <button
             type="button"
-            aria-label="Dismiss all alerts"
+            aria-label="Dismiss all service alerts"
             onClick={() => {
               const allIds = new Set(alerts.map((a) => a.id));
               setDismissed(allIds);
@@ -121,7 +146,7 @@ export default function HomeAlerts() {
           <ul
             className="flex flex-col -mx-5"
             role="list"
-            aria-label="Inventory alerts"
+            aria-label="Service alerts"
           >
             {visible.map((item) => {
               const isOverdue = item.daysUntil <= 0;
@@ -134,26 +159,18 @@ export default function HomeAlerts() {
               return (
                 <li key={item.id} className="border-t border-border">
                   <Link
-                    href={`/inventory/${item.id}`}
+                    href="/services"
                     className="flex flex-wrap items-center gap-x-2 gap-y-2 px-5 py-3 hover:bg-surface-hover transition-[background] duration-[120ms]"
                   >
-                    {item.thumbnailUrl ? (
-                      <img
-                        src={item.thumbnailUrl}
-                        alt=""
-                        className="w-8 h-8 rounded-full object-cover shrink-0"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0">
-                        <ApplianceIcon width={16} height={16} className="text-white" strokeWidth={1.5} />
-                      </div>
-                    )}
+                    <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0">
+                      <ClipboardCheckIcon width={16} height={16} className="text-white" />
+                    </div>
                     <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                       <span className="text-[14px] font-medium text-text-primary truncate">
                         {item.name}
                       </span>
                       <span className="text-[11px] text-text-3">
-                        Reorder reminder
+                        {item.provider ? `${item.provider} · ` : ""}Service due
                       </span>
                     </div>
                     <span
@@ -163,6 +180,21 @@ export default function HomeAlerts() {
                     >
                       {label}
                     </span>
+                    <div className="flex items-center gap-1.5 shrink-0 w-full pl-10 sm:w-auto sm:pl-0">
+                      <button
+                        type="button"
+                        onClick={(e) => handleMarkCompleted(e, item)}
+                        disabled={completedIds.has(item.id)}
+                        className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-[12px] font-medium transition-all duration-[120ms] inline-flex items-center gap-1 ${
+                          completedIds.has(item.id)
+                            ? "bg-green text-white cursor-default"
+                            : "border border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
+                        }`}
+                      >
+                        <CheckCircleIcon width={12} height={12} />
+                        {completedIds.has(item.id) ? "Completed!" : "Mark as Done"}
+                      </button>
+                    </div>
                   </Link>
                 </li>
               );

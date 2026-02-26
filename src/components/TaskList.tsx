@@ -124,7 +124,7 @@ export default function TaskList() {
     <div className="p-5">
       <header className="flex items-start justify-between gap-4 mb-4">
         <div className="flex flex-col gap-[3px] min-w-0">
-          <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
+          <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
             <ClipboardCheckIcon width={15} height={15} className="text-accent" />
             Tasks
           </h2>
@@ -140,7 +140,7 @@ export default function TaskList() {
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="Add a task..."
-          className="flex-1 px-3 py-2 rounded-[var(--radius-md)] border border-border bg-surface text-[13px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+          className="flex-1 px-3 py-2 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
         />
         <button
           type="submit"
@@ -153,13 +153,13 @@ export default function TaskList() {
       </form>
 
       {loading ? (
-        <p className="text-[13px] text-text-3 py-4">Loading...</p>
+        <p className="text-[14px] text-text-3 py-4">Loading...</p>
       ) : tasks.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-6 px-4 text-center">
           <div className="w-10 h-10 rounded-full bg-accent-light flex items-center justify-center">
             <ClipboardCheckIcon width={18} height={18} className="text-accent" />
           </div>
-          <p className="text-[13px] text-text-3">
+          <p className="text-[14px] text-text-3">
             No tasks yet. Add one above!
           </p>
         </div>
@@ -194,12 +194,12 @@ export default function TaskList() {
                     if (e.key === "Enter") handleRename(task.id);
                     if (e.key === "Escape") setEditingId(null);
                   }}
-                  className="flex-1 min-w-0 text-[13px] text-text-primary bg-transparent border-none py-0"
+                  className="flex-1 min-w-0 text-[14px] text-text-primary bg-transparent border-none py-0"
                 />
               ) : (
                 <span
                   onClick={() => startEditing(task)}
-                  className={`text-[13px] truncate cursor-text flex-1 min-w-0 ${task.completed ? "text-text-3 line-through" : "text-text-primary"}`}
+                  className={`text-[14px] truncate cursor-text flex-1 min-w-0 ${task.completed ? "text-text-3 line-through" : "text-text-primary"}`}
                 >
                   {task.title}
                 </span>

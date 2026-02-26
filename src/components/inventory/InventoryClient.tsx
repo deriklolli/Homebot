@@ -6,9 +6,10 @@ import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase";
 import { dbToInventoryItem, inventoryItemToDb, dbToHomeAsset } from "@/lib/mappers";
 import { type HomeAsset } from "@/lib/home-assets-data";
-import { PlusIcon, SearchIcon, ApplianceIcon, BellIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, ApplianceIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
+import HomeAlerts from "@/components/HomeAlerts";
 /* ------------------------------------------------------------------ */
 /*  Shared row component for urgent & non-urgent inventory items       */
 /* ------------------------------------------------------------------ */
@@ -45,7 +46,7 @@ function InventoryItemRow({
         )}
         <div className="flex-1 min-w-0">
           {extraInfo ?? (
-            <span className="text-[13px] font-semibold text-text-primary truncate block">
+            <span className="text-[14px] font-semibold text-text-primary truncate block">
               {item.name}
             </span>
           )}
@@ -280,7 +281,7 @@ export default function InventoryClient() {
         </h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={14} height={14} />
           Add Item
@@ -301,71 +302,35 @@ export default function InventoryClient() {
               placeholder="Search Home Inventory"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+              className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
             />
           </div>
         </div>
       )}
+
+      <HomeAlerts />
 
       {/* Content */}
       {loading ? (
         <p className="text-sm text-text-3">Loading inventory...</p>
       ) : items.length === 0 ? (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-sm font-semibold text-text-primary mb-1">
+          <p className="text-[15px] font-semibold text-text-primary mb-1">
             No items yet
           </p>
-          <p className="text-[13px] text-text-3">
+          <p className="text-[14px] text-text-3">
             Start tracking household items that need periodic replacement.
           </p>
         </div>
       ) : (
         <>
-          {/* Urgent items card */}
+          {/* Main inventory list */}
           {(() => {
-            const urgent = filtered.filter((item) => daysUntil(item.nextReminderDate) <= 7);
-            if (urgent.length === 0) return null;
-            return (
-              <div className="bg-surface rounded-[var(--radius-lg)] border border-red/30 shadow-[var(--shadow-card)] overflow-hidden mb-4">
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-red/20 bg-red-light">
-                  <BellIcon width={14} height={14} className="text-red" />
-                  <span className="text-[13px] font-semibold text-red">
-                    Inventory Alert
-                  </span>
-                </div>
-                <ul role="list" aria-label="Urgent inventory items">
-                  {urgent.map((item) => {
-                    const days = daysUntil(item.nextReminderDate);
-                    const isOverdue = days <= 0;
-                    const dueLabel = isOverdue
-                      ? days === 0
-                        ? "Due today"
-                        : `${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} overdue`
-                      : `in ${days} day${days !== 1 ? "s" : ""}`;
-
-                    return (
-                      <InventoryItemRow
-                        key={item.id}
-                        item={item}
-                        dueLabel={dueLabel}
-                        badgeClass={isOverdue ? "bg-red text-white" : "bg-accent-light text-accent"}
-                        assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}
-                      />
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })()}
-
-          {/* Main inventory list (non-urgent items) */}
-          {(() => {
-            const nonUrgent = filtered.filter((item) => daysUntil(item.nextReminderDate) > 7);
-            if (nonUrgent.length === 0) return null;
+            if (filtered.length === 0) return null;
             return (
               <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
                 <ul role="list" aria-label="Inventory items">
-                  {nonUrgent.map((item) => {
+                  {filtered.map((item) => {
                     const days = daysUntil(item.nextReminderDate);
                     const isSoon = days > 0 && days <= 30;
                     const dueLabel = `in ${days} day${days !== 1 ? "s" : ""}`;
@@ -379,7 +344,7 @@ export default function InventoryClient() {
                         assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}
                         extraInfo={
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-[13px] font-semibold text-text-primary truncate">
+                            <span className="text-[14px] font-semibold text-text-primary truncate">
                               {item.name}
                             </span>
                             <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">

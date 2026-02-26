@@ -28,7 +28,7 @@ export default function SearchFilterBar({
           placeholder="Search Contractors"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-9 pr-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+          className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
           aria-label="Search contractors"
         />
       </div>
@@ -40,7 +40,7 @@ export default function SearchFilterBar({
           onChange={(e) =>
             onSpecialtyChange(e.target.value as Specialty | "All")
           }
-          className="appearance-none bg-surface border border-border rounded-[var(--radius-sm)] py-[7px] pl-3 pr-8 text-[13px] font-medium text-text-primary cursor-pointer hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+          className="appearance-none bg-surface border border-border rounded-[var(--radius-sm)] py-[7px] pl-3 pr-8 text-[14px] font-medium text-text-primary cursor-pointer hover:border-border-strong focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
           aria-label="Filter by specialty"
         >
           <option value="All">All Specialties</option>

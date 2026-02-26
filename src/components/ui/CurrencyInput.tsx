@@ -79,7 +79,7 @@ export default function CurrencyInput({
       )}
       onClick={() => inputRef.current?.focus()}
     >
-      <span className="pl-3 text-[13px] text-text-3 select-none">$</span>
+      <span className="pl-3 text-[14px] text-text-3 select-none">$</span>
       <input
         ref={inputRef}
         type="text"
@@ -88,7 +88,7 @@ export default function CurrencyInput({
         autoFocus={autoFocus}
         value={displayValue}
         onChange={handleChange}
-        className="flex-1 px-1.5 py-[7px] text-[13px] bg-transparent text-text-primary placeholder:text-text-4 focus:outline-none"
+        className="flex-1 px-1.5 py-[7px] text-[14px] bg-transparent text-text-primary placeholder:text-text-4 focus:outline-none"
         placeholder={placeholder}
       />
     </div>

@@ -20,7 +20,7 @@ export default function ProjectRow({
         className="grid grid-cols-[1fr_140px_110px] items-center gap-3 px-5 py-3 hover:bg-surface-hover transition-[background] duration-[120ms]"
       >
         {/* Project Name */}
-        <span className="text-[13px] font-semibold text-text-primary truncate">
+        <span className="text-[14px] font-semibold text-text-primary truncate">
           {project.name}
         </span>
 

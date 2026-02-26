@@ -40,13 +40,13 @@ export default function SuperadminDashboardClient() {
       <div className="flex gap-3 mb-6">
         <Link
           href="/superadmin/organizations/new"
-          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           + New Organization
         </Link>
         <Link
           href="/superadmin/managers/new"
-          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[13px] font-medium hover:bg-border transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[14px] font-medium hover:bg-border transition-all duration-[120ms]"
         >
           + New Manager
         </Link>
@@ -55,12 +55,12 @@ export default function SuperadminDashboardClient() {
       {/* Org list */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)]">
         <div className="px-5 py-4 border-b border-border">
-          <h2 className="text-sm font-semibold text-text-primary">Organizations</h2>
+          <h2 className="text-[15px] font-semibold text-text-primary">Organizations</h2>
         </div>
         {loading ? (
-          <p className="px-5 py-8 text-[13px] text-text-3 text-center">Loading...</p>
+          <p className="px-5 py-8 text-[14px] text-text-3 text-center">Loading...</p>
         ) : orgs.length === 0 ? (
-          <p className="px-5 py-8 text-[13px] text-text-3 text-center">
+          <p className="px-5 py-8 text-[14px] text-text-3 text-center">
             No organizations yet. Create one to get started.
           </p>
         ) : (

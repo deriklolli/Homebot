@@ -100,8 +100,8 @@ export default function SettingsPage() {
 
       {/* Property */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mb-4">
-        <h2 className="text-sm font-semibold text-text-primary mb-1">Property</h2>
-        <p className="text-[13px] text-text-3 mb-4">
+        <h2 className="text-[15px] font-semibold text-text-primary mb-1">Property</h2>
+        <p className="text-[14px] text-text-3 mb-4">
           Name your property. This appears on the dashboard header.
         </p>
         <input
@@ -115,7 +115,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSaveProperty}
             disabled={savingProperty}
-            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
           >
             {savingProperty ? "Saving..." : savedProperty ? "Saved!" : "Save"}
           </button>
@@ -124,8 +124,8 @@ export default function SettingsPage() {
 
       {/* Appearance */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5">
-        <h2 className="text-sm font-semibold text-text-primary mb-1">Appearance</h2>
-        <p className="text-[13px] text-text-3 mb-4">Choose your preferred theme.</p>
+        <h2 className="text-[15px] font-semibold text-text-primary mb-1">Appearance</h2>
+        <p className="text-[14px] text-text-3 mb-4">Choose your preferred theme.</p>
         <div className="flex gap-2">
           {themeOptions.map((opt) => {
             const isActive = theme === opt.value;
@@ -133,7 +133,7 @@ export default function SettingsPage() {
               <button
                 key={opt.value}
                 onClick={() => setTheme(opt.value)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border text-[13px] font-medium transition-all duration-[120ms] ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border text-[14px] font-medium transition-all duration-[120ms] ${
                   isActive
                     ? "border-accent bg-accent-light text-accent"
                     : "border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
@@ -149,13 +149,13 @@ export default function SettingsPage() {
 
       {/* Notifications */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mt-4">
-        <h2 className="text-sm font-semibold text-text-primary mb-1">Notifications</h2>
-        <p className="text-[13px] text-text-3 mb-4">
+        <h2 className="text-[15px] font-semibold text-text-primary mb-1">Notifications</h2>
+        <p className="text-[14px] text-text-3 mb-4">
           Get alerts when inventory items are due for reorder.
         </p>
 
         {loadingPrefs ? (
-          <p className="text-[13px] text-text-3">Loading preferences...</p>
+          <p className="text-[14px] text-text-3">Loading preferences...</p>
         ) : (
           <div className="space-y-4">
             {/* Email toggle */}
@@ -168,7 +168,7 @@ export default function SettingsPage() {
               />
               <MailIcon width={15} height={15} className="text-text-3 mt-0.5 shrink-0" />
               <div>
-                <span className="text-[13px] font-medium text-text-primary block">
+                <span className="text-[14px] font-medium text-text-primary block">
                   Email notifications
                 </span>
                 {userEmail && (
@@ -189,7 +189,7 @@ export default function SettingsPage() {
               />
               <PhoneIcon width={15} height={15} className="text-text-3 mt-0.5 shrink-0" />
               <div>
-                <span className="text-[13px] font-medium text-text-primary block">
+                <span className="text-[14px] font-medium text-text-primary block">
                   SMS notifications
                 </span>
                 <span className="text-[12px] text-text-3 block">
@@ -214,7 +214,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
               >
                 {saving ? "Saving..." : saved ? "Saved!" : "Save preferences"}
               </button>

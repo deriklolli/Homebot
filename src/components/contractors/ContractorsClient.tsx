@@ -122,7 +122,7 @@ export default function ContractorsClient() {
         </h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={14} height={14} />
           Add Contractor
@@ -155,10 +155,10 @@ export default function ContractorsClient() {
         </div>
       ) : (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-sm font-semibold text-text-primary mb-1">
+          <p className="text-[15px] font-semibold text-text-primary mb-1">
             No contractors found
           </p>
-          <p className="text-[13px] text-text-3">
+          <p className="text-[14px] text-text-3">
             Try adjusting your search or filter, or add a new contractor.
           </p>
         </div>

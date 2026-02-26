@@ -119,7 +119,7 @@ export default function ProjectsClient() {
         </h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={14} height={14} />
           Add Project
@@ -137,7 +137,7 @@ export default function ProjectsClient() {
               role="tab"
               aria-selected={isActive}
               onClick={() => setSelectedStatus(isActive ? "All" : tab)}
-              className={`relative px-4 py-2.5 text-[13px] font-medium transition-colors duration-[120ms] ${
+              className={`relative px-4 py-2.5 text-[14px] font-medium transition-colors duration-[120ms] ${
                 isActive
                   ? "text-accent"
                   : "text-text-3 hover:text-text-primary"
@@ -190,10 +190,10 @@ export default function ProjectsClient() {
         </div>
       ) : (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-sm font-semibold text-text-primary mb-1">
+          <p className="text-[15px] font-semibold text-text-primary mb-1">
             No projects found
           </p>
-          <p className="text-[13px] text-text-3">
+          <p className="text-[14px] text-text-3">
             Try adjusting your search or filter, or add a new project.
           </p>
         </div>

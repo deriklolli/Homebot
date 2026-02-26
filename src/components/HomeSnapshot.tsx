@@ -177,17 +177,17 @@ export default function HomeSnapshot() {
     return (
       <div className="p-5">
         <header className="flex items-start justify-between gap-4 mb-4">
-          <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
+          <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
             <HomeIcon width={16} height={16} className="text-accent" />
             Your Home's Estimated Value
           </h2>
         </header>
         <div className="flex flex-col items-center gap-4 py-4 px-4 text-center">
           <div className="flex flex-col gap-1">
-            <p className="text-sm font-semibold text-text-primary">
+            <p className="text-[15px] font-semibold text-text-primary">
               Connect your home
             </p>
-            <p className="text-[13px] text-text-3 leading-normal">
+            <p className="text-[14px] text-text-3 leading-normal">
               Paste your Redfin property URL to see your home&apos;s value and photo.
             </p>
           </div>
@@ -204,14 +204,14 @@ export default function HomeSnapshot() {
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleConnect()}
-                className="w-full pl-8 pr-3 py-2 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full pl-8 pr-3 py-2 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 aria-label="Redfin property URL"
               />
             </div>
             <button
               onClick={handleConnect}
               disabled={scraping || !urlInput.trim()}
-              className="px-4 py-2 rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              className="px-4 py-2 rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
             >
               {scraping ? "Connecting..." : "Connect"}
             </button>
@@ -228,7 +228,7 @@ export default function HomeSnapshot() {
   return (
     <div className="p-5">
       <header className="flex items-start justify-between gap-4 mb-4">
-        <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
+        <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
           <HomeIcon width={16} height={16} className="text-accent" />
           Your Home's Estimated Value
         </h2>
@@ -259,7 +259,7 @@ export default function HomeSnapshot() {
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleConnect()}
-                className="w-full pl-8 pr-3 py-2 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full pl-8 pr-3 py-2 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 aria-label="Redfin property URL"
                 autoFocus
               />
@@ -267,7 +267,7 @@ export default function HomeSnapshot() {
             <button
               onClick={handleConnect}
               disabled={scraping || !urlInput.trim()}
-              className="px-4 py-2 rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              className="px-4 py-2 rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
             >
               {scraping ? "Updating..." : "Update"}
             </button>
@@ -313,7 +313,7 @@ export default function HomeSnapshot() {
                 href={snapshot.redfinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[13px] font-medium text-text-primary hover:text-accent transition-colors duration-[120ms]"
+                className="text-[14px] font-medium text-text-primary hover:text-accent transition-colors duration-[120ms]"
               >
                 {parsed ? (
                   <>
@@ -359,7 +359,7 @@ export default function HomeSnapshot() {
                   {formatCurrency(snapshot.estimatedValue)}
                 </span>
               ) : (
-                <span className="text-[13px] text-text-3">
+                <span className="text-[14px] text-text-3">
                   No value set
                 </span>
               )}

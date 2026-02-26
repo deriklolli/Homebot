@@ -213,7 +213,7 @@ export default function DatePicker({
         type="button"
         onClick={() => (open ? setOpen(false) : handleOpen())}
         className={cn(
-          "flex items-center justify-between gap-2 w-full px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] transition-all duration-[120ms] text-left",
+          "flex items-center justify-between gap-2 w-full px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] transition-all duration-[120ms] text-left",
           open
             ? "border-accent ring-1 ring-accent/30 outline-none"
             : "hover:border-border-strong",
@@ -260,7 +260,7 @@ export default function DatePicker({
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); setView("months"); }}
-                    className="text-[13px] font-semibold text-text-primary hover:text-accent transition-colors duration-[120ms]"
+                    className="text-[14px] font-semibold text-text-primary hover:text-accent transition-colors duration-[120ms]"
                   >
                     {MONTH_NAMES[viewMonth]} {viewYear}
                   </button>
@@ -328,7 +328,7 @@ export default function DatePicker({
                   >
                     <ChevronLeftIcon width={14} height={14} />
                   </button>
-                  <span className="text-[13px] font-semibold text-text-primary">
+                  <span className="text-[14px] font-semibold text-text-primary">
                     {viewYear}
                   </span>
                   <button

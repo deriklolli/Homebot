@@ -58,7 +58,7 @@ export default function CreateClientForm() {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <Link
         href="/admin"
-        className="inline-flex items-center gap-1 text-[13px] text-text-3 hover:text-accent mb-4 transition-colors"
+        className="inline-flex items-center gap-1 text-[14px] text-text-3 hover:text-accent mb-4 transition-colors"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Clients
@@ -92,7 +92,7 @@ export default function CreateClientForm() {
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 max-w-[520px]">
         {error && (
           <div className="mb-4 px-3 py-2 rounded-[var(--radius-sm)] bg-red/10 border border-red/20">
-            <p className="text-[13px] text-red">{error}</p>
+            <p className="text-[14px] text-red">{error}</p>
           </div>
         )}
 
@@ -157,7 +157,7 @@ export default function CreateClientForm() {
                 if (!email.trim()) return;
                 setStep("assets");
               }}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
             >
               Next: Select Assets
             </button>
@@ -173,14 +173,14 @@ export default function CreateClientForm() {
               <button
                 type="button"
                 onClick={() => setStep("info")}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[13px] font-medium hover:bg-border transition-all duration-[120ms]"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[14px] font-medium hover:bg-border transition-all duration-[120ms]"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={() => setStep("review")}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
               >
                 Next: Review
               </button>
@@ -209,11 +209,11 @@ export default function CreateClientForm() {
                 Pre-loaded Assets
               </p>
               {selectedAssets.length === 0 ? (
-                <p className="text-[13px] text-text-3">No assets selected</p>
+                <p className="text-[14px] text-text-3">No assets selected</p>
               ) : (
                 <ul className="flex flex-col gap-0.5">
                   {selectedAssets.map((a) => (
-                    <li key={`${a.category}-${a.name}`} className="text-[13px] text-text-primary">
+                    <li key={`${a.category}-${a.name}`} className="text-[14px] text-text-primary">
                       {a.name} <span className="text-text-3">({a.category})</span>
                     </li>
                   ))}
@@ -225,7 +225,7 @@ export default function CreateClientForm() {
               <button
                 type="button"
                 onClick={() => setStep("assets")}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[13px] font-medium hover:bg-border transition-all duration-[120ms]"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[14px] font-medium hover:bg-border transition-all duration-[120ms]"
               >
                 Back
               </button>
@@ -233,7 +233,7 @@ export default function CreateClientForm() {
                 type="button"
                 onClick={handleCreate}
                 disabled={saving}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
               >
                 {saving ? "Creating..." : "Create Client"}
               </button>

@@ -23,11 +23,11 @@ export default function ProjectCard({
 
   return (
     <Link href={`/projects/${project.id}`}>
-      <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200 h-full">
+      <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out h-full">
         <div className="p-5">
           {/* Name + status */}
           <div className="flex items-start justify-between gap-2 mb-2">
-            <p className="text-[13px] font-semibold text-text-primary truncate">
+            <p className="text-[14px] font-semibold text-text-primary truncate">
               {project.name}
             </p>
             <span
@@ -39,7 +39,7 @@ export default function ProjectCard({
 
           {/* Description */}
           {project.description && (
-            <p className="text-[13px] text-text-3 line-clamp-2 leading-relaxed mb-3">
+            <p className="text-[14px] text-text-3 line-clamp-2 leading-relaxed mb-3">
               {project.description}
             </p>
           )}
@@ -52,12 +52,12 @@ export default function ProjectCard({
                   <img
                     src={contractorLogoUrl}
                     alt={contractorCompany}
-                    className="w-5 h-5 rounded-full object-contain bg-white border border-border shrink-0"
+                    className="w-10 h-10 rounded-full object-contain bg-white border border-border shrink-0"
                     onError={() => setLogoError(true)}
                   />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center shrink-0">
-                    <UserIcon width={11} height={11} />
+                  <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center shrink-0">
+                    <UserIcon width={20} height={20} />
                   </div>
                 )}
                 <span className="text-[12px] text-text-2 truncate">{contractorCompany}</span>

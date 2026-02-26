@@ -72,7 +72,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
-        <p className="text-[13px] text-text-3">Loading...</p>
+        <p className="text-[14px] text-text-3">Loading...</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <Link
         href="/admin"
-        className="inline-flex items-center gap-1 text-[13px] text-text-3 hover:text-accent mb-4 transition-colors"
+        className="inline-flex items-center gap-1 text-[14px] text-text-3 hover:text-accent mb-4 transition-colors"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Clients
@@ -103,7 +103,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
             {client.fullName || client.email}
           </h1>
           {client.propertyName && (
-            <p className="text-[13px] text-text-3 mt-0.5">{client.propertyName}</p>
+            <p className="text-[14px] text-text-3 mt-0.5">{client.propertyName}</p>
           )}
         </div>
         <span
@@ -140,7 +140,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
       {/* Invite success */}
       {inviteSuccess && (
         <div className="mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-green/10 border border-green/20 max-w-[520px]">
-          <p className="text-[13px] text-green font-medium">
+          <p className="text-[14px] text-green font-medium">
             Invite email sent to {client.email}
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <button
             onClick={handleInvite}
             disabled={inviting}
-            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
           >
             {inviting ? "Sending..." : client.status === "invited" ? "Resend Invite" : "Send Invite"}
           </button>
@@ -169,7 +169,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
       {client.status === "activated" && (
         <div className="mb-6 px-4 py-3 rounded-[var(--radius-md)] bg-green/10 border border-green/20 max-w-[520px]">
-          <p className="text-[13px] text-green font-medium">
+          <p className="text-[14px] text-green font-medium">
             This client has activated their account. You no longer have access to their data.
           </p>
         </div>
@@ -179,7 +179,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
       {client.assets.length > 0 && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] max-w-[520px]">
           <div className="px-5 py-4 border-b border-border">
-            <h2 className="text-sm font-semibold text-text-primary">Pre-loaded Assets</h2>
+            <h2 className="text-[15px] font-semibold text-text-primary">Pre-loaded Assets</h2>
           </div>
           <ul className="divide-y divide-border">
             {client.assets.map((asset) => (

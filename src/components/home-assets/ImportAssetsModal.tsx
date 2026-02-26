@@ -209,7 +209,7 @@ export default function ImportAssetsModal({
                 className="text-text-4"
               />
               <div className="text-center">
-                <p className="text-[13px] font-medium text-text-primary">
+                <p className="text-[14px] font-medium text-text-primary">
                   Drag & drop a file here, or click to browse
                 </p>
                 <p className="text-[12px] text-text-3 mt-1">
@@ -227,13 +227,13 @@ export default function ImportAssetsModal({
             </div>
 
             {fileError && (
-              <p className="text-[13px] text-red font-medium">{fileError}</p>
+              <p className="text-[14px] text-red font-medium">{fileError}</p>
             )}
 
             <button
               type="button"
               onClick={downloadTemplate}
-              className="text-[13px] text-accent hover:underline self-start"
+              className="text-[14px] text-accent hover:underline self-start"
               aria-label="Download CSV template"
             >
               Download Template
@@ -246,7 +246,7 @@ export default function ImportAssetsModal({
           <>
             <div className="px-5 py-3 border-b border-border bg-bg/50 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <span className="text-[13px] text-text-primary font-medium">
+                <span className="text-[14px] text-text-primary font-medium">
                   {fileName}
                 </span>
                 <span className="text-[12px] text-text-3">
@@ -266,7 +266,7 @@ export default function ImportAssetsModal({
             </div>
 
             <div className="overflow-y-auto flex-1 min-h-0">
-              <table className="w-full text-[13px]">
+              <table className="w-full text-[14px]">
                 <thead>
                   <tr className="border-b border-border text-left text-[11px] font-medium text-text-4 uppercase tracking-wide">
                     <th className="pl-5 pr-2 py-2.5 w-8">
@@ -351,7 +351,7 @@ export default function ImportAssetsModal({
                   setRows([]);
                   setFileName("");
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
               >
                 Back
               </button>
@@ -359,7 +359,7 @@ export default function ImportAssetsModal({
                 type="button"
                 onClick={handleImport}
                 disabled={selectedCount === 0}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Import {selectedCount} Asset{selectedCount !== 1 ? "s" : ""}
               </button>
@@ -370,7 +370,7 @@ export default function ImportAssetsModal({
         {/* Step 3: Importing */}
         {step === "importing" && (
           <div className="p-8 flex flex-col items-center gap-4">
-            <p className="text-[13px] font-medium text-text-primary">
+            <p className="text-[14px] font-medium text-text-primary">
               Importing assets...
             </p>
             <div className="w-full max-w-xs h-2 bg-border rounded-[var(--radius-full)] overflow-hidden">
@@ -425,7 +425,7 @@ export default function ImportAssetsModal({
                 onImportComplete(importedAssets);
                 onClose();
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] mt-2"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] mt-2"
             >
               Done
             </button>

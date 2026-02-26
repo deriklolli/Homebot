@@ -176,7 +176,7 @@ export default function CalendarClient() {
         </h1>
         <button
           onClick={() => setSubscribeModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <CalendarIcon width={14} height={14} />
           Subscribe
@@ -207,7 +207,7 @@ export default function CalendarClient() {
         <div className="flex rounded-[var(--radius-sm)] border border-border-strong overflow-hidden">
           <button
             onClick={() => setView("week")}
-            className={`px-3 py-[5px] text-[13px] font-medium transition-all duration-[120ms] ${
+            className={`px-3 py-[5px] text-[14px] font-medium transition-all duration-[120ms] ${
               view === "week"
                 ? "bg-accent text-white"
                 : "bg-surface text-text-2 hover:bg-border hover:text-text-primary"
@@ -217,7 +217,7 @@ export default function CalendarClient() {
           </button>
           <button
             onClick={() => setView("month")}
-            className={`px-3 py-[5px] text-[13px] font-medium transition-all duration-[120ms] ${
+            className={`px-3 py-[5px] text-[14px] font-medium transition-all duration-[120ms] ${
               view === "month"
                 ? "bg-accent text-white"
                 : "bg-surface text-text-2 hover:bg-border hover:text-text-primary"

@@ -124,7 +124,7 @@ export default function TimePicker({
         type="button"
         onClick={() => (open ? setOpen(false) : handleOpen())}
         className={cn(
-          "flex items-center justify-between gap-2 w-full px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] transition-all duration-[120ms] text-left",
+          "flex items-center justify-between gap-2 w-full px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] transition-all duration-[120ms] text-left",
           open
             ? "border-accent ring-1 ring-accent/30 outline-none"
             : "hover:border-border-strong",
@@ -179,7 +179,7 @@ export default function TimePicker({
                   aria-selected={isSelected}
                   onClick={() => handleSelect(time)}
                   className={cn(
-                    "w-full px-3 py-1.5 text-[13px] text-left transition-colors duration-[120ms]",
+                    "w-full px-3 py-1.5 text-[14px] text-left transition-colors duration-[120ms]",
                     isSelected
                       ? "bg-accent text-white font-medium"
                       : "text-text-primary hover:bg-accent/10"

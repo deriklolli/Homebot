@@ -7,6 +7,9 @@ export const FREQUENCY_OPTIONS = [
   { value: 6, label: "Every 6 months" },
   { value: 12, label: "Every year" },
   { value: 24, label: "Every 2 years" },
+  { value: 36, label: "Every 3 years" },
+  { value: 48, label: "Every 4 years" },
+  { value: 60, label: "Every 5 years" },
 ] as const;
 
 export interface InventoryItem {

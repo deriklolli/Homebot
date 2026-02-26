@@ -221,16 +221,16 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/projects"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Projects
         </Link>
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-sm font-semibold text-text-primary mb-1">
+          <p className="text-[15px] font-semibold text-text-primary mb-1">
             Project not found
           </p>
-          <p className="text-[13px] text-text-3">
+          <p className="text-[14px] text-text-3">
             This project may have been removed.
           </p>
         </div>
@@ -486,7 +486,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Projects
@@ -516,7 +516,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     <button
                       key={s}
                       onClick={() => handleStatusChange(s)}
-                      className={`w-full text-left px-3 py-1.5 text-[13px] transition-colors duration-[120ms] ${
+                      className={`w-full text-left px-3 py-1.5 text-[14px] transition-colors duration-[120ms] ${
                         s === project.status
                           ? "font-semibold text-text-primary bg-border/50"
                           : "text-text-2 hover:bg-border hover:text-text-primary"
@@ -536,7 +536,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           <div className="relative" ref={addMenuRef}>
             <button
               onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
             >
               <PlusIcon width={13} height={13} />
               Add Event
@@ -549,7 +549,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     setAddMenuOpen(false);
                     setAddEventModalOpen(true);
                   }}
-                  className="w-full text-left px-3 py-1.5 text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
                 >
                   Schedule Appointment
                 </button>
@@ -558,7 +558,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     setAddMenuOpen(false);
                     setAddNoteModalOpen(true);
                   }}
-                  className="w-full text-left px-3 py-1.5 text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
                 >
                   Add Note
                 </button>
@@ -567,7 +567,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     galleryRef.current?.triggerUpload();
                     setAddMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-1.5 text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
                 >
                   Add Photos
                 </button>
@@ -576,7 +576,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     invoiceSectionRef.current?.triggerUpload();
                     setAddMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-1.5 text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
                 >
                   Add Invoice
                 </button>
@@ -585,14 +585,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           </div>
           <button
             onClick={() => setEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <PencilIcon width={13} height={13} />
             Edit
           </button>
           <button
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <TrashIcon width={13} height={13} />
             Delete
@@ -622,7 +622,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           <div>
             {contractor ? (
               <>
-                <span className="block text-[13px] font-semibold text-text-primary">
+                <span className="block text-[14px] font-semibold text-text-primary">
                   {contractor.company}
                 </span>
                 {contractor.name && (
@@ -632,7 +632,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 )}
               </>
             ) : (
-              <span className="text-[13px] text-text-3">Unassigned</span>
+              <span className="text-[14px] text-text-3">Unassigned</span>
             )}
           </div>
           <span className="text-[10px] text-text-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
@@ -650,31 +650,31 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               Scheduled
             </span>
             <div
-              className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group cursor-pointer hover:shadow-[var(--shadow-hover)] transition-shadow duration-[120ms]"
+              className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out"
               onClick={() => setEditingEvent(item.data)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === "Enter") setEditingEvent(item.data); }}
             >
               <div className="flex flex-col gap-0.5">
-                <span className="text-[13px] font-semibold text-text-primary">
+                <span className="text-[14px] font-semibold text-text-primary">
                   {item.data.title}
                 </span>
-                <span className="text-[13px] text-text-3">
+                <span className="text-[14px] text-text-3">
                   {formatDate(item.data.eventDate)}{item.data.eventTime ? ` at ${formatTime(item.data.eventTime)}${item.data.eventEndTime ? ` – ${formatTime(item.data.eventEndTime)}` : ""}` : ""}
                 </span>
                 {contractor && (
                   <>
-                    <span className="text-[13px] text-text-3">
+                    <span className="text-[14px] text-text-3">
                       {contractor.company}
                     </span>
                     {contractor.name && (
-                      <span className="text-[13px] text-text-3">
+                      <span className="text-[14px] text-text-3">
                         {contractor.name}
                       </span>
                     )}
                     {contractor.phone && (
-                      <span className="text-[13px] text-text-3">
+                      <span className="text-[14px] text-text-3">
                         {contractor.phone}
                       </span>
                     )}
@@ -702,7 +702,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               Note
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
-              <p className="text-[13px] text-text-primary leading-relaxed whitespace-pre-wrap">
+              <p className="text-[14px] text-text-primary leading-relaxed whitespace-pre-wrap">
                 {item.data.content}
               </p>
               <div className="flex items-center gap-2 shrink-0 ml-3">
@@ -746,7 +746,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
                 Total Cost
               </span>
-              <span className="text-[13px] font-semibold text-text-primary flex items-center gap-1.5">
+              <span className="text-[14px] font-semibold text-text-primary flex items-center gap-1.5">
                 <DollarIcon width={13} height={13} className="text-text-3" />
                 {project.totalCost !== null
                   ? `$${project.totalCost.toLocaleString()}`
@@ -781,7 +781,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
                   Completed On
                 </span>
-                <span className="text-[13px] text-text-3">
+                <span className="text-[14px] text-text-3">
                   {formatDateTime(project.completedAt)}
                 </span>
               </div>
@@ -793,18 +793,18 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Delete confirmation */}
       {confirmDelete && (
         <div className="mt-4 flex items-center gap-3 bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[var(--shadow-card)] px-5 py-3">
-          <span className="text-[13px] text-text-3 flex-1">
+          <span className="text-[14px] text-text-3 flex-1">
             Are you sure you want to delete this project? This cannot be undone.
           </span>
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
           >
             Yes, Delete
           </button>
           <button
             onClick={() => setConfirmDelete(false)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             Cancel
           </button>
@@ -888,7 +888,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="Write a note..."
                 autoFocus
                 onKeyDown={(e) => {
@@ -902,7 +902,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     setAddNoteModalOpen(false);
                     setNewNote("");
                   }}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
                 >
                   Cancel
                 </button>
@@ -910,7 +910,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                   type="button"
                   onClick={handleAddNote}
                   disabled={!newNote.trim()}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Save Note
                 </button>

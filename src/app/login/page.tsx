@@ -57,7 +57,7 @@ export default function LoginPage() {
           <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
             Welcome back
           </h1>
-          <p className="text-[13px] text-text-3 text-center">
+          <p className="text-[14px] text-text-3 text-center">
             Sign in to manage your home projects, contractors, and inventory.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         {/* Error message */}
         {error && (
           <div className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-red/10 border border-red/20">
-            <p className="text-[13px] text-red">{error}</p>
+            <p className="text-[14px] text-red">{error}</p>
           </div>
         )}
 
@@ -131,7 +131,7 @@ export default function LoginPage() {
         </button>
 
         {/* Sign up link */}
-        <p className="text-[13px] text-text-3">
+        <p className="text-[14px] text-text-3">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-accent font-medium hover:underline">
             Sign up

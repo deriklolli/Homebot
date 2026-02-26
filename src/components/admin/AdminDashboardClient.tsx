@@ -46,7 +46,7 @@ export default function AdminDashboardClient() {
         </h1>
         <Link
           href="/admin/clients/new"
-          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           + New Client
         </Link>
@@ -62,13 +62,13 @@ export default function AdminDashboardClient() {
       {/* Client list */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)]">
         <div className="px-5 py-4 border-b border-border">
-          <h2 className="text-sm font-semibold text-text-primary">All Clients</h2>
+          <h2 className="text-[15px] font-semibold text-text-primary">All Clients</h2>
         </div>
 
         {loading ? (
-          <p className="px-5 py-8 text-[13px] text-text-3 text-center">Loading...</p>
+          <p className="px-5 py-8 text-[14px] text-text-3 text-center">Loading...</p>
         ) : clients.length === 0 ? (
-          <p className="px-5 py-8 text-[13px] text-text-3 text-center">
+          <p className="px-5 py-8 text-[14px] text-text-3 text-center">
             No clients yet. Create one to get started.
           </p>
         ) : (

@@ -243,7 +243,7 @@ export default function HomeAssetsClient() {
         <button
           type="button"
           onClick={() => setImportModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
         >
           <UploadIcon width={14} height={14} />
           Import CSV
@@ -263,14 +263,14 @@ export default function HomeAssetsClient() {
             placeholder="Search Assets"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+            className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
           />
         </div>
       </div>
 
       {/* Content */}
       {loading ? (
-        <p className="text-[13px] text-text-3">Loading assets...</p>
+        <p className="text-[14px] text-text-3">Loading assets...</p>
       ) : (
         <div className="flex flex-col gap-4">
           {categoriesToShow.map((category) => {
@@ -300,7 +300,7 @@ export default function HomeAssetsClient() {
                     ) : (
                       <ChevronDownIcon width={14} height={14} className="text-text-3 shrink-0" />
                     )}
-                    <span className="text-[13px] font-semibold text-text-primary">
+                    <span className="text-[14px] font-semibold text-text-primary">
                       {category}
                     </span>
                     <span className="text-[12px] text-text-3">
@@ -338,7 +338,7 @@ export default function HomeAssetsClient() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
-                                  <span className="text-[13px] font-semibold text-text-primary truncate">
+                                  <span className="text-[14px] font-semibold text-text-primary truncate">
                                     {asset.name}
                                   </span>
                                   {warranty && (
@@ -372,7 +372,7 @@ export default function HomeAssetsClient() {
                               <HomeIcon width={18} height={18} className="text-text-4" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[13px] font-medium text-text-3">
+                              <span className="text-[14px] font-medium text-text-3">
                                 {row.name}
                               </span>
                               <p className="text-[12px] text-text-4">

@@ -9,6 +9,7 @@ import { dbToService, serviceToDb, dbToContractor, contractorToDb, dbToHomeAsset
 import { formatDateShort as formatDate } from "@/lib/date-utils";
 import { PlusIcon, SearchIcon } from "@/components/icons";
 import AddServiceModal from "./AddServiceModal";
+import HomeServiceAlerts from "@/components/HomeServiceAlerts";
 
 
 function daysUntil(dateStr: string): number {
@@ -164,7 +165,7 @@ export default function ServicesClient() {
         </h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={14} height={14} />
           Add Service
@@ -185,21 +186,23 @@ export default function ServicesClient() {
               placeholder="Search Home Services"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+              className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
             />
           </div>
         </div>
       )}
+
+      <HomeServiceAlerts />
 
       {/* Content */}
       {loading ? (
         <p className="text-sm text-text-3">Loading services...</p>
       ) : services.length === 0 ? (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-sm font-semibold text-text-primary mb-1">
+          <p className="text-[15px] font-semibold text-text-primary mb-1">
             No services yet
           </p>
-          <p className="text-[13px] text-text-3">
+          <p className="text-[14px] text-text-3">
             Start tracking recurring home services like mowing, plowing, and maintenance.
           </p>
         </div>
@@ -231,7 +234,7 @@ export default function ServicesClient() {
                     {/* Service info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[13px] font-semibold text-text-primary truncate">
+                        <span className="text-[14px] font-semibold text-text-primary truncate">
                           {s.name}
                         </span>
                         <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-purple-light text-purple">
@@ -249,7 +252,7 @@ export default function ServicesClient() {
                     {/* Due date */}
                     <div className="flex flex-col items-end gap-0.5 shrink-0">
                       <span
-                        className={`text-[13px] font-medium whitespace-nowrap ${
+                        className={`text-[14px] font-medium whitespace-nowrap ${
                           isOverdue
                             ? "text-red"
                             : isSoon

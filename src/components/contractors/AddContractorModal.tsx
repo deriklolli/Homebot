@@ -119,7 +119,7 @@ export default function AddContractorModal({
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
           {/* Company */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Company Name
             </span>
             <input
@@ -127,21 +127,21 @@ export default function AddContractorModal({
               type="text"
               value={form.company}
               onChange={(e) => setForm({ ...form, company: e.target.value })}
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="e.g. Reynolds Plumbing Co."
             />
           </label>
 
           {/* Name */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Contact Name {!form.company.trim() && <span className="text-red">*</span>}
             </span>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="e.g. Mike Reynolds"
             />
           </label>
@@ -149,7 +149,7 @@ export default function AddContractorModal({
           {/* Phone + Email row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-text-primary">
+              <span className="text-[14px] font-medium text-text-primary">
                 Phone
               </span>
               <PhoneInput
@@ -158,14 +158,14 @@ export default function AddContractorModal({
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-text-primary">
+              <span className="text-[14px] font-medium text-text-primary">
                 Email
               </span>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="mike@example.com"
               />
             </label>
@@ -173,7 +173,7 @@ export default function AddContractorModal({
 
           {/* Website */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Website
             </span>
             <div className="flex items-center gap-2">
@@ -182,7 +182,7 @@ export default function AddContractorModal({
                 value={form.website}
                 onChange={(e) => setForm({ ...form, website: e.target.value })}
                 onBlur={handleWebsiteBlur}
-                className="flex-1 px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="flex-1 px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="e.g. reynoldsplumbing.com"
               />
               {scrapingLogo && (
@@ -202,7 +202,7 @@ export default function AddContractorModal({
 
           {/* Specialty */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Specialty <span className="text-red">*</span>
             </span>
             <div className="relative">
@@ -212,7 +212,7 @@ export default function AddContractorModal({
                 onChange={(e) =>
                   setForm({ ...form, specialty: e.target.value as Specialty })
                 }
-                className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               >
                 <option value="" disabled>
                   Select a specialty...
@@ -229,7 +229,7 @@ export default function AddContractorModal({
 
           {/* Rating */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Rating
             </span>
             <div className="flex gap-1" role="radiogroup" aria-label="Rating">
@@ -255,14 +255,14 @@ export default function AddContractorModal({
 
           {/* Notes */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Notes
             </span>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={3}
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="Work performed, pricing notes, availability..."
             />
           </label>
@@ -273,7 +273,7 @@ export default function AddContractorModal({
               <button
                 type="button"
                 onClick={onDelete}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-red/30 bg-surface text-red text-[13px] font-medium hover:bg-red-light transition-all duration-[120ms]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-red/30 bg-surface text-red text-[14px] font-medium hover:bg-red-light transition-all duration-[120ms]"
               >
                 <TrashIcon width={14} height={14} />
                 Delete
@@ -283,14 +283,14 @@ export default function AddContractorModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isEditing ? "Save Changes" : "Save Contractor"}
             </button>

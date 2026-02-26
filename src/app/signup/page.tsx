@@ -72,7 +72,7 @@ export default function SignUpPage() {
           </p>
           <Link
             href="/login"
-            className="mt-2 text-[13px] text-accent font-medium hover:underline"
+            className="mt-2 text-[14px] text-accent font-medium hover:underline"
           >
             Back to sign in
           </Link>
@@ -90,7 +90,7 @@ export default function SignUpPage() {
           <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
             Create an account
           </h1>
-          <p className="text-[13px] text-text-3 text-center">
+          <p className="text-[14px] text-text-3 text-center">
             Get started managing your home projects and inventory.
           </p>
         </div>
@@ -98,7 +98,7 @@ export default function SignUpPage() {
         {/* Error message */}
         {error && (
           <div className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-red/10 border border-red/20">
-            <p className="text-[13px] text-red">{error}</p>
+            <p className="text-[14px] text-red">{error}</p>
           </div>
         )}
 
@@ -181,7 +181,7 @@ export default function SignUpPage() {
         </button>
 
         {/* Sign in link */}
-        <p className="text-[13px] text-text-3">
+        <p className="text-[14px] text-text-3">
           Already have an account?{" "}
           <Link href="/login" className="text-accent font-medium hover:underline">
             Sign in

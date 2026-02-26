@@ -73,7 +73,7 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
 
         {/* Body */}
         <div className="p-5 flex flex-col gap-4">
-          <p className="text-[13px] text-text-2 leading-relaxed">
+          <p className="text-[14px] text-text-2 leading-relaxed">
             Add your HOMEBOT schedule to your calendar so project
             appointments, inventory reminders, and service dates stay in sync.
           </p>
@@ -106,7 +106,7 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
             />
             <button
               onClick={handleCopy}
-              className="inline-flex items-center px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] shrink-0"
+              className="inline-flex items-center px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] shrink-0"
             >
               {copied ? "Copied!" : "Copy"}
             </button>

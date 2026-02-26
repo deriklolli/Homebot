@@ -93,7 +93,7 @@ export default function AddProjectModal({
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
           {/* Name */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Project Name <span className="text-red">*</span>
             </span>
             <input
@@ -102,14 +102,14 @@ export default function AddProjectModal({
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="e.g. Kitchen Faucet Replacement"
             />
           </label>
 
           {/* Description */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Description
             </span>
             <input
@@ -118,14 +118,14 @@ export default function AddProjectModal({
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="Brief description of the work"
             />
           </label>
 
           {/* Contractor */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Contractor
             </span>
             <div className="relative">
@@ -134,7 +134,7 @@ export default function AddProjectModal({
                 onChange={(e) =>
                   setForm({ ...form, contractorId: e.target.value })
                 }
-                className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               >
                 <option value="">None (DIY)</option>
                 {[...contractors]
@@ -152,7 +152,7 @@ export default function AddProjectModal({
           {/* Home Asset */}
           {homeAssets.length > 0 && (
             <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-text-primary">
+              <span className="text-[14px] font-medium text-text-primary">
                 Home Asset
               </span>
               <div className="relative">
@@ -161,7 +161,7 @@ export default function AddProjectModal({
                   onChange={(e) =>
                     setForm({ ...form, homeAssetId: e.target.value })
                   }
-                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 >
                   <option value="">None</option>
                   {[...homeAssets]
@@ -179,7 +179,7 @@ export default function AddProjectModal({
 
           {/* Status */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Status
             </span>
             <div className="relative">
@@ -191,7 +191,7 @@ export default function AddProjectModal({
                     status: e.target.value as ProjectStatus,
                   })
                 }
-                className="w-full appearance-none px-3 py-[7px] pr-8 text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               >
                 {PROJECT_STATUSES.map((s) => (
                   <option key={s} value={s}>
@@ -205,14 +205,14 @@ export default function AddProjectModal({
 
           {/* Notes */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium text-text-primary">
+            <span className="text-[14px] font-medium text-text-primary">
               Notes
             </span>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={3}
-              className="px-3 py-[7px] text-[13px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="Materials, special instructions, access notes..."
             />
           </label>
@@ -222,14 +222,14 @@ export default function AddProjectModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isEditing ? "Save Changes" : "Create Project"}
             </button>

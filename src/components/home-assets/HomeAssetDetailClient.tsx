@@ -130,16 +130,16 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/home-assets"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Home Assets
         </Link>
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-sm font-semibold text-text-primary mb-1">
+          <p className="text-[15px] font-semibold text-text-primary mb-1">
             Asset not found
           </p>
-          <p className="text-[13px] text-text-3">
+          <p className="text-[14px] text-text-3">
             This asset may have been removed.
           </p>
         </div>
@@ -154,7 +154,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/home-assets"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Home Assets
@@ -177,14 +177,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <PencilIcon width={13} height={13} />
             Edit
           </button>
           <button
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <TrashIcon width={13} height={13} />
             Delete
@@ -271,7 +271,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
               href={affiliateUrl(asset.productUrl)}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[13px] text-accent hover:underline"
+              className="text-[14px] text-accent hover:underline"
             >
               View Product
             </a>
@@ -284,7 +284,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-bg/50">
             <PackageIcon width={14} height={14} className="text-text-3" />
-            <span className="text-[13px] font-semibold text-text-primary">
+            <span className="text-[14px] font-semibold text-text-primary">
               Tracked Inventory
             </span>
           </div>
@@ -296,7 +296,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                   className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
                 >
                   <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-semibold text-text-primary truncate block">
+                    <span className="text-[14px] font-semibold text-text-primary truncate block">
                       {inv.name}
                     </span>
                     {inv.description && (
@@ -331,7 +331,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {projects.length > 0 && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
           <div className="px-5 py-3 border-b border-border bg-bg/50">
-            <span className="text-[13px] font-semibold text-text-primary">
+            <span className="text-[14px] font-semibold text-text-primary">
               {asset.name} Projects
             </span>
           </div>
@@ -349,7 +349,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[13px] font-semibold text-text-primary truncate">
+                        <span className="text-[14px] font-semibold text-text-primary truncate">
                           {p.name}
                         </span>
                         <span className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${statusBadge[p.status]}`}>
@@ -376,18 +376,18 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Delete confirmation */}
       {confirmDelete && (
         <div className="mt-4 flex items-center gap-3 bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[var(--shadow-card)] px-5 py-3">
-          <span className="text-[13px] text-text-3 flex-1">
+          <span className="text-[14px] text-text-3 flex-1">
             Are you sure you want to delete this asset? This cannot be undone.
           </span>
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
           >
             Yes, Delete
           </button>
           <button
             onClick={() => setConfirmDelete(false)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[13px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             Cancel
           </button>

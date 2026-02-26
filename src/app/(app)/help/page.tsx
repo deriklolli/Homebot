@@ -7,7 +7,7 @@ export default function HelpPage() {
         </h1>
       </header>
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-        <p className="text-[13px] text-text-3">
+        <p className="text-[14px] text-text-3">
           Help &amp; support page coming soon.
         </p>
       </div>

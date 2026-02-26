@@ -26,7 +26,7 @@ export default function OrgListClient() {
         </h1>
         <Link
           href="/superadmin/organizations/new"
-          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           + New Organization
         </Link>
@@ -34,9 +34,9 @@ export default function OrgListClient() {
 
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)]">
         {loading ? (
-          <p className="px-5 py-8 text-[13px] text-text-3 text-center">Loading...</p>
+          <p className="px-5 py-8 text-[14px] text-text-3 text-center">Loading...</p>
         ) : orgs.length === 0 ? (
-          <p className="px-5 py-8 text-[13px] text-text-3 text-center">
+          <p className="px-5 py-8 text-[14px] text-text-3 text-center">
             No organizations yet.
           </p>
         ) : (

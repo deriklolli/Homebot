@@ -39,7 +39,7 @@ export default function CreateOrgForm() {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <Link
         href="/superadmin/organizations"
-        className="inline-flex items-center gap-1 text-[13px] text-text-3 hover:text-accent mb-4 transition-colors"
+        className="inline-flex items-center gap-1 text-[14px] text-text-3 hover:text-accent mb-4 transition-colors"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Organizations
@@ -54,7 +54,7 @@ export default function CreateOrgForm() {
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 max-w-[480px]">
         {error && (
           <div className="mb-4 px-3 py-2 rounded-[var(--radius-sm)] bg-red/10 border border-red/20">
-            <p className="text-[13px] text-red">{error}</p>
+            <p className="text-[14px] text-red">{error}</p>
           </div>
         )}
 
@@ -80,7 +80,7 @@ export default function CreateOrgForm() {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
           >
             {saving ? "Creating..." : "Create Organization"}
           </button>

@@ -152,14 +152,14 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
                 <Link
                   href={item.href}
                   onClick={handleLinkClick}
-                  className={`flex items-center gap-2 py-3 md:py-[9px] px-2 rounded-[var(--radius-md)] text-[13px] font-medium whitespace-nowrap transition-all duration-[120ms] ${
+                  className={`flex items-center gap-2.5 py-3 md:py-[9px] px-2 rounded-[var(--radius-md)] text-[15px] font-medium whitespace-nowrap transition-all duration-[120ms] ${
                     isActive
                       ? "text-accent"
                       : "text-text-3 hover:bg-border hover:text-text-primary"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <item.icon className={`shrink-0 ${isActive ? "text-accent" : ""}`} />
+                  <item.icon className={`shrink-0 ${isActive ? "text-accent" : ""}`} width={20} height={20} />
                   <span
                     className={`transition-all duration-200 whitespace-nowrap ${
                       expanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden"
@@ -183,13 +183,13 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
               key={item.href}
               href={item.href}
               onClick={handleLinkClick}
-              className={`flex items-center gap-2 py-3 md:py-[9px] px-2 rounded-[var(--radius-md)] text-[13px] font-medium whitespace-nowrap transition-all duration-[120ms] ${
+              className={`flex items-center gap-2.5 py-3 md:py-[9px] px-2 rounded-[var(--radius-md)] text-[15px] font-medium whitespace-nowrap transition-all duration-[120ms] ${
                 isActive
                   ? "text-accent"
                   : "text-text-3 hover:bg-border hover:text-text-primary"
               }`}
             >
-              <item.icon className="shrink-0" />
+              <item.icon className="shrink-0" width={20} height={20} />
               <span
                 className={`transition-all duration-200 whitespace-nowrap ${
                   expanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden"
@@ -238,7 +238,7 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
             </button>
           </div>
           <span
-            className={`text-[13px] font-medium text-text-3 transition-all duration-200 whitespace-nowrap ${
+            className={`text-[15px] font-medium text-text-3 transition-all duration-200 whitespace-nowrap ${
               expanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden"
             }`}
           >
@@ -250,7 +250,7 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
       {/* User footer */}
       <div className="px-2 pb-3 border-t border-border shrink-0 relative" ref={menuRef}>
         <button
-          className="flex items-center gap-2 w-full py-2 px-2 rounded-[var(--radius-md)] text-[13px] font-medium text-text-primary hover:bg-border transition-[background] duration-[120ms]"
+          className="flex items-center gap-2.5 w-full py-2 px-2 rounded-[var(--radius-md)] text-[15px] font-medium text-text-primary hover:bg-border transition-[background] duration-[120ms]"
           aria-label="Open user profile menu"
           onClick={() => setMenuOpen(!menuOpen)}
         >
@@ -285,7 +285,7 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
           <div className="absolute bottom-full left-2 right-2 mb-1 bg-surface rounded-[var(--radius-md)] border border-border shadow-[var(--shadow-hover)] overflow-hidden z-20">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 w-full py-2.5 px-3 text-[13px] font-medium text-text-primary hover:bg-border transition-[background] duration-[120ms]"
+              className="flex items-center gap-2.5 w-full py-2.5 px-3 text-[15px] font-medium text-text-primary hover:bg-border transition-[background] duration-[120ms]"
             >
               <LogOutIcon width={15} height={15} />
               Sign out

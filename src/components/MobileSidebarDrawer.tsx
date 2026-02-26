@@ -71,7 +71,7 @@ export default function MobileSidebarDrawer({
       >
         {/* Close button */}
         <div className="flex items-center justify-between px-3 h-14 border-b border-border shrink-0">
-          <span className="text-[13px] font-semibold text-text-primary pl-1">Menu</span>
+          <span className="text-[14px] font-semibold text-text-primary pl-1">Menu</span>
           <button
             onClick={onClose}
             className="flex items-center justify-center w-11 h-11 rounded-[var(--radius-md)] text-text-3 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"

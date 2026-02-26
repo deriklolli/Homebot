@@ -69,7 +69,7 @@ export default function AssetSelector({ selected, onChange }: AssetSelectorProps
                 onClick={() => setExpandedCategory(isExpanded ? null : category)}
                 className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-border/30 transition-colors text-left"
               >
-                <span className="text-[13px] font-medium text-text-primary">
+                <span className="text-[14px] font-medium text-text-primary">
                   {category}
                 </span>
                 <span className="text-[12px] text-text-3">
@@ -105,7 +105,7 @@ export default function AssetSelector({ selected, onChange }: AssetSelectorProps
                         onChange={() => toggleAsset(category, name)}
                         className="rounded border-border text-accent focus:ring-accent/30"
                       />
-                      <span className="text-[13px] text-text-primary">{name}</span>
+                      <span className="text-[14px] text-text-primary">{name}</span>
                     </label>
                   ))}
                 </div>

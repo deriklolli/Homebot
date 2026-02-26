@@ -71,7 +71,7 @@ export default function UpcomingAppointments() {
     <div className="p-5">
       <header className="flex items-start justify-between gap-4 mb-4">
         <div className="flex flex-col gap-[3px] min-w-0">
-          <h2 className="text-sm font-semibold text-text-primary flex items-center gap-1.5">
+          <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
             <CalendarSolidIcon width={15} height={15} className="text-accent" />
             Upcoming Appointments
           </h2>
@@ -80,9 +80,9 @@ export default function UpcomingAppointments() {
       </header>
 
       {loading ? (
-        <p className="text-[13px] text-text-3 py-4">Loading...</p>
+        <p className="text-[14px] text-text-3 py-4">Loading...</p>
       ) : events.length === 0 ? (
-        <p className="text-[13px] text-text-3 py-4">
+        <p className="text-[14px] text-text-3 py-4">
           No upcoming appointments scheduled.
         </p>
       ) : (
@@ -105,7 +105,7 @@ export default function UpcomingAppointments() {
                   />
                 </div>
                 <div className="flex flex-col gap-0.5 min-w-0">
-                  <span className="text-[13px] font-medium text-text-primary truncate">
+                  <span className="text-[14px] font-medium text-text-primary truncate">
                     {ev.project_name}
                   </span>
                   {ev.contractor_company && (
@@ -117,7 +117,7 @@ export default function UpcomingAppointments() {
                   )}
                 </div>
                 <div className="flex flex-col items-end gap-0.5 shrink-0">
-                  <span className="text-[13px] font-medium text-text-primary whitespace-nowrap">
+                  <span className="text-[14px] font-medium text-text-primary whitespace-nowrap">
                     {formatDate(ev.event_date)}
                   </span>
                   {ev.event_time && (

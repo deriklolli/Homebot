@@ -1,5 +1,6 @@
 import UpcomingAppointments from "@/components/UpcomingAppointments";
 import HomeAlerts from "@/components/HomeAlerts";
+import HomeServiceAlerts from "@/components/HomeServiceAlerts";
 import TaskList from "@/components/TaskList";
 import SpendingCard from "@/components/SpendingCard";
 import HomeSnapshot from "@/components/HomeSnapshot";
@@ -18,6 +19,7 @@ export default function DashboardPage() {
 
       {/* Full-width alerts */}
       <HomeAlerts />
+      <HomeServiceAlerts />
 
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
@@ -61,7 +63,7 @@ function Card({
 }) {
   return (
     <article
-      className={`bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200 ${className}`}
+      className={`bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden ${className}`}
     >
       {children}
     </article>

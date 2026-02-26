@@ -205,7 +205,7 @@ export default function SpendingCard() {
     <div className="p-5">
       <header className="flex items-start justify-between gap-4 mb-4">
         <div className="flex flex-col gap-[3px] min-w-0">
-          <h2 className="text-sm font-semibold text-text-primary">
+          <h2 className="text-[15px] font-semibold text-text-primary">
             Home Spending
           </h2>
           <p className="text-[22px] font-bold text-text-primary tracking-tight leading-tight">
@@ -261,11 +261,11 @@ export default function SpendingCard() {
             return (
               <div key={key} className="flex flex-col gap-[5px]">
                 <div className="flex justify-between items-baseline gap-2">
-                  <span className="flex items-center gap-1.5 text-[13px] font-medium text-text-primary">
+                  <span className="flex items-center gap-1.5 text-[14px] font-medium text-text-primary">
                     <span className={`inline-block w-2 h-2 rounded-full ${CATEGORY_DOT[key]} shrink-0`} />
                     {label}
                   </span>
-                  <span className="text-[13px] font-medium text-text-primary">
+                  <span className="text-[14px] font-medium text-text-primary">
                     ${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>

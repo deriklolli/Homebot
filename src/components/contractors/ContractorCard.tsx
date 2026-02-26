@@ -21,7 +21,7 @@ export default function ContractorCard({
   const [logoError, setLogoError] = useState(false);
 
   return (
-    <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200">
+    <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out">
       <div className="p-5">
         {/* Name + avatar + edit */}
         <div className="flex items-start gap-3 mb-3">
@@ -42,7 +42,7 @@ export default function ContractorCard({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold text-text-primary truncate">
+            <p className="text-[14px] font-semibold text-text-primary truncate">
               {contractor.company?.trim() || contractor.name}
             </p>
             {contractor.company?.trim() && contractor.name && (
@@ -79,7 +79,7 @@ export default function ContractorCard({
 
         {/* Contact info */}
         <div className="flex flex-col gap-1.5 py-3 border-t border-border">
-          <div className="flex items-center gap-2 text-[13px] text-text-2">
+          <div className="flex items-center gap-2 text-[14px] text-text-2">
             <PhoneCallIcon
               width={13}
               height={13}
@@ -92,7 +92,7 @@ export default function ContractorCard({
               {contractor.phone}
             </a>
           </div>
-          <div className="flex items-center gap-2 text-[13px] text-text-2">
+          <div className="flex items-center gap-2 text-[14px] text-text-2">
             <MailIcon
               width={13}
               height={13}
@@ -113,7 +113,7 @@ export default function ContractorCard({
             {contractor.specialty}
           </span>
           {contractor.notes && (
-            <p className="text-[13px] text-text-3 line-clamp-2 leading-relaxed">
+            <p className="text-[14px] text-text-3 line-clamp-2 leading-relaxed">
               {contractor.notes}
             </p>
           )}

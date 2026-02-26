@@ -70,14 +70,14 @@ export default function ActivatePage() {
           <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
             Set Up Your Account
           </h1>
-          <p className="text-[13px] text-text-3 text-center">
+          <p className="text-[14px] text-text-3 text-center">
             Create a password to activate your HOMEBOT account.
           </p>
         </div>
 
         {error && (
           <div className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-red/10 border border-red/20">
-            <p className="text-[13px] text-red">{error}</p>
+            <p className="text-[14px] text-red">{error}</p>
           </div>
         )}
 

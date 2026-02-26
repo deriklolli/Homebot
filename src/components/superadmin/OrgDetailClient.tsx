@@ -55,7 +55,7 @@ export default function OrgDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
-        <p className="text-[13px] text-text-3">Loading...</p>
+        <p className="text-[14px] text-text-3">Loading...</p>
       </div>
     );
   }
@@ -72,7 +72,7 @@ export default function OrgDetailClient({ id }: { id: string }) {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <Link
         href="/superadmin/organizations"
-        className="inline-flex items-center gap-1 text-[13px] text-text-3 hover:text-accent mb-4 transition-colors"
+        className="inline-flex items-center gap-1 text-[14px] text-text-3 hover:text-accent mb-4 transition-colors"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Organizations
@@ -95,17 +95,17 @@ export default function OrgDetailClient({ id }: { id: string }) {
       {/* Managers */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-sm font-semibold text-text-primary">Managers</h2>
+          <h2 className="text-[15px] font-semibold text-text-primary">Managers</h2>
           <Link
             href={`/superadmin/managers/new?org=${id}`}
-            className="text-[13px] text-accent font-medium hover:underline"
+            className="text-[14px] text-accent font-medium hover:underline"
           >
             + Add Manager
           </Link>
         </div>
 
         {managers.length === 0 ? (
-          <p className="px-5 py-8 text-[13px] text-text-3 text-center">
+          <p className="px-5 py-8 text-[14px] text-text-3 text-center">
             No managers in this organization yet.
           </p>
         ) : (
