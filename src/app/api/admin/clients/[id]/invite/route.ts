@@ -67,7 +67,7 @@ export async function POST(
 
     try {
       await resend.emails.send({
-        from: "HOMEBOT <alerts@homebot.house>",
+        from: "HOMEBOT <onboarding@resend.dev>",
         to: clientUser.email,
         subject: `${managerName.replace(/[\r\n]/g, " ")} has set up your HOMEBOT account`,
         html: `

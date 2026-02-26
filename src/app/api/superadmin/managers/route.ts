@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     try {
       await resend.emails.send({
-        from: "HOMEBOT <alerts@homebot.house>",
+        from: "HOMEBOT <onboarding@resend.dev>",
         to: email,
         subject: `You've been invited to HOMEBOT as a ${org.name.replace(/[\r\n]/g, " ")} manager`,
         html: `
