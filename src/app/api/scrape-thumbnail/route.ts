@@ -10,8 +10,6 @@ function resolveUrl(src: string, base: string): string {
 
 /**
  * Detect if a URL is an Amazon search page (e.g. /s?k=...).
- * These pages return the Amazon logo for og:image, so we need
- * a different strategy to extract actual product thumbnails.
  */
 function isAmazonSearchUrl(url: string): boolean {
   try {
@@ -26,25 +24,42 @@ function isAmazonSearchUrl(url: string): boolean {
 }
 
 /**
- * Extract the first product image from an Amazon search results page.
- * Amazon product images in search results use the class "s-image"
- * and are hosted on m.media-amazon.com/images/I/.
+ * Extract the search query from an Amazon search URL.
  */
-function extractAmazonProductImage(html: string): string | null {
-  // Match <img> tags with class="s-image" and extract src
-  const sImageMatch = html.match(
-    /<img[^>]+class="s-image"[^>]+src="([^"]+)"/i
-  );
-  if (sImageMatch?.[1]) return sImageMatch[1];
+function getAmazonSearchQuery(url: string): string {
+  try {
+    return new URL(url).searchParams.get("k") ?? "";
+  } catch {
+    return "";
+  }
+}
 
-  // Fallback: look for any media-amazon product image in search results
-  // These are typically in the format: https://m.media-amazon.com/images/I/...
-  const mediaMatch = html.match(
-    /https:\/\/m\.media-amazon\.com\/images\/I\/[A-Za-z0-9._%-]+\.(?:jpg|png|webp)/i
-  );
-  if (mediaMatch?.[0]) return mediaMatch[0];
+/**
+ * Fetch a product image via Bing Image Search (no API key needed).
+ * Extracts the first full-size image URL from the results page.
+ */
+async function bingImageSearch(query: string): Promise<string> {
+  const bingUrl = new URL("https://www.bing.com/images/search");
+  bingUrl.searchParams.set("q", query);
+  bingUrl.searchParams.set("first", "1");
+  bingUrl.searchParams.set("count", "1");
 
-  return null;
+  const res = await fetch(bingUrl.toString(), {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept": "text/html",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
+    signal: AbortSignal.timeout(8000),
+  });
+
+  if (!res.ok) return "";
+
+  const html = await res.text();
+  // Bing embeds full-size image URLs as murl in JSON data
+  const matches = html.match(/murl&quot;:&quot;(https?:\/\/[^&]+)/);
+  return matches?.[1] ?? "";
 }
 
 export async function POST(req: NextRequest) {
@@ -64,6 +79,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // --- Amazon search pages: use Bing image search instead ---
+    if (isAmazonSearchUrl(url)) {
+      const query = getAmazonSearchQuery(url);
+      if (query) {
+        const imageUrl = await bingImageSearch(query);
+        if (imageUrl) {
+          return NextResponse.json({
+            thumbnailUrl: imageUrl,
+            logoUrl: faviconFallback,
+          });
+        }
+      }
+      return NextResponse.json({ thumbnailUrl: "", logoUrl: faviconFallback });
+    }
+
     const res = await fetch(url, {
       headers: {
         "User-Agent":
@@ -80,15 +110,6 @@ export async function POST(req: NextRequest) {
     }
 
     const html = await res.text();
-
-    // --- Amazon search pages: extract product images directly ---
-    if (isAmazonSearchUrl(url)) {
-      const productImage = extractAmazonProductImage(html);
-      return NextResponse.json({
-        thumbnailUrl: productImage || "",
-        logoUrl: faviconFallback,
-      });
-    }
 
     // --- Thumbnail: og:image or twitter:image ---
     const ogMatch =
