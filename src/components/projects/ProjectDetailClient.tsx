@@ -52,6 +52,8 @@ import {
   ThumbsUpSolidIcon,
   CalendarSolidIcon,
   NoteSolidIcon,
+  BuildingIcon,
+  UserIcon,
 } from "@/components/icons";
 import AddProjectModal from "./AddProjectModal";
 import CompleteProjectModal from "./CompleteProjectModal";
@@ -87,6 +89,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [addNoteModalOpen, setAddNoteModalOpen] = useState(false);
   const [newNote, setNewNote] = useState("");
+  const [logoError, setLogoError] = useState(false);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const addMenuRef = useRef<HTMLDivElement>(null);
@@ -619,17 +622,35 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           Hired
         </span>
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
-          <div>
+          <div className="flex items-center gap-3">
             {contractor ? (
               <>
-                <span className="block text-[14px] font-semibold text-text-primary">
-                  {contractor.company}
-                </span>
-                {contractor.name && (
-                  <span className="block text-[12px] text-text-3">
-                    {contractor.name}
-                  </span>
+                {contractor.logoUrl?.trim() && !logoError ? (
+                  <img
+                    src={contractor.logoUrl}
+                    alt={contractor.company}
+                    className="w-9 h-9 rounded-full object-contain bg-white border border-border shrink-0"
+                    onError={() => setLogoError(true)}
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center shrink-0">
+                    {contractor.company?.trim() ? (
+                      <BuildingIcon width={18} height={18} />
+                    ) : (
+                      <UserIcon width={18} height={18} />
+                    )}
+                  </div>
                 )}
+                <div>
+                  <span className="block text-[14px] font-semibold text-text-primary">
+                    {contractor.company}
+                  </span>
+                  {contractor.name && (
+                    <span className="block text-[12px] text-text-3">
+                      {contractor.name}
+                    </span>
+                  )}
+                </div>
               </>
             ) : (
               <span className="text-[14px] text-text-3">Unassigned</span>
