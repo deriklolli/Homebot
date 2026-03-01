@@ -1,9 +1,9 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbHomeSnapshot, DbHomeAsset, DbProfile, DbOrganization } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbProfile, DbOrganization } from "./supabase";
 import type { Profile, Organization } from "./admin-data";
 import type { Contractor } from "./contractors-data";
 import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
-import type { Service } from "./services-data";
+import type { Service, ServiceHistory } from "./services-data";
 import type { HomeAsset } from "./home-assets-data";
 
 export function dbToContractor(row: DbContractor): Contractor {
@@ -167,6 +167,7 @@ export function dbToService(row: DbService): Service {
     homeAssetId: row.home_asset_id,
     phone: row.phone,
     notes: row.notes,
+    remindersEnabled: row.reminders_enabled,
     createdAt: row.created_at,
   };
 }
@@ -185,6 +186,22 @@ export function serviceToDb(
     home_asset_id: data.homeAssetId,
     phone: data.phone,
     notes: data.notes,
+    reminders_enabled: data.remindersEnabled,
+  };
+}
+
+/* ----- Service History ----- */
+
+export function dbToServiceHistory(row: DbServiceHistory): ServiceHistory {
+  return {
+    id: row.id,
+    serviceId: row.service_id,
+    serviceDate: row.service_date,
+    contractorName: row.contractor_name,
+    invoicePath: row.invoice_path,
+    invoiceFileName: row.invoice_file_name,
+    invoiceFileType: row.invoice_file_type,
+    createdAt: row.created_at,
   };
 }
 

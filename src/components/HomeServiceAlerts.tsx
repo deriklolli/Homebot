@@ -54,10 +54,11 @@ export default function HomeServiceAlerts() {
 
       const { data, error } = await supabase
         .from("services")
-        .select("id, name, provider, next_service_date, frequency_months")
+        .select("id, name, provider, next_service_date, frequency_months, reminders_enabled")
+        .eq("reminders_enabled", true)
         .lte("next_service_date", cutoff)
         .order("next_service_date", { ascending: true })
-        .returns<{ id: string; name: string; provider: string; next_service_date: string; frequency_months: number }[]>();
+        .returns<{ id: string; name: string; provider: string; next_service_date: string; frequency_months: number; reminders_enabled: boolean }[]>();
 
       if (!error && data) {
         const fetched = data.map((row) => ({

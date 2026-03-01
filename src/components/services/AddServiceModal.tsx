@@ -64,6 +64,7 @@ export default function AddServiceModal({
   const [phone, setPhone] = useState(service?.phone ?? "");
   const [homeAssetId, setHomeAssetId] = useState(service?.homeAssetId ?? "");
   const [notes, setNotes] = useState(service?.notes ?? "");
+  const [remindersEnabled, setRemindersEnabled] = useState(service?.remindersEnabled ?? false);
   const [showContractorModal, setShowContractorModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -117,6 +118,7 @@ export default function AddServiceModal({
       homeAssetId: homeAssetId || null,
       phone: phone.trim(),
       notes: notes.trim(),
+      remindersEnabled,
     });
   }
 
@@ -124,7 +126,7 @@ export default function AddServiceModal({
     <>
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
-        onClick={(e) => {
+        onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >
@@ -210,17 +212,8 @@ export default function AddServiceModal({
               </label>
             )}
 
-            {/* Cost & Frequency */}
-            <div className="flex gap-3">
-              <label className="flex flex-col gap-1.5 flex-1">
-                <span className="text-[14px] font-medium text-text-primary">
-                  Cost
-                </span>
-                <CurrencyInput
-                  value={cost}
-                  onChange={setCost}
-                />
-              </label>
+            {/* Frequency & Remind me */}
+            <div className="flex gap-3 items-end">
               <label className="flex flex-col gap-1.5 flex-1">
                 <span className="text-[14px] font-medium text-text-primary">
                   Frequency <span className="text-red">*</span>
@@ -237,7 +230,35 @@ export default function AddServiceModal({
                   ))}
                 </select>
               </label>
+              <div
+                className="flex items-center gap-2 cursor-pointer px-3 py-[7px] rounded-[var(--radius-sm)] hover:bg-surface-hover transition-[background] duration-[120ms] shrink-0"
+                onClick={() => setRemindersEnabled(!remindersEnabled)}
+              >
+                {remindersEnabled ? (
+                  <span className="shrink-0 w-[18px] h-[18px] rounded-full bg-accent border-2 border-accent flex items-center justify-center text-white">
+                    <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </span>
+                ) : (
+                  <span className="shrink-0 w-[18px] h-[18px] rounded-full border-2 border-border-strong" />
+                )}
+                <span className="text-[14px] font-medium text-text-primary">
+                  Remind me
+                </span>
+              </div>
             </div>
+
+            {/* Cost */}
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[14px] font-medium text-text-primary">
+                Cost
+              </span>
+              <CurrencyInput
+                value={cost}
+                onChange={setCost}
+              />
+            </label>
 
             {/* Last Service Date */}
             <label className="flex flex-col gap-1.5">

@@ -409,7 +409,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
             <p className="text-[14px] font-semibold text-text-primary mb-1">
               Helpful Homebot Tip
             </p>
-            <p className="text-[12px] text-text-3 leading-relaxed">
+            <p className="text-[14px] text-text-primary leading-relaxed">
               Did you know you can get more product options for this item? Simply connect this item to an asset with a model number.
             </p>
           </div>
@@ -440,7 +440,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 href={buyNowUrl(product.searchTerm)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out"
+                className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-hover)] transition-shadow duration-200"
               >
                 <div className="p-5">
                   <div className="flex items-start gap-3">

@@ -14,5 +14,17 @@ export interface Service {
   homeAssetId: string | null;
   phone: string;
   notes: string;
+  remindersEnabled: boolean;
+  createdAt: string;
+}
+
+export interface ServiceHistory {
+  id: string;
+  serviceId: string;
+  serviceDate: string;
+  contractorName: string;
+  invoicePath: string;
+  invoiceFileName: string;
+  invoiceFileType: string;
   createdAt: string;
 }

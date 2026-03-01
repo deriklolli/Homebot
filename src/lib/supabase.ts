@@ -78,6 +78,19 @@ export interface DbService {
   home_asset_id: string | null;
   phone: string;
   notes: string;
+  reminders_enabled: boolean;
+  created_at: string;
+}
+
+export interface DbServiceHistory {
+  id: string;
+  user_id: string;
+  service_id: string;
+  service_date: string;
+  contractor_name: string;
+  invoice_path: string;
+  invoice_file_name: string;
+  invoice_file_type: string;
   created_at: string;
 }
 

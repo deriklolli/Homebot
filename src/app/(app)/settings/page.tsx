@@ -159,14 +159,20 @@ export default function SettingsPage() {
         ) : (
           <div className="space-y-4">
             {/* Email toggle */}
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={emailEnabled}
-                onChange={(e) => setEmailEnabled(e.target.checked)}
-                className="mt-0.5 w-4 h-4 accent-accent rounded"
-              />
-              <MailIcon width={15} height={15} className="text-text-3 mt-0.5 shrink-0" />
+            <div
+              className="flex items-center gap-3 cursor-pointer p-2 rounded-[var(--radius-md)] hover:bg-surface-hover transition-[background] duration-[120ms]"
+              onClick={() => setEmailEnabled(!emailEnabled)}
+            >
+              {emailEnabled ? (
+                <span className="shrink-0 w-[18px] h-[18px] rounded-full bg-accent border-2 border-accent flex items-center justify-center text-white">
+                  <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+              ) : (
+                <span className="shrink-0 w-[18px] h-[18px] rounded-full border-2 border-border-strong" />
+              )}
+              <MailIcon width={15} height={15} className="text-text-3 shrink-0" />
               <div>
                 <span className="text-[14px] font-medium text-text-primary block">
                   Email notifications
@@ -177,17 +183,23 @@ export default function SettingsPage() {
                   </span>
                 )}
               </div>
-            </label>
+            </div>
 
             {/* SMS toggle */}
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={smsEnabled}
-                onChange={(e) => setSmsEnabled(e.target.checked)}
-                className="mt-0.5 w-4 h-4 accent-accent rounded"
-              />
-              <PhoneIcon width={15} height={15} className="text-text-3 mt-0.5 shrink-0" />
+            <div
+              className="flex items-center gap-3 cursor-pointer p-2 rounded-[var(--radius-md)] hover:bg-surface-hover transition-[background] duration-[120ms]"
+              onClick={() => setSmsEnabled(!smsEnabled)}
+            >
+              {smsEnabled ? (
+                <span className="shrink-0 w-[18px] h-[18px] rounded-full bg-accent border-2 border-accent flex items-center justify-center text-white">
+                  <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+              ) : (
+                <span className="shrink-0 w-[18px] h-[18px] rounded-full border-2 border-border-strong" />
+              )}
+              <PhoneIcon width={15} height={15} className="text-text-3 shrink-0" />
               <div>
                 <span className="text-[14px] font-medium text-text-primary block">
                   SMS notifications
@@ -196,7 +208,7 @@ export default function SettingsPage() {
                   Optional text message alerts
                 </span>
               </div>
-            </label>
+            </div>
 
             {/* Phone input (visible when SMS enabled) */}
             {smsEnabled && (

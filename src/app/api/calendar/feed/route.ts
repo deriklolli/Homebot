@@ -97,8 +97,9 @@ export async function GET(req: NextRequest) {
 
   const { data: serviceItems, error: svcError } = await supabase
     .from("services")
-    .select("id, name, provider, next_service_date, frequency_months")
+    .select("id, name, provider, next_service_date, frequency_months, reminders_enabled")
     .eq("user_id", userId)
+    .eq("reminders_enabled", true)
     .order("next_service_date", { ascending: true })
     .returns<DbServiceItem[]>();
 
