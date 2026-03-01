@@ -848,6 +848,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         <CompleteProjectModal
           project={project}
           contractorName={contractor?.name ?? null}
+          invoices={invoices}
           onComplete={handleComplete}
           onClose={() => setCompleteModalOpen(false)}
         />

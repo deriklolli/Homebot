@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import type { Project } from "@/lib/projects-data";
+import type { Project, ProjectInvoice } from "@/lib/projects-data";
 import { XIcon, StarFilledIcon, DollarIcon } from "@/components/icons";
 import CurrencyInput from "@/components/ui/CurrencyInput";
 
 interface CompleteProjectModalProps {
   project: Project;
   contractorName: string | null;
+  invoices: ProjectInvoice[];
   onComplete: (data: { totalCost: number; contractorRating: number }) => void;
   onClose: () => void;
 }
@@ -13,10 +14,12 @@ interface CompleteProjectModalProps {
 export default function CompleteProjectModal({
   project,
   contractorName,
+  invoices,
   onComplete,
   onClose,
 }: CompleteProjectModalProps) {
-  const [totalCost, setTotalCost] = useState("");
+  const invoiceTotal = invoices.reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
+  const [totalCost, setTotalCost] = useState(invoiceTotal > 0 ? String(invoiceTotal) : "");
   const [rating, setRating] = useState(0);
 
   const hasContractor = project.contractorId !== null;
