@@ -188,6 +188,7 @@ function mapRow(raw: RawRow): Record<AssetField, string> {
     location: mapped.location ?? "",
     notes: mapped.notes ?? "",
     productUrl: mapped.productUrl ?? "",
+    imageUrl: mapped.imageUrl ?? "",
   };
 }
 
@@ -241,6 +242,7 @@ export function validateRows(rawRows: RawRow[]): ValidatedRow[] {
       location: mapped.location.trim(),
       notes: mapped.notes.trim(),
       productUrl: mapped.productUrl.trim(),
+      imageUrl: mapped.imageUrl?.trim() ?? "",
     };
 
     return {
