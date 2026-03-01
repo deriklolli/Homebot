@@ -54,6 +54,7 @@ import {
   NoteSolidIcon,
   BuildingIcon,
   UserIcon,
+  CheckCircleSolidIcon,
 } from "@/components/icons";
 import AddProjectModal from "./AddProjectModal";
 import CompleteProjectModal from "./CompleteProjectModal";
@@ -759,27 +760,30 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         onInvoicesChange={setInvoices}
       />
 
-      {/* Completion details */}
+      {/* Project Completed card */}
       {project.status === "Completed" && (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-            <div>
-              <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-                Total Cost
-              </span>
-              <span className="text-[14px] font-semibold text-text-primary flex items-center gap-1.5">
+        <div className="flex items-start gap-4 mb-5">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <CheckCircleSolidIcon width={30} height={30} className="text-green" />
+            Completed
+          </span>
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1">
+            <span className="block text-[14px] font-semibold text-text-primary mb-1">
+              Project Completed
+            </span>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+              <span className="text-[14px] text-text-3 flex items-center gap-1.5">
                 <DollarIcon width={13} height={13} className="text-text-3" />
                 {project.totalCost !== null
                   ? `$${project.totalCost.toLocaleString()}`
                   : "—"}
               </span>
-            </div>
-
-            {project.contractorRating !== null && (
-              <div>
-                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-                  Contractor Rating
+              {project.completedAt && (
+                <span className="text-[14px] text-text-3">
+                  {formatDate(project.completedAt)}
                 </span>
+              )}
+              {project.contractorRating !== null && project.contractorRating > 0 && (
                 <div className="flex items-center gap-0.5">
                   {Array.from({ length: 5 }, (_, i) => (
                     <StarFilledIcon
@@ -794,19 +798,8 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     />
                   ))}
                 </div>
-              </div>
-            )}
-
-            {project.completedAt && (
-              <div>
-                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-                  Completed On
-                </span>
-                <span className="text-[14px] text-text-3">
-                  {formatDateTime(project.completedAt)}
-                </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
