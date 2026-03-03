@@ -238,15 +238,26 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
         <div className="flex gap-6">
           {/* Product image — left side */}
-          <div className="shrink-0">
+          <div className="shrink-0 self-start">
             {asset.imageUrl ? (
-              <div className="rounded-[var(--radius-md)] border border-border bg-bg p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
+              <div className="relative group rounded-[var(--radius-md)] border border-border bg-bg p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
                 <img
                   src={asset.imageUrl}
                   alt={`${asset.make} ${asset.model}`}
                   className="h-[195px] w-[195px] object-contain"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  onError={() => {
+                    // Clear broken image URL so placeholder shows
+                    setAsset((prev) => prev ? { ...prev, imageUrl: "" } : prev);
+                    supabase.from("home_assets").update({ image_url: "" }).eq("id", asset.id).then(() => {});
+                  }}
                 />
+                <button
+                  type="button"
+                  onClick={() => { setImageInput(asset.imageUrl); setImagePromptOpen(true); }}
+                  className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[var(--radius-md)] opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms] cursor-pointer"
+                >
+                  <CameraIcon width={22} height={22} className="text-white" />
+                </button>
               </div>
             ) : (
               <button
