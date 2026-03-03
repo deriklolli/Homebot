@@ -633,7 +633,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 Project Added
               </span>
               <span className="text-[14px] text-text-primary">
-                {formatDate(project.createdAt)}
+                {formatDateTime(project.createdAt)}
               </span>
             </div>
 
