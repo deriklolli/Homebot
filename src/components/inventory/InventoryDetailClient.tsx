@@ -14,6 +14,7 @@ import {
   ApplianceIcon,
   SparklesIcon,
   XIcon,
+  CameraIcon,
 } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
@@ -49,6 +50,8 @@ export default function InventoryDetailClient({ id }: { id: string }) {
   const [productOptions, setProductOptions] = useState<ConsumableProduct[]>([]);
   const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [tipDismissed, setTipDismissed] = useState(false);
+  const [imagePromptOpen, setImagePromptOpen] = useState(false);
+  const [imageInput, setImageInput] = useState("");
 
   useEffect(() => {
     async function fetchItem() {
@@ -213,6 +216,21 @@ export default function InventoryDetailClient({ id }: { id: string }) {
     setTimeout(() => setReminderReset(false), 2000);
   }
 
+  async function handleImageSave() {
+    if (!item || !imageInput.trim()) return;
+    const url = imageInput.trim();
+    const { error } = await supabase
+      .from("inventory_items")
+      .update({ thumbnail_url: url })
+      .eq("id", item.id);
+
+    if (!error) {
+      setItem((prev) => prev ? { ...prev, thumbnailUrl: url } : prev);
+    }
+    setImagePromptOpen(false);
+    setImageInput("");
+  }
+
   async function handleDelete() {
     const { error } = await supabase
       .from("inventory_items")
@@ -313,74 +331,155 @@ export default function InventoryDetailClient({ id }: { id: string }) {
         </div>
       </header>
 
-      {/* Thumbnail + Details */}
-      <div className="flex gap-5 mb-5">
-        {/* Thumbnail */}
-        <div className="shrink-0">
-          {item.thumbnailUrl ? (
-            <img
-              src={item.thumbnailUrl}
-              alt={item.name}
-              className="w-28 h-28 rounded-full object-cover bg-border"
-            />
-          ) : (
-            <div className="w-28 h-28 rounded-full bg-accent flex items-center justify-center">
-              <ApplianceIcon width={48} height={48} className="text-white" strokeWidth={1.5} />
-            </div>
-          )}
-        </div>
-
-        {/* Details card */}
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 flex-1 relative">
-          {item.purchaseUrl && !item.homeAssetId && (
-            <a
-              href={buyNowUrl(item.name, item.purchaseUrl)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute top-5 right-5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] bg-accent text-white text-[12px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-            >
-              Buy Now
-            </a>
-          )}
-          <div className="grid grid-cols-2 gap-5">
-            {/* Next Reminder */}
-            <div>
-              <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-                Next Reminder
-              </span>
-              <span className="text-[14px] font-semibold text-text-primary">
-                {formatDate(item.nextReminderDate)}
-              </span>
-              {isOverdue ? (
-                <span className="block mt-1 px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-red text-white w-fit">
-                  {dueLabel}
-                </span>
-              ) : (
-                <span
-                  className={`block text-[12px] mt-0.5 ${
-                    isSoon ? "text-accent font-medium" : "text-text-3"
-                  }`}
+      {/* Details card */}
+      <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
+        <div className="flex gap-6">
+          {/* Product image — left side */}
+          <div className="shrink-0 self-start">
+            {item.thumbnailUrl ? (
+              <div className="relative group rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
+                <img
+                  src={item.thumbnailUrl}
+                  alt={item.name}
+                  className="h-[195px] w-[195px] object-contain"
+                  onError={() => {
+                    setItem((prev) => prev ? { ...prev, thumbnailUrl: "" } : prev);
+                    supabase.from("inventory_items").update({ thumbnail_url: "" }).eq("id", item.id).then(() => {});
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => { setImageInput(item.thumbnailUrl); setImagePromptOpen(true); }}
+                  className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[var(--radius-md)] opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms] cursor-pointer"
                 >
-                  {dueLabel}
-                </span>
-              )}
+                  <CameraIcon width={22} height={22} className="text-white" />
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={handleResetReminder}
-                disabled={reminderReset}
-                className={`block text-[12px] mt-1 ${
-                  reminderReset
-                    ? "text-green font-medium cursor-default"
-                    : "text-accent hover:underline"
-                }`}
+                onClick={() => setImagePromptOpen(true)}
+                className="h-[195px] w-[195px] rounded-[var(--radius-md)] bg-bg border-2 border-dashed border-border-strong flex flex-col items-center justify-center gap-2 text-text-4 hover:border-accent hover:text-accent transition-all duration-[120ms] cursor-pointer"
               >
-                {reminderReset ? "Reminder Reset!" : "Reset Reminder"}
+                <CameraIcon width={28} height={28} />
+                <span className="text-[12px] font-medium">Add Image</span>
               </button>
+            )}
+
+            {/* Image URL prompt */}
+            {imagePromptOpen && (
+              <div className="mt-3 flex flex-col gap-2 w-[195px]">
+                <input
+                  type="url"
+                  autoFocus
+                  value={imageInput}
+                  onChange={(e) => setImageInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleImageSave(); if (e.key === "Escape") { setImagePromptOpen(false); setImageInput(""); } }}
+                  placeholder="Paste image URL..."
+                  className="px-2.5 py-[6px] text-[12px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                />
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleImageSave}
+                    disabled={!imageInput.trim()}
+                    className="flex-1 px-2 py-[5px] rounded-[var(--radius-sm)] bg-accent text-white text-[11px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setImagePromptOpen(false); setImageInput(""); }}
+                    className="flex-1 px-2 py-[5px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 text-[11px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Details — right side */}
+          <div className="flex-1 min-w-0">
+            {/* Row 1: Next Reminder & Frequency */}
+            <div className="flex gap-5 pb-4 border-b border-dotted border-border-strong">
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Next Reminder
+                </span>
+                <span className="text-[14px] font-semibold text-text-primary">
+                  {formatDate(item.nextReminderDate)}
+                </span>
+                {isOverdue ? (
+                  <span className="block mt-1 px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-red text-white w-fit">
+                    {dueLabel}
+                  </span>
+                ) : (
+                  <span
+                    className={`block text-[12px] mt-0.5 ${
+                      isSoon ? "text-accent font-medium" : "text-text-3"
+                    }`}
+                  >
+                    {dueLabel}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResetReminder}
+                  disabled={reminderReset}
+                  className={`block text-[12px] mt-1 ${
+                    reminderReset
+                      ? "text-green font-medium cursor-default"
+                      : "text-accent hover:underline"
+                  }`}
+                >
+                  {reminderReset ? "Reminder Reset!" : "Reset Reminder"}
+                </button>
+              </div>
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Last Ordered
+                </span>
+                <span className="text-[14px] text-text-primary">
+                  {item.lastOrderedDate ? formatDate(item.lastOrderedDate) : "\u2014"}
+                </span>
+              </div>
             </div>
 
-            {/* Description */}
+            {/* Row 2: Cost & Buy Now */}
+            {(item.cost || item.purchaseUrl) && (
+              <div className={`flex gap-5 py-4${item.description ? " border-b border-dotted border-border-strong" : ""}`}>
+                {item.cost != null && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                      Est. Cost
+                    </span>
+                    <span className="text-[14px] text-text-primary">
+                      ${item.cost}
+                    </span>
+                  </div>
+                )}
+                {item.purchaseUrl && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                      Purchase Link
+                    </span>
+                    <a
+                      href={buyNowUrl(item.name, item.purchaseUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[14px] text-accent hover:underline"
+                    >
+                      Buy Now
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Row 3: Description */}
             {item.description && (
-              <div className="col-span-2">
+              <div className="pt-4">
                 <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
                   Description
                 </span>
