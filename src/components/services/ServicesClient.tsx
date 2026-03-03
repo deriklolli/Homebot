@@ -164,7 +164,7 @@ export default function ServicesClient() {
 
       {/* Tabs */}
       {services.length > 0 && (
-        <div className="flex gap-6 mb-5 border-b border-border">
+        <div className="flex gap-6 mb-5 border-b border-[#DAD3CE]">
           {(["all", "regular", "annual"] as const).map((tab) => {
             const label = tab === "all" ? "All Services" : tab === "regular" ? "Regular Services" : "Annual Services";
             const isActive = activeTab === tab;
