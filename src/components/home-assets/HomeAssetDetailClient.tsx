@@ -240,7 +240,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           {/* Product image — left side */}
           <div className="shrink-0 self-start">
             {asset.imageUrl ? (
-              <div className="relative group rounded-[var(--radius-md)] border border-border bg-bg p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
+              <div className="relative group rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
                 <img
                   src={asset.imageUrl}
                   alt={`${asset.make} ${asset.model}`}
