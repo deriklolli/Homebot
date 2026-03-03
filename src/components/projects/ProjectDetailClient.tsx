@@ -609,28 +609,37 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       </header>
 
       {/* Description card */}
-      {(project.description || linkedAsset?.imageUrl) && (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
-          <div className="flex gap-6">
-            {/* Linked asset image — left side */}
-            {linkedAsset?.imageUrl && (
-              <div className="shrink-0 self-start">
-                <Link href={`/home-assets/${linkedAsset.id}`}>
-                  <div className="rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)] hover:border-accent transition-colors duration-[120ms]">
-                    <img
-                      src={linkedAsset.imageUrl}
-                      alt={`${linkedAsset.make} ${linkedAsset.model}`.trim() || linkedAsset.name}
-                      className="h-[140px] w-[140px] object-contain"
-                    />
-                  </div>
-                </Link>
-              </div>
-            )}
+      <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
+        <div className="flex gap-6">
+          {/* Linked asset image — left side */}
+          {linkedAsset?.imageUrl && (
+            <div className="shrink-0 self-start">
+              <Link href={`/home-assets/${linkedAsset.id}`}>
+                <div className="rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)] hover:border-accent transition-colors duration-[120ms]">
+                  <img
+                    src={linkedAsset.imageUrl}
+                    alt={`${linkedAsset.make} ${linkedAsset.model}`.trim() || linkedAsset.name}
+                    className="h-[140px] w-[140px] object-contain"
+                  />
+                </div>
+              </Link>
+            </div>
+          )}
 
-            {/* Description — right side */}
+          {/* Details — right side */}
+          <div className="flex-1 min-w-0">
+            <div className="mb-4">
+              <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                Project Added
+              </span>
+              <span className="text-[14px] text-text-primary">
+                {formatDate(project.createdAt)}
+              </span>
+            </div>
+
             {project.description && (
-              <div className="flex-1 min-w-0">
-                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-2">
+              <div className={linkedAsset ? "mb-4" : ""}>
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
                   Project Description
                 </span>
                 <p className="text-[14px] text-text-primary leading-relaxed">
@@ -638,9 +647,25 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 </p>
               </div>
             )}
+
+            {linkedAsset && (
+              <div>
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Home Asset
+                </span>
+                <Link href={`/home-assets/${linkedAsset.id}`} className="text-[14px] text-accent font-medium hover:underline">
+                  {linkedAsset.name}
+                </Link>
+                {(linkedAsset.make || linkedAsset.model) && (
+                  <p className="text-[13px] text-text-3 mt-0.5">
+                    {[linkedAsset.make, linkedAsset.model].filter(Boolean).join(" ")}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Contractor row */}
       <div className="flex items-center gap-4 mb-5">
