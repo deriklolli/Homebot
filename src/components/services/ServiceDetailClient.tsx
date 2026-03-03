@@ -276,7 +276,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
             <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
               {service.name}
             </h1>
-            <span className="shrink-0 px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-purple-light text-purple">
+            <span className="shrink-0 px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
               {frequencyLabel(service.frequencyMonths)}
             </span>
           </div>

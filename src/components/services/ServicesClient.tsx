@@ -198,7 +198,7 @@ export default function ServicesClient() {
                         <span className="text-[14px] font-semibold text-text-primary truncate">
                           {s.name}
                         </span>
-                        <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-purple-light text-purple">
+                        <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
                           {frequencyLabel(s.frequencyMonths)}
                         </span>
                       </div>
