@@ -112,12 +112,8 @@ export default function Sidebar({ variant = "desktop", onNavigate }: SidebarProp
   }
 
   const role = (user?.app_metadata?.role as string) ?? "homeowner";
-  const navItems =
-    role === "superadmin"
-      ? [...superadminNavItems, ...homeownerNavItems]
-      : role === "manager"
-        ? [...managerNavItems, ...homeownerNavItems]
-        : homeownerNavItems;
+  // TODO: re-enable superadmin/manager nav once those pages are built
+  const navItems = homeownerNavItems;
 
   const displayName =
     user?.user_metadata?.full_name ?? user?.email ?? "User";

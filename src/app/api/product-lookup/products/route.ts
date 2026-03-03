@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
         products.push({
           productId: products.length,
           sku: `${ds.datasetId}::${modelNumber}`,
-          name: `${ds.label}: ${modelNumber}`,
+          name: modelNumber,
           brand: row[ds.brandField] || brand,
           image: "",
           status: "ENERGY STAR Certified",

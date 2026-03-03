@@ -143,8 +143,8 @@ export default function AddHomeAssetModal({
   // Handle model selection — fetch full details and auto-fill
   const handleModelSelect = useCallback(
     async (option: ComboboxOption) => {
-      // option.value is the SKU
-      setModel(option.value);
+      // option.label is the model number; option.value is the SKU (datasetId::model)
+      setModel(option.label);
 
       try {
         const res = await fetch(
