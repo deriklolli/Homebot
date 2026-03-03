@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { type HomeAsset } from "@/lib/home-assets-data";
+import { type HomeAsset, type HomeAssetDocument } from "@/lib/home-assets-data";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { type Project, type ProjectStatus } from "@/lib/projects-data";
-import { supabase, type DbHomeAsset, type DbProject, type DbInventoryItem } from "@/lib/supabase";
-import { dbToHomeAsset, homeAssetToDb, dbToProject, dbToInventoryItem } from "@/lib/mappers";
+import { supabase, type DbHomeAsset, type DbProject, type DbInventoryItem, type DbHomeAssetDocument } from "@/lib/supabase";
+import { dbToHomeAsset, homeAssetToDb, dbToProject, dbToInventoryItem, dbToHomeAssetDocument } from "@/lib/mappers";
 import {
   ChevronLeftIcon,
   PencilIcon,
@@ -16,6 +16,7 @@ import {
   CameraIcon,
 } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
+import HomeAssetDocuments from "./HomeAssetDocuments";
 import { affiliateUrl } from "@/lib/utils";
 import { formatDateLong as formatDate } from "@/lib/date-utils";
 
@@ -44,12 +45,13 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [linkedInventory, setLinkedInventory] = useState<InventoryItem[]>([]);
+  const [documents, setDocuments] = useState<HomeAssetDocument[]>([]);
   const [imagePromptOpen, setImagePromptOpen] = useState(false);
   const [imageInput, setImageInput] = useState("");
 
   useEffect(() => {
     async function fetchData() {
-      const [assetRes, projectsRes, inventoryRes] = await Promise.all([
+      const [assetRes, projectsRes, inventoryRes, documentsRes] = await Promise.all([
         supabase
           .from("home_assets")
           .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, created_at")
@@ -68,6 +70,12 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           .eq("home_asset_id", id)
           .order("next_reminder_date", { ascending: true })
           .returns<DbInventoryItem[]>(),
+        supabase
+          .from("home_asset_documents")
+          .select("id, user_id, home_asset_id, storage_path, file_name, file_type, created_at")
+          .eq("home_asset_id", id)
+          .order("created_at", { ascending: true })
+          .returns<DbHomeAssetDocument[]>(),
       ]);
 
       if (assetRes.error || !assetRes.data) {
@@ -82,6 +90,10 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
       if (inventoryRes.data) {
         setLinkedInventory(inventoryRes.data.map(dbToInventoryItem));
+      }
+
+      if (documentsRes.data) {
+        setDocuments(documentsRes.data.map(dbToHomeAssetDocument));
       }
 
       setLoading(false);
@@ -147,6 +159,12 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   }
 
   async function handleDelete() {
+    // Clean up document storage files (DB rows cascade-delete automatically)
+    if (documents.length > 0) {
+      const paths = documents.map((d) => d.storagePath);
+      await supabase.storage.from("home-asset-documents").remove(paths);
+    }
+
     const { error } = await supabase
       .from("home_assets")
       .delete()
@@ -388,6 +406,12 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 </a>
               </div>
             )}
+            {/* Documents & Manuals */}
+            <HomeAssetDocuments
+              assetId={asset.id}
+              documents={documents}
+              onDocumentsChange={setDocuments}
+            />
           </div>{/* end flex-1 details */}
         </div>{/* end flex row */}
       </div>

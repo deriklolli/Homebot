@@ -139,6 +139,16 @@ export interface DbHomeAsset {
   created_at: string;
 }
 
+export interface DbHomeAssetDocument {
+  id: string;
+  user_id: string;
+  home_asset_id: string;
+  storage_path: string;
+  file_name: string;
+  file_type: string;
+  created_at: string;
+}
+
 export interface DbHomeSnapshot {
   id: string;
   user_id: string;

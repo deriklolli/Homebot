@@ -86,3 +86,12 @@ export interface HomeAsset {
   imageUrl: string;
   createdAt: string;
 }
+
+export interface HomeAssetDocument {
+  id: string;
+  homeAssetId: string;
+  storagePath: string;
+  fileName: string;
+  fileType: string;
+  createdAt: string;
+}

@@ -1,10 +1,10 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbProfile, DbOrganization } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbHomeAssetDocument, DbProfile, DbOrganization } from "./supabase";
 import type { Profile, Organization } from "./admin-data";
 import type { Contractor } from "./contractors-data";
 import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
 import type { Service, ServiceHistory } from "./services-data";
-import type { HomeAsset } from "./home-assets-data";
+import type { HomeAsset, HomeAssetDocument } from "./home-assets-data";
 
 export function dbToContractor(row: DbContractor): Contractor {
   return {
@@ -264,6 +264,17 @@ export function homeAssetToDb(
     notes: data.notes,
     product_url: data.productUrl,
     image_url: data.imageUrl,
+  };
+}
+
+export function dbToHomeAssetDocument(row: DbHomeAssetDocument): HomeAssetDocument {
+  return {
+    id: row.id,
+    homeAssetId: row.home_asset_id,
+    storagePath: row.storage_path,
+    fileName: row.file_name,
+    fileType: row.file_type,
+    createdAt: row.created_at,
   };
 }
 
