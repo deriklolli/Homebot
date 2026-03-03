@@ -147,7 +147,7 @@ export default function ComboboxInput({
         <ul
           ref={listRef}
           role="listbox"
-          className="absolute z-20 top-full left-0 right-0 mt-1 max-h-[200px] overflow-y-auto bg-surface border border-border rounded-[var(--radius-sm)] shadow-[var(--shadow-hover)] py-1"
+          className="absolute z-20 top-full left-0 right-0 mt-1 max-h-[260px] overflow-y-auto bg-surface border border-border rounded-[var(--radius-sm)] shadow-[var(--shadow-hover)] py-1 divide-y divide-border"
         >
           {loading ? (
             <li className="px-3 py-2 text-[13px] text-text-4 flex items-center gap-2">
@@ -166,7 +166,7 @@ export default function ComboboxInput({
                   handleSelect(option);
                 }}
                 onMouseEnter={() => setActiveIndex(i)}
-                className={`flex items-center gap-2 px-3 py-1.5 text-[14px] cursor-pointer transition-colors duration-[80ms] ${
+                className={`flex items-center gap-2.5 px-3 py-2 text-[14px] cursor-pointer transition-colors duration-[80ms] ${
                   i === activeIndex
                     ? "bg-border text-text-primary"
                     : "text-text-2 hover:bg-border hover:text-text-primary"
@@ -176,7 +176,7 @@ export default function ComboboxInput({
                   <img
                     src={option.icon}
                     alt=""
-                    className="w-5 h-5 rounded-sm object-contain shrink-0"
+                    className="w-8 h-8 rounded-[var(--radius-sm)] object-contain bg-white border border-border shrink-0"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
                     }}
