@@ -146,6 +146,7 @@ export interface DbHomeAssetDocument {
   storage_path: string;
   file_name: string;
   file_type: string;
+  document_type: string;
   created_at: string;
 }
 

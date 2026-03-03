@@ -87,11 +87,15 @@ export interface HomeAsset {
   createdAt: string;
 }
 
+export const DOCUMENT_TYPES = ["Purchase Receipt", "Warranty", "Owners Manual"] as const;
+export type DocumentType = (typeof DOCUMENT_TYPES)[number];
+
 export interface HomeAssetDocument {
   id: string;
   homeAssetId: string;
   storagePath: string;
   fileName: string;
   fileType: string;
+  documentType: string;
   createdAt: string;
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { type HomeAsset, type HomeAssetDocument } from "@/lib/home-assets-data";
+import { type HomeAsset, type HomeAssetDocument, DOCUMENT_TYPES } from "@/lib/home-assets-data";
 import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { type Project, type ProjectStatus } from "@/lib/projects-data";
 import { supabase, type DbHomeAsset, type DbProject, type DbInventoryItem, type DbHomeAssetDocument } from "@/lib/supabase";
@@ -14,9 +14,10 @@ import {
   TrashIcon,
   PackageIcon,
   CameraIcon,
+  PlusIcon,
 } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
-import HomeAssetDocuments from "./HomeAssetDocuments";
+import HomeAssetDocuments, { type HomeAssetDocumentsHandle } from "./HomeAssetDocuments";
 import { affiliateUrl } from "@/lib/utils";
 import { formatDateLong as formatDate } from "@/lib/date-utils";
 
@@ -46,6 +47,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [linkedInventory, setLinkedInventory] = useState<InventoryItem[]>([]);
   const [documents, setDocuments] = useState<HomeAssetDocument[]>([]);
+  const [addFilesMenuOpen, setAddFilesMenuOpen] = useState(false);
+  const addFilesMenuRef = useRef<HTMLDivElement>(null);
+  const documentsRef = useRef<HomeAssetDocumentsHandle>(null);
   const [imagePromptOpen, setImagePromptOpen] = useState(false);
   const [imageInput, setImageInput] = useState("");
 
@@ -72,7 +76,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           .returns<DbInventoryItem[]>(),
         supabase
           .from("home_asset_documents")
-          .select("id, user_id, home_asset_id, storage_path, file_name, file_type, created_at")
+          .select("id, user_id, home_asset_id, storage_path, file_name, file_type, document_type, created_at")
           .eq("home_asset_id", id)
           .order("created_at", { ascending: true })
           .returns<DbHomeAssetDocument[]>(),
@@ -100,6 +104,18 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
     }
     fetchData();
   }, [id]);
+
+  // Close add files menu on outside click
+  useEffect(() => {
+    if (!addFilesMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (addFilesMenuRef.current && !addFilesMenuRef.current.contains(e.target as Node)) {
+        setAddFilesMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [addFilesMenuOpen]);
 
   async function handleEdit(data: Omit<HomeAsset, "id" | "createdAt">) {
     if (!asset) return;
@@ -235,6 +251,33 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* +Add Files dropdown */}
+          <div className="relative" ref={addFilesMenuRef}>
+            <button
+              onClick={() => setAddFilesMenuOpen(!addFilesMenuOpen)}
+              className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            >
+              <PlusIcon width={13} height={13} />
+              Add Files
+            </button>
+            {addFilesMenuOpen && (
+              <div className="absolute top-full right-0 mt-1.5 bg-surface rounded-[var(--radius-sm)] border border-border shadow-[var(--shadow-hover)] py-1 min-w-[170px] z-20">
+                {DOCUMENT_TYPES.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => {
+                      documentsRef.current?.triggerUpload(type);
+                      setAddFilesMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => setEditModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
@@ -406,15 +449,17 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 </a>
               </div>
             )}
-            {/* Documents & Manuals */}
-            <HomeAssetDocuments
-              assetId={asset.id}
-              documents={documents}
-              onDocumentsChange={setDocuments}
-            />
           </div>{/* end flex-1 details */}
         </div>{/* end flex row */}
       </div>
+
+      {/* Important Docs */}
+      <HomeAssetDocuments
+        ref={documentsRef}
+        assetId={asset.id}
+        documents={documents}
+        onDocumentsChange={setDocuments}
+      />
 
       {/* Linked Inventory Items */}
       {linkedInventory.length > 0 && (

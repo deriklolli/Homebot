@@ -274,6 +274,7 @@ export function dbToHomeAssetDocument(row: DbHomeAssetDocument): HomeAssetDocume
     storagePath: row.storage_path,
     fileName: row.file_name,
     fileType: row.file_type,
+    documentType: row.document_type,
     createdAt: row.created_at,
   };
 }
