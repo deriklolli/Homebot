@@ -4,14 +4,12 @@ import {
   type ProjectStatus,
   type Project,
 } from "@/lib/projects-data";
-import type { Contractor } from "@/lib/contractors-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
 import { XIcon, ChevronDownIcon, HomeIcon } from "@/components/icons";
 import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
 interface AddProjectModalProps {
   project?: Project;
-  contractors: Contractor[];
   homeAssets?: HomeAsset[];
   onSave: (
     data: Omit<
@@ -24,7 +22,6 @@ interface AddProjectModalProps {
 
 export default function AddProjectModal({
   project,
-  contractors,
   homeAssets = [],
   onSave,
   onClose,
@@ -134,32 +131,6 @@ export default function AddProjectModal({
               className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="Brief description of the work"
             />
-          </label>
-
-          {/* Contractor */}
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
-              Contractor
-            </span>
-            <div className="relative">
-              <select
-                value={form.contractorId}
-                onChange={(e) =>
-                  setForm({ ...form, contractorId: e.target.value })
-                }
-                className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-              >
-                <option value="">None (DIY)</option>
-                {[...contractors]
-                  .sort((a, b) => (a.company || a.name).localeCompare(b.company || b.name))
-                  .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.company || c.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
-            </div>
           </label>
 
           {/* Home Asset */}

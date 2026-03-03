@@ -202,7 +202,6 @@ export default function ProjectsClient() {
       {/* Add modal */}
       {modalOpen && (
         <AddProjectModal
-          contractors={contractors}
           homeAssets={homeAssets}
           onSave={handleAdd}
           onClose={() => setModalOpen(false)}

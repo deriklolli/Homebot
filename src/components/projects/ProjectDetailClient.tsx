@@ -89,6 +89,8 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [statusPopoverOpen, setStatusPopoverOpen] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [addNoteModalOpen, setAddNoteModalOpen] = useState(false);
+  const [hireContractorOpen, setHireContractorOpen] = useState(false);
+  const [selectedContractorId, setSelectedContractorId] = useState("");
   const [newNote, setNewNote] = useState("");
   const [logoError, setLogoError] = useState(false);
   const noteRef = useRef<HTMLTextAreaElement>(null);
@@ -244,6 +246,24 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         </div>
       </div>
     );
+  }
+
+  async function handleHireContractor() {
+    const contractorId = selectedContractorId || null;
+    const { data: rows, error } = await supabase
+      .from("projects")
+      .update({ contractor_id: contractorId })
+      .eq("id", project!.id)
+      .select()
+      .returns<DbProject[]>();
+
+    if (error) {
+      console.error("Failed to assign contractor:", error);
+      return;
+    }
+    setProject(dbToProject(rows[0]));
+    setHireContractorOpen(false);
+    setSelectedContractorId("");
   }
 
   async function handleEdit(
@@ -588,6 +608,16 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 >
                   Add Invoice
                 </button>
+                <button
+                  onClick={() => {
+                    setAddMenuOpen(false);
+                    setSelectedContractorId(project.contractorId ?? "");
+                    setHireContractorOpen(true);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                >
+                  Hire Contractor
+                </button>
               </div>
             )}
           </div>
@@ -615,7 +645,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           {linkedAsset?.imageUrl && (
             <div className="shrink-0 self-start">
               <Link href={`/home-assets/${linkedAsset.id}`}>
-                <div className="rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)] hover:border-accent transition-colors duration-[120ms]">
+                <div className="rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
                   <img
                     src={linkedAsset.imageUrl}
                     alt={`${linkedAsset.make} ${linkedAsset.model}`.trim() || linkedAsset.name}
@@ -653,14 +683,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
                   Home Asset
                 </span>
-                <Link href={`/home-assets/${linkedAsset.id}`} className="text-[14px] text-accent font-medium hover:underline">
-                  {linkedAsset.name}
-                </Link>
-                {(linkedAsset.make || linkedAsset.model) && (
-                  <p className="text-[13px] text-text-3 mt-0.5">
-                    {[linkedAsset.make, linkedAsset.model].filter(Boolean).join(" ")}
-                  </p>
-                )}
+                <p className="text-[14px] text-text-primary">
+                  <Link href={`/home-assets/${linkedAsset.id}`} className="font-medium hover:underline">
+                    {linkedAsset.name}
+                  </Link>
+                  {(linkedAsset.make || linkedAsset.model) && (
+                    <span className="text-text-3">, {[linkedAsset.make, linkedAsset.model].filter(Boolean).join(" ")}</span>
+                  )}
+                </p>
               </div>
             )}
           </div>
@@ -880,7 +910,6 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {editModalOpen && (
         <AddProjectModal
           project={project}
-          contractors={contractors}
           homeAssets={homeAssets}
           onSave={handleEdit}
           onClose={() => setEditModalOpen(false)}
@@ -919,6 +948,68 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           onContractorAdded={handleContractorAdded}
           onClose={() => setEditingEvent(null)}
         />
+      )}
+
+      {/* Hire Contractor modal */}
+      {hireContractorOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              setHireContractorOpen(false);
+              setSelectedContractorId("");
+            }
+          }}
+        >
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-hover)] w-full max-w-md mx-4">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h2 className="text-[15px] font-semibold text-text-primary">
+                Hire Contractor
+              </h2>
+              <button
+                onClick={() => { setHireContractorOpen(false); setSelectedContractorId(""); }}
+                className="flex items-center justify-center rounded-[var(--radius-sm)] p-1.5 text-text-3 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                aria-label="Close modal"
+              >
+                <XIcon width={16} height={16} />
+              </button>
+            </div>
+            <div className="p-5 flex flex-col gap-4">
+              <div className="relative">
+                <select
+                  value={selectedContractorId}
+                  onChange={(e) => setSelectedContractorId(e.target.value)}
+                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                >
+                  <option value="">Select a contractor...</option>
+                  {[...contractors]
+                    .sort((a, b) => (a.company || a.name).localeCompare(b.company || b.name))
+                    .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.company || c.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => { setHireContractorOpen(false); setSelectedContractorId(""); }}
+                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleHireContractor}
+                  disabled={!selectedContractorId}
+                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40"
+                >
+                  Assign
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Add note modal */}
