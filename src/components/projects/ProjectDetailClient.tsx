@@ -266,6 +266,21 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     setSelectedContractorId("");
   }
 
+  async function handleRemoveContractor() {
+    const { data: rows, error } = await supabase
+      .from("projects")
+      .update({ contractor_id: null })
+      .eq("id", project!.id)
+      .select()
+      .returns<DbProject[]>();
+
+    if (error) {
+      console.error("Failed to remove contractor:", error);
+      return;
+    }
+    setProject(dbToProject(rows[0]));
+  }
+
   async function handleEdit(
     data: Omit<
       Project,
@@ -698,51 +713,51 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       </div>
 
       {/* Contractor row */}
-      <div className="flex items-center gap-4 mb-5">
-        <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0">
-          <ThumbsUpSolidIcon width={30} height={30} className="text-accent" />
-          Hired
-        </span>
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
-          <div className="flex items-center gap-3">
-            {contractor ? (
-              <>
-                {contractor.logoUrl?.trim() && !logoError ? (
-                  <img
-                    src={contractor.logoUrl}
-                    alt={contractor.company}
-                    className="w-9 h-9 rounded-full object-contain bg-white border border-border shrink-0"
-                    onError={() => setLogoError(true)}
-                  />
-                ) : (
-                  <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center shrink-0">
-                    {contractor.company?.trim() ? (
-                      <BuildingIcon width={18} height={18} />
-                    ) : (
-                      <UserIcon width={18} height={18} />
-                    )}
-                  </div>
-                )}
-                <div>
-                  <span className="block text-[14px] font-semibold text-text-primary">
-                    {contractor.company}
-                  </span>
-                  {contractor.name && (
-                    <span className="block text-[12px] text-text-3">
-                      {contractor.name}
-                    </span>
+      {contractor && (
+        <div className="flex items-center gap-4 mb-5">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0">
+            <ThumbsUpSolidIcon width={30} height={30} className="text-accent" />
+            Hired
+          </span>
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
+            <div className="flex items-center gap-3">
+              {contractor.logoUrl?.trim() && !logoError ? (
+                <img
+                  src={contractor.logoUrl}
+                  alt={contractor.company}
+                  className="w-9 h-9 rounded-full object-contain bg-white border border-border shrink-0"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center shrink-0">
+                  {contractor.company?.trim() ? (
+                    <BuildingIcon width={18} height={18} />
+                  ) : (
+                    <UserIcon width={18} height={18} />
                   )}
                 </div>
-              </>
-            ) : (
-              <span className="text-[14px] text-text-3">Unassigned</span>
-            )}
+              )}
+              <div>
+                <span className="block text-[14px] font-semibold text-text-primary">
+                  {contractor.company}
+                </span>
+                {contractor.name && (
+                  <span className="block text-[12px] text-text-3">
+                    {contractor.name}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => handleRemoveContractor()}
+              className="shrink-0 p-1.5 rounded-[var(--radius-sm)] text-text-4 opacity-0 group-hover:opacity-100 hover:bg-border hover:text-red transition-all duration-[120ms]"
+              aria-label="Remove contractor"
+            >
+              <XIcon width={14} height={14} />
+            </button>
           </div>
-          <span className="text-[10px] text-text-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
-            Added {formatDateTime(project.createdAt)}
-          </span>
         </div>
-      </div>
+      )}
 
       {/* Timeline: events + notes in creation order */}
       {timeline.map((item) =>
