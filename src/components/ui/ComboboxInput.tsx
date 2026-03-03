@@ -6,6 +6,7 @@ export interface ComboboxOption {
   label: string;
   value: string;
   icon?: string;
+  subtitle?: string;
 }
 
 interface ComboboxInputProps {
@@ -37,9 +38,10 @@ export default function ComboboxInput({
 
   // Filter options client-side as user types
   const filtered = value.trim()
-    ? options.filter((o) =>
-        o.label.toLowerCase().includes(value.toLowerCase())
-      )
+    ? options.filter((o) => {
+        const q = value.toLowerCase();
+        return o.label.toLowerCase().includes(q) || (o.subtitle?.toLowerCase().includes(q) ?? false);
+      })
     : options;
 
   // Close on outside click
@@ -180,7 +182,12 @@ export default function ComboboxInput({
                     }}
                   />
                 )}
-                <span className="truncate">{option.label}</span>
+                <div className="min-w-0 flex-1">
+                  <span className="block truncate">{option.label}</span>
+                  {option.subtitle && (
+                    <span className="block text-[11px] text-text-4 truncate">{option.subtitle}</span>
+                  )}
+                </div>
               </li>
             ))
           ) : (

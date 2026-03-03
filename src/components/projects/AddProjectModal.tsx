@@ -7,6 +7,7 @@ import {
 import type { Contractor } from "@/lib/contractors-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
 import { XIcon, ChevronDownIcon } from "@/components/icons";
+import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
 interface AddProjectModalProps {
   project?: Project;
@@ -41,6 +42,18 @@ export default function AddProjectModal({
 
   const nameRef = useRef<HTMLInputElement>(null);
   const isValid = form.name.trim() !== "";
+
+  // Asset combobox
+  const selectedAsset = homeAssets.find((a) => a.id === form.homeAssetId);
+  const [assetSearch, setAssetSearch] = useState(selectedAsset?.name ?? "");
+  const assetOptions: ComboboxOption[] = [...homeAssets]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((a) => ({
+      label: a.name,
+      value: a.id,
+      subtitle: [a.make, a.model].filter(Boolean).join(" ") || undefined,
+      icon: a.imageUrl || undefined,
+    }));
 
   useEffect(() => {
     nameRef.current?.focus();
@@ -151,30 +164,31 @@ export default function AddProjectModal({
 
           {/* Home Asset */}
           {homeAssets.length > 0 && (
-            <label className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5">
               <span className="text-[14px] font-medium text-text-primary">
                 Home Asset
               </span>
-              <div className="relative">
-                <select
-                  value={form.homeAssetId}
-                  onChange={(e) =>
-                    setForm({ ...form, homeAssetId: e.target.value })
+              <ComboboxInput
+                value={assetSearch}
+                onChange={(val) => {
+                  setAssetSearch(val);
+                  // Clear selection if user edits the text
+                  if (form.homeAssetId) {
+                    const match = homeAssets.find((a) => a.id === form.homeAssetId);
+                    if (match && val !== match.name) {
+                      setForm({ ...form, homeAssetId: "" });
+                    }
                   }
-                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-                >
-                  <option value="">None</option>
-                  {[...homeAssets]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
-              </div>
-            </label>
+                }}
+                options={assetOptions}
+                placeholder="Search assets..."
+                onSelect={(option) => {
+                  setAssetSearch(option.label);
+                  setForm({ ...form, homeAssetId: option.value });
+                }}
+                emptyMessage="No assets found"
+              />
+            </div>
           )}
 
           {/* Status */}
