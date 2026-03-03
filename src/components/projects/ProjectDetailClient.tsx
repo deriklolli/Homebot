@@ -715,7 +715,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Contractor row */}
       {contractor && (
         <div className="flex items-center gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide w-[80px] shrink-0">
             <ThumbsUpSolidIcon width={30} height={30} className="text-accent" />
             Hired
           </span>
@@ -763,7 +763,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {timeline.map((item) =>
         item.type === "event" ? (
           <div key={`event-${item.data.id}`} className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide w-[80px] shrink-0 mt-4">
               <CalendarSolidIcon width={30} height={30} className="text-accent" />
               Scheduled
             </span>
@@ -815,7 +815,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           </div>
         ) : (
           <div key={`note-${item.data.id}`} className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide w-[80px] shrink-0 mt-4">
               <NoteSolidIcon width={30} height={30} className="text-accent" />
               Note
             </span>
@@ -859,7 +859,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Project Completed card */}
       {project.status === "Completed" && (
         <div className="flex items-start gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide w-[80px] shrink-0 mt-4">
             <CheckCircleSolidIcon width={30} height={30} className="text-green" />
             Completed
           </span>

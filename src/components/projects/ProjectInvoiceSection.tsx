@@ -249,7 +249,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
 
         {(invoices.length > 0 || uploading) && (
           <div className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide w-[80px] shrink-0 mt-4">
               <InvoiceSolidIcon width={30} height={30} className="text-accent" />
               Invoices
             </span>

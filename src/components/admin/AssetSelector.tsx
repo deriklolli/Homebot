@@ -46,7 +46,7 @@ export default function AssetSelector({ selected, onChange }: AssetSelectorProps
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+      <p className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
         Pre-load Home Assets
       </p>
       <p className="text-[12px] text-text-3 mb-2">

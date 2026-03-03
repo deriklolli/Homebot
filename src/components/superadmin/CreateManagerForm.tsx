@@ -93,7 +93,7 @@ export default function CreateManagerForm() {
           <div>
             <label
               htmlFor="org"
-              className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1.5"
+              className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1.5"
             >
               Organization
             </label>
@@ -118,7 +118,7 @@ export default function CreateManagerForm() {
           <div>
             <label
               htmlFor="email"
-              className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1.5"
+              className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1.5"
             >
               Email
             </label>
@@ -136,7 +136,7 @@ export default function CreateManagerForm() {
           <div>
             <label
               htmlFor="fullName"
-              className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1.5"
+              className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1.5"
             >
               Full Name <span className="text-text-4 normal-case">(optional)</span>
             </label>

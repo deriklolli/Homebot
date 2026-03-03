@@ -102,7 +102,7 @@ export default function CreateClientForm() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1.5"
+                className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1.5"
               >
                 Email
               </label>
@@ -120,7 +120,7 @@ export default function CreateClientForm() {
             <div>
               <label
                 htmlFor="fullName"
-                className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1.5"
+                className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1.5"
               >
                 Full Name <span className="text-text-4 normal-case">(optional)</span>
               </label>
@@ -137,7 +137,7 @@ export default function CreateClientForm() {
             <div>
               <label
                 htmlFor="propertyName"
-                className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1.5"
+                className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1.5"
               >
                 Property Name <span className="text-text-4 normal-case">(optional)</span>
               </label>
@@ -192,7 +192,7 @@ export default function CreateClientForm() {
         {step === "review" && (
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+              <p className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
                 Client
               </p>
               <p className="text-[14px] text-text-primary">{email}</p>
@@ -205,7 +205,7 @@ export default function CreateClientForm() {
             </div>
 
             <div>
-              <p className="text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+              <p className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
                 Pre-loaded Assets
               </p>
               {selectedAssets.length === 0 ? (

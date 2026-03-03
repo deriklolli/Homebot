@@ -315,7 +315,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
           <div className="flex gap-5 mb-5">
             {/* Next Service Date */}
             <div className="flex-[35] min-w-0">
-              <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+              <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
                 Next Service Date
               </span>
               <span className="text-[14px] font-semibold text-text-primary">
@@ -339,7 +339,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
             {/* Contractor */}
             {service.provider && (
               <div className="flex-[35] min-w-0">
-                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
                   Contractor
                 </span>
                 <div className="flex items-start gap-2.5">
@@ -393,7 +393,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
           <div className="flex gap-5 flex-wrap">
             {service.cost !== null && (
               <div>
-                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
                   Cost
                 </span>
                 <span className="text-[14px] text-text-primary">
@@ -404,7 +404,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
 
             {service.notes && (
               <div className="flex-1 min-w-0">
-                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
                   Notes
                 </span>
                 <p className="text-[14px] text-text-primary leading-relaxed whitespace-pre-wrap">

@@ -62,7 +62,7 @@ export default function CreateOrgForm() {
           <div>
             <label
               htmlFor="orgName"
-              className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1.5"
+              className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1.5"
             >
               Organization Name
             </label>
