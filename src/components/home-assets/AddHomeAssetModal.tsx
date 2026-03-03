@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CATEGORY_OPTIONS, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
 import { isProductLookupSupported, type ProductBrand, type ProductSummary, type ProductDetail } from "@/lib/product-data";
-import { XIcon } from "@/components/icons";
+import { XIcon, ChevronDownIcon } from "@/components/icons";
 import DatePicker from "@/components/ui/DatePicker";
 import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
@@ -256,27 +256,30 @@ export default function AddHomeAssetModal({
             <span className="text-[14px] font-medium text-text-primary">
               Category <span className="text-red">*</span>
             </span>
-            <select
-              value={category}
-              onChange={(e) => {
-                const newCat = e.target.value as AssetCategory;
-                setCategory(newCat);
-                // Clear make/model when category changes (unless editing)
-                if (!isEditing) {
-                  setMake("");
-                  setModel("");
-                  setSelectedBrand(null);
-                  setProducts([]);
-                }
-              }}
-              className={inputClassName}
-            >
-              {CATEGORY_OPTIONS.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={category}
+                onChange={(e) => {
+                  const newCat = e.target.value as AssetCategory;
+                  setCategory(newCat);
+                  // Clear make/model when category changes (unless editing)
+                  if (!isEditing) {
+                    setMake("");
+                    setModel("");
+                    setSelectedBrand(null);
+                    setProducts([]);
+                  }
+                }}
+                className={`${inputClassName} w-full appearance-none pr-8 cursor-pointer`}
+              >
+                {CATEGORY_OPTIONS.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+            </div>
           </label>
 
           {/* Make & Model */}
