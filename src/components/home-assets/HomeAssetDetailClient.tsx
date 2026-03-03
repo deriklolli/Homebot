@@ -395,8 +395,8 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Linked Inventory Items */}
       {linkedInventory.length > 0 && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-bg/50">
-            <PackageIcon width={14} height={14} className="text-text-3" />
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-[#e8f4f8]">
+            <PackageIcon width={14} height={14} className="text-teal" />
             <span className="text-[14px] font-semibold text-text-primary">
               Tracked Inventory
             </span>
