@@ -32,6 +32,7 @@ export default function ServicesClient() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "regular" | "annual">("all");
 
   useEffect(() => {
     async function fetchData() {
@@ -70,6 +71,11 @@ export default function ServicesClient() {
   }, []);
 
   const filtered = services.filter((s) => {
+    // Tab filter
+    if (activeTab === "regular" && s.frequencyMonths >= 12) return false;
+    if (activeTab === "annual" && s.frequencyMonths < 12) return false;
+
+    // Search filter
     const q = searchQuery.toLowerCase();
     if (!q) return true;
     return (
@@ -155,6 +161,29 @@ export default function ServicesClient() {
       )}
 
       <HomeServiceAlerts />
+
+      {/* Tabs */}
+      {services.length > 0 && (
+        <div className="flex gap-6 mb-5 border-b border-border">
+          {(["all", "regular", "annual"] as const).map((tab) => {
+            const label = tab === "all" ? "All Services" : tab === "regular" ? "Regular Services" : "Annual Services";
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-2.5 text-[14px] font-medium transition-colors duration-[120ms] border-b-2 -mb-px ${
+                  isActive
+                    ? "text-text-primary border-accent"
+                    : "text-text-3 border-transparent hover:text-text-primary"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Content */}
       {loading ? (
