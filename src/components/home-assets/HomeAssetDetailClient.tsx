@@ -218,101 +218,106 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
       {/* Details card */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
-        {/* Product image */}
-        {asset.imageUrl && (
-          <div className="flex justify-center mb-5 pb-5 border-b border-dotted border-border-strong">
-            <img
-              src={asset.imageUrl}
-              alt={`${asset.make} ${asset.model}`}
-              className="max-h-[200px] max-w-full object-contain rounded-[var(--radius-md)]"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-          </div>
-        )}
-
-        {/* Row 1: Make & Model */}
-        <div className="flex gap-5 pb-4 border-b border-dotted border-border-strong">
-          <div className="flex-1">
-            <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-              Make
-            </span>
-            <span className="text-[14px] text-text-primary">
-              {asset.make || "\u2014"}
-            </span>
-          </div>
-          <div className="flex-1">
-            <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-              Model
-            </span>
-            <span className="text-[14px] text-text-primary">
-              {asset.model || "\u2014"}
-            </span>
-          </div>
-        </div>
-
-        {/* Row 2: Serial Number & Location */}
-        <div className="flex gap-5 py-4 border-b border-dotted border-border-strong">
-          <div className="flex-1">
-            <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-              Serial Number
-            </span>
-            <span className="text-[14px] text-text-primary font-mono">
-              {asset.serialNumber || "\u2014"}
-            </span>
-          </div>
-          <div className="flex-1">
-            <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-              Location
-            </span>
-            <span className="text-[14px] text-text-primary">
-              {asset.location || "\u2014"}
-            </span>
-          </div>
-        </div>
-
-        {/* Row 3: Purchase Date & Warranty */}
-        <div className={`flex gap-5 pt-4${asset.productUrl ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
-          <div className="flex-1">
-            <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-              Purchase / Install Date
-            </span>
-            <span className="text-[14px] text-text-primary">
-              {asset.purchaseDate ? formatDate(asset.purchaseDate) : "\u2014"}
-            </span>
-          </div>
-          <div className="flex-1">
-            <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-              Warranty Expiration
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-[14px] text-text-primary">
-                {asset.warrantyExpiration ? formatDate(asset.warrantyExpiration) : "\u2014"}
-              </span>
-              {warranty && (
-                <span className={`px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
-                  {warranty.label}
-                </span>
-              )}
+        <div className="flex gap-6">
+          {/* Product image — left side */}
+          {(asset.imageUrl || !asset.imageUrl) && (
+            <div className="shrink-0 rounded-[var(--radius-md)] shadow-[0_4px_12px_0px_rgba(0,0,0,0.15)] overflow-hidden bg-bg">
+              <img
+                src={asset.imageUrl || "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=300&h=300&fit=crop"}
+                alt={`${asset.make} ${asset.model}`}
+                className="h-[195px] w-[195px] object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Row 4: Product Link (if set) */}
-        {asset.productUrl && (
-          <div className="pt-4">
-            <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
-              Product Link
-            </span>
-            <a
-              href={affiliateUrl(asset.productUrl)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[14px] text-accent hover:underline"
-            >
-              View Product
-            </a>
-          </div>
-        )}
+          {/* Details — right side */}
+          <div className="flex-1 min-w-0">
+            {/* Row 1: Make & Model */}
+            <div className="flex gap-5 pb-4 border-b border-dotted border-border-strong">
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Make
+                </span>
+                <span className="text-[14px] text-text-primary">
+                  {asset.make || "\u2014"}
+                </span>
+              </div>
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Model
+                </span>
+                <span className="text-[14px] text-text-primary">
+                  {asset.model || "\u2014"}
+                </span>
+              </div>
+            </div>
+
+            {/* Row 2: Serial Number & Location */}
+            <div className="flex gap-5 py-4 border-b border-dotted border-border-strong">
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Serial Number
+                </span>
+                <span className="text-[14px] text-text-primary font-mono">
+                  {asset.serialNumber || "\u2014"}
+                </span>
+              </div>
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Location
+                </span>
+                <span className="text-[14px] text-text-primary">
+                  {asset.location || "\u2014"}
+                </span>
+              </div>
+            </div>
+
+            {/* Row 3: Purchase Date & Warranty */}
+            <div className={`flex gap-5 pt-4${asset.productUrl ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Purchase / Install Date
+                </span>
+                <span className="text-[14px] text-text-primary">
+                  {asset.purchaseDate ? formatDate(asset.purchaseDate) : "\u2014"}
+                </span>
+              </div>
+              <div className="flex-1">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Warranty Expiration
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[14px] text-text-primary">
+                    {asset.warrantyExpiration ? formatDate(asset.warrantyExpiration) : "\u2014"}
+                  </span>
+                  {warranty && (
+                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
+                      {warranty.label}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Row 4: Product Link (if set) */}
+            {asset.productUrl && (
+              <div className="pt-4">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-1">
+                  Product Link
+                </span>
+                <a
+                  href={affiliateUrl(asset.productUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[14px] text-accent hover:underline"
+                >
+                  View Product
+                </a>
+              </div>
+            )}
+          </div>{/* end flex-1 details */}
+        </div>{/* end flex row */}
       </div>
 
       {/* Linked Inventory Items */}
