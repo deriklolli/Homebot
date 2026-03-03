@@ -13,6 +13,7 @@ import {
   PencilIcon,
   TrashIcon,
   PackageIcon,
+  CameraIcon,
 } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
 import { affiliateUrl } from "@/lib/utils";
@@ -43,6 +44,8 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [linkedInventory, setLinkedInventory] = useState<InventoryItem[]>([]);
+  const [imagePromptOpen, setImagePromptOpen] = useState(false);
+  const [imageInput, setImageInput] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -126,6 +129,21 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         })
         .catch(() => {});
     }
+  }
+
+  async function handleImageSave() {
+    if (!asset || !imageInput.trim()) return;
+    const url = imageInput.trim();
+    const { error } = await supabase
+      .from("home_assets")
+      .update({ image_url: url })
+      .eq("id", asset.id);
+
+    if (!error) {
+      setAsset((prev) => prev ? { ...prev, imageUrl: url } : prev);
+    }
+    setImagePromptOpen(false);
+    setImageInput("");
   }
 
   async function handleDelete() {
@@ -220,16 +238,59 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
         <div className="flex gap-6">
           {/* Product image — left side */}
-          {(asset.imageUrl || !asset.imageUrl) && (
-            <div className="shrink-0 rounded-[var(--radius-md)] shadow-[0_4px_12px_0px_rgba(0,0,0,0.15)] overflow-hidden bg-bg">
-              <img
-                src={asset.imageUrl || "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=300&h=300&fit=crop"}
-                alt={`${asset.make} ${asset.model}`}
-                className="h-[195px] w-[195px] object-contain"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            </div>
-          )}
+          <div className="shrink-0">
+            {asset.imageUrl ? (
+              <div className="rounded-[var(--radius-md)] border border-border bg-bg p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
+                <img
+                  src={asset.imageUrl}
+                  alt={`${asset.make} ${asset.model}`}
+                  className="h-[195px] w-[195px] object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setImagePromptOpen(true)}
+                className="h-[195px] w-[195px] rounded-[var(--radius-md)] bg-bg border-2 border-dashed border-border-strong flex flex-col items-center justify-center gap-2 text-text-4 hover:border-accent hover:text-accent transition-all duration-[120ms] cursor-pointer"
+              >
+                <CameraIcon width={28} height={28} />
+                <span className="text-[12px] font-medium">Add Image</span>
+              </button>
+            )}
+
+            {/* Image URL prompt */}
+            {imagePromptOpen && (
+              <div className="mt-3 flex flex-col gap-2 w-[195px]">
+                <input
+                  type="url"
+                  autoFocus
+                  value={imageInput}
+                  onChange={(e) => setImageInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleImageSave(); if (e.key === "Escape") { setImagePromptOpen(false); setImageInput(""); } }}
+                  placeholder="Paste image URL..."
+                  className="px-2.5 py-[6px] text-[12px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                />
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleImageSave}
+                    disabled={!imageInput.trim()}
+                    className="flex-1 px-2 py-[5px] rounded-[var(--radius-sm)] bg-accent text-white text-[11px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setImagePromptOpen(false); setImageInput(""); }}
+                    className="flex-1 px-2 py-[5px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 text-[11px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Details — right side */}
           <div className="flex-1 min-w-0">
