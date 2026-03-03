@@ -6,7 +6,7 @@ import {
 } from "@/lib/projects-data";
 import type { Contractor } from "@/lib/contractors-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
-import { XIcon, ChevronDownIcon } from "@/components/icons";
+import { XIcon, ChevronDownIcon, HomeIcon } from "@/components/icons";
 import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
 interface AddProjectModalProps {
@@ -187,6 +187,7 @@ export default function AddProjectModal({
                   setForm({ ...form, homeAssetId: option.value });
                 }}
                 emptyMessage="No assets found"
+                placeholderIcon={<HomeIcon width={16} height={16} className="text-white" />}
               />
             </div>
           )}

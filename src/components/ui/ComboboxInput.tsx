@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
 
 export interface ComboboxOption {
   label: string;
@@ -18,6 +18,7 @@ interface ComboboxInputProps {
   disabled?: boolean;
   onSelect?: (option: ComboboxOption) => void;
   emptyMessage?: string;
+  placeholderIcon?: ReactNode;
 }
 
 export default function ComboboxInput({
@@ -29,6 +30,7 @@ export default function ComboboxInput({
   disabled = false,
   onSelect,
   emptyMessage = "No results found",
+  placeholderIcon,
 }: ComboboxInputProps) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -172,15 +174,22 @@ export default function ComboboxInput({
                     : "text-text-2 hover:bg-border hover:text-text-primary"
                 }`}
               >
-                {option.icon && (
+                {option.icon ? (
                   <img
                     src={option.icon}
                     alt=""
-                    className="w-8 h-8 rounded-[var(--radius-sm)] object-contain bg-white border border-border shrink-0"
+                    className="w-8 h-8 rounded-full object-contain bg-white border border-border shrink-0"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
+                      const el = e.target as HTMLImageElement;
+                      el.style.display = "none";
+                      el.nextElementSibling?.classList.remove("hidden");
                     }}
                   />
+                ) : null}
+                {(!option.icon || true) && placeholderIcon && (
+                  <div className={`w-8 h-8 rounded-full bg-accent shrink-0 flex items-center justify-center ${option.icon ? "hidden" : ""}`}>
+                    {placeholderIcon}
+                  </div>
                 )}
                 <div className="min-w-0 flex-1">
                   <span className="block truncate">{option.label}</span>
