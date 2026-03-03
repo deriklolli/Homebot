@@ -172,19 +172,19 @@ export default function ServiceHistorySection({
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-border">
-                <th className="px-5 py-3 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide">
+                <th className="px-5 py-3 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide">
                   Service Date
                 </th>
-                <th className="px-5 py-3 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide">
+                <th className="px-5 py-3 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide">
                   Contractor
                 </th>
-                <th className="px-5 py-3 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide">
+                <th className="px-5 py-3 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide">
                   Asset Make
                 </th>
-                <th className="px-5 py-3 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide">
+                <th className="px-5 py-3 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide">
                   Asset Model
                 </th>
-                <th className="pl-5 pr-2 py-3 text-[11px] font-medium text-[#E7B096] uppercase tracking-wide text-right">
+                <th className="pl-5 pr-2 py-3 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide text-right">
                   Invoice
                 </th>
                 <th className="w-8"></th>

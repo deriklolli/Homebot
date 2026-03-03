@@ -268,7 +268,7 @@ export default function ImportAssetsModal({
             <div className="overflow-y-auto flex-1 min-h-0">
               <table className="w-full text-[14px]">
                 <thead>
-                  <tr className="border-b border-border text-left text-[11px] font-medium text-[#E7B096] uppercase tracking-wide">
+                  <tr className="border-b border-border text-left text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide">
                     <th className="pl-5 pr-2 py-2.5 w-8">
                       <input
                         type="checkbox"

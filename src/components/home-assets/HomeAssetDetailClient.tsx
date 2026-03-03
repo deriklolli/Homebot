@@ -369,7 +369,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             {/* Row 1: Make & Model */}
             <div className="flex gap-5 pb-4 border-b border-dotted border-border-strong">
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Make
                 </span>
                 <span className="text-[14px] text-text-primary">
@@ -377,7 +377,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 </span>
               </div>
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Model
                 </span>
                 <span className="text-[14px] text-text-primary">
@@ -389,7 +389,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             {/* Row 2: Serial Number & Location */}
             <div className="flex gap-5 py-4 border-b border-dotted border-border-strong">
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Serial Number
                 </span>
                 <span className="text-[14px] text-text-primary font-mono">
@@ -397,7 +397,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 </span>
               </div>
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Location
                 </span>
                 <span className="text-[14px] text-text-primary">
@@ -409,7 +409,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             {/* Row 3: Purchase Date & Warranty */}
             <div className={`flex gap-5 pt-4${asset.productUrl ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Purchase / Install Date
                 </span>
                 <span className="text-[14px] text-text-primary">
@@ -417,7 +417,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 </span>
               </div>
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Warranty Expiration
                 </span>
                 <div className="flex items-center gap-2">
@@ -436,7 +436,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             {/* Row 4: Product Link (if set) */}
             {asset.productUrl && (
               <div className="pt-4">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Product Link
                 </span>
                 <a
@@ -500,7 +500,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Notes */}
       {asset.notes && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
-          <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-2">
+          <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-2">
             Notes
           </span>
           <p className="text-[14px] text-text-primary leading-relaxed whitespace-pre-wrap">

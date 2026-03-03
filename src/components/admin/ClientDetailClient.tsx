@@ -117,21 +117,21 @@ export default function ClientDetailClient({ id }: { id: string }) {
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mb-4 max-w-[520px]">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-0.5">Email</p>
+            <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Email</p>
             <p className="text-[14px] text-text-primary">{client.email}</p>
           </div>
           <div>
-            <p className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-0.5">Created</p>
+            <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Created</p>
             <p className="text-[14px] text-text-primary">
               {new Date(client.createdAt).toLocaleDateString()}
             </p>
           </div>
           <div>
-            <p className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-0.5">Assets</p>
+            <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Assets</p>
             <p className="text-[14px] text-text-primary">{client.assetCount}</p>
           </div>
           <div>
-            <p className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-0.5">Inventory</p>
+            <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Inventory</p>
             <p className="text-[14px] text-text-primary">{client.inventoryCount}</p>
           </div>
         </div>

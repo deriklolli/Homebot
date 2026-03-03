@@ -404,7 +404,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
             {/* Row 1: Next Reminder & Frequency */}
             <div className="flex gap-5 pb-4 border-b border-dotted border-border-strong">
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Next Reminder
                 </span>
                 <span className="text-[14px] font-semibold text-text-primary">
@@ -437,7 +437,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 </button>
               </div>
               <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Last Ordered
                 </span>
                 <span className="text-[14px] text-text-primary">
@@ -451,7 +451,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
               <div className={`flex gap-5 py-4${item.description ? " border-b border-dotted border-border-strong" : ""}`}>
                 {item.cost != null && (
                   <div className="flex-1">
-                    <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                       Est. Cost
                     </span>
                     <span className="text-[14px] text-text-primary">
@@ -461,7 +461,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 )}
                 {item.purchaseUrl && (
                   <div className="flex-1">
-                    <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                       Purchase Link
                     </span>
                     <a
@@ -480,7 +480,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
             {/* Row 3: Description */}
             {item.description && (
               <div className="pt-4">
-                <span className="block text-[11px] font-medium text-[#E7B096] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Description
                 </span>
                 <p className="text-[14px] text-text-primary leading-relaxed">

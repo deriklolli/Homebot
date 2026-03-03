@@ -65,7 +65,7 @@ export default function ProjectCard({
             )}
             {project.totalCost !== null && (
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-[#E7B096] uppercase tracking-wide">
+                <span className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide">
                   Cost
                 </span>
                 <span className="text-[12px] text-text-2">
