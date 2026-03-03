@@ -361,7 +361,19 @@ export default function HomeAssetsClient() {
                               href={`/home-assets/${asset.id}`}
                               className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
                             >
-                              <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                              {asset.imageUrl ? (
+                                <img
+                                  src={asset.imageUrl}
+                                  alt={asset.name}
+                                  className="w-10 h-10 rounded-full shrink-0 object-cover bg-bg"
+                                  onError={(e) => {
+                                    const el = e.target as HTMLImageElement;
+                                    el.style.display = "none";
+                                    el.nextElementSibling?.classList.remove("hidden");
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center ${asset.imageUrl ? "hidden" : ""}`}>
                                 <HomeIcon width={18} height={18} className="text-white" />
                               </div>
                               <div className="flex-1 min-w-0">

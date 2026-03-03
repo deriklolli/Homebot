@@ -42,7 +42,6 @@ export default function AddHomeAssetModal({
   const [products, setProducts] = useState<ProductSummary[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(asset?.make ?? null);
-  const [autoFilled, setAutoFilled] = useState(false);
 
   useEffect(() => {
     nameRef.current?.focus();
@@ -135,7 +134,6 @@ export default function AddHomeAssetModal({
       setMake(option.label);
       setSelectedBrand(option.label);
       setModel("");
-      setAutoFilled(false);
     },
     []
   );
@@ -170,7 +168,6 @@ export default function AddHomeAssetModal({
             date.setMonth(date.getMonth() + product.warrantyMonths);
             setWarrantyExpiration(date.toISOString().slice(0, 10));
           }
-          setAutoFilled(true);
         }
       } catch {
         // Silently fail — auto-fill is best-effort
@@ -270,7 +267,6 @@ export default function AddHomeAssetModal({
                   setModel("");
                   setSelectedBrand(null);
                   setProducts([]);
-                  setAutoFilled(false);
                 }
               }}
               className={inputClassName}
@@ -328,7 +324,6 @@ export default function AddHomeAssetModal({
                   value={model}
                   onChange={(val) => {
                     setModel(val);
-                    setAutoFilled(false);
                   }}
                   options={productOptions}
                   loading={productsLoading}
@@ -347,12 +342,6 @@ export default function AddHomeAssetModal({
               )}
             </div>
           </div>
-
-          {autoFilled && (
-            <p className="text-[11px] text-accent -mt-2">
-              Product details auto-filled
-            </p>
-          )}
 
           {/* Serial Number */}
           <label className="flex flex-col gap-1.5">
