@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { CATEGORY_OPTIONS, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
+import { isProductLookupSupported, type ProductBrand, type ProductSummary, type ProductDetail } from "@/lib/product-data";
 import { XIcon } from "@/components/icons";
 import DatePicker from "@/components/ui/DatePicker";
+import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
 interface AddHomeAssetModalProps {
   asset?: HomeAsset;
@@ -28,9 +30,19 @@ export default function AddHomeAssetModal({
   const [warrantyExpiration, setWarrantyExpiration] = useState(asset?.warrantyExpiration ?? "");
   const [location, setLocation] = useState(asset?.location ?? "");
   const [productUrl, setProductUrl] = useState(asset?.productUrl ?? "");
+  const [imageUrl, setImageUrl] = useState(asset?.imageUrl ?? "");
   const [notes, setNotes] = useState(asset?.notes ?? "");
   const nameRef = useRef<HTMLInputElement>(null);
   const isValid = name.trim() !== "";
+
+  // Product lookup state
+  const [lookupEnabled, setLookupEnabled] = useState(false);
+  const [brands, setBrands] = useState<ProductBrand[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
+  const [products, setProducts] = useState<ProductSummary[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(asset?.make ?? null);
+  const [autoFilled, setAutoFilled] = useState(false);
 
   useEffect(() => {
     nameRef.current?.focus();
@@ -43,6 +55,142 @@ export default function AddHomeAssetModal({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  // Fetch brands when category changes
+  useEffect(() => {
+    const supported = isProductLookupSupported(category);
+    setLookupEnabled(supported);
+
+    if (!supported) {
+      setBrands([]);
+      setProducts([]);
+      return;
+    }
+
+    let cancelled = false;
+    setBrandsLoading(true);
+
+    fetch(`/api/product-lookup/brands?category=${encodeURIComponent(category)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) {
+          setBrands(data.brands ?? []);
+          // If editing and make matches a brand, load products
+          if (isEditing && asset?.make) {
+            const matchesBrand = (data.brands ?? []).some(
+              (b: ProductBrand) => b.name.toLowerCase() === asset.make.toLowerCase()
+            );
+            if (matchesBrand) {
+              setSelectedBrand(asset.make);
+            }
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setBrands([]);
+      })
+      .finally(() => {
+        if (!cancelled) setBrandsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // Only re-fetch when category changes, not on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
+
+  // Fetch products when a brand is selected
+  useEffect(() => {
+    if (!lookupEnabled || !selectedBrand) {
+      setProducts([]);
+      return;
+    }
+
+    let cancelled = false;
+    setProductsLoading(true);
+
+    fetch(
+      `/api/product-lookup/products?brand=${encodeURIComponent(selectedBrand)}&category=${encodeURIComponent(category)}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setProducts(data.products ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setProductsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lookupEnabled, selectedBrand, category]);
+
+  // Handle brand selection from dropdown
+  const handleBrandSelect = useCallback(
+    (option: ComboboxOption) => {
+      setMake(option.label);
+      setSelectedBrand(option.label);
+      setModel("");
+      setAutoFilled(false);
+    },
+    []
+  );
+
+  // Handle model selection — fetch full details and auto-fill
+  const handleModelSelect = useCallback(
+    async (option: ComboboxOption) => {
+      // option.value is the SKU
+      setModel(option.value);
+
+      try {
+        const res = await fetch(
+          `/api/product-lookup/product-detail?sku=${encodeURIComponent(option.value)}&brand=${encodeURIComponent(make)}`
+        );
+        const data = await res.json();
+        const product: ProductDetail | null = data.product;
+
+        if (product) {
+          // Auto-fill name if empty or still the prefill value
+          if (!name.trim() || name === prefill?.name) {
+            setName(product.name);
+          }
+          if (product.image) {
+            setImageUrl(product.image);
+          }
+          if (product.productUrl) {
+            setProductUrl(product.productUrl);
+          }
+          // Compute warranty expiration from warrantyMonths + purchaseDate
+          if (product.warrantyMonths && purchaseDate) {
+            const date = new Date(purchaseDate);
+            date.setMonth(date.getMonth() + product.warrantyMonths);
+            setWarrantyExpiration(date.toISOString().slice(0, 10));
+          }
+          setAutoFilled(true);
+        }
+      } catch {
+        // Silently fail — auto-fill is best-effort
+      }
+    },
+    [name, prefill?.name, purchaseDate, make]
+  );
+
+  // Brand combobox options
+  const brandOptions: ComboboxOption[] = brands.map((b) => ({
+    label: b.name,
+    value: b.name,
+    icon: b.image,
+  }));
+
+  // Product combobox options
+  const productOptions: ComboboxOption[] = products.map((p) => ({
+    label: p.name,
+    value: p.sku,
+  }));
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,10 +206,13 @@ export default function AddHomeAssetModal({
       warrantyExpiration: warrantyExpiration || null,
       location: location.trim(),
       productUrl: productUrl.trim(),
-      imageUrl: asset?.imageUrl ?? "",
+      imageUrl,
       notes: notes.trim(),
     });
   }
+
+  const inputClassName =
+    "px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]";
 
   return (
     <div
@@ -98,7 +249,7 @@ export default function AddHomeAssetModal({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className={inputClassName}
               placeholder="e.g. Refrigerator, Water Heater"
             />
           </label>
@@ -110,8 +261,19 @@ export default function AddHomeAssetModal({
             </span>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value as AssetCategory)}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              onChange={(e) => {
+                const newCat = e.target.value as AssetCategory;
+                setCategory(newCat);
+                // Clear make/model when category changes (unless editing)
+                if (!isEditing) {
+                  setMake("");
+                  setModel("");
+                  setSelectedBrand(null);
+                  setProducts([]);
+                  setAutoFilled(false);
+                }
+              }}
+              className={inputClassName}
             >
               {CATEGORY_OPTIONS.map((cat) => (
                 <option key={cat} value={cat}>
@@ -123,31 +285,74 @@ export default function AddHomeAssetModal({
 
           {/* Make & Model */}
           <div className="flex gap-3">
-            <label className="flex flex-col gap-1.5 flex-1">
+            <div className="flex flex-col gap-1.5 flex-1">
               <span className="text-[14px] font-medium text-text-primary">
                 Make
               </span>
-              <input
-                type="text"
-                value={make}
-                onChange={(e) => setMake(e.target.value)}
-                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-                placeholder="e.g. Samsung, Rheem"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 flex-1">
+              {lookupEnabled && brandOptions.length > 0 ? (
+                <ComboboxInput
+                  value={make}
+                  onChange={(val) => {
+                    setMake(val);
+                    // If typed value no longer matches a brand, clear products
+                    const matchesBrand = brands.some(
+                      (b) => b.name.toLowerCase() === val.toLowerCase()
+                    );
+                    if (!matchesBrand) {
+                      setSelectedBrand(null);
+                      setProducts([]);
+                    }
+                  }}
+                  options={brandOptions}
+                  loading={brandsLoading}
+                  placeholder="Search or type a brand..."
+                  onSelect={handleBrandSelect}
+                  emptyMessage="No brands found"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={make}
+                  onChange={(e) => setMake(e.target.value)}
+                  className={inputClassName}
+                  placeholder="e.g. Samsung, Rheem"
+                />
+              )}
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1">
               <span className="text-[14px] font-medium text-text-primary">
                 Model
               </span>
-              <input
-                type="text"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-                placeholder="e.g. RF28R7351SR"
-              />
-            </label>
+              {lookupEnabled && selectedBrand && productOptions.length > 0 ? (
+                <ComboboxInput
+                  value={model}
+                  onChange={(val) => {
+                    setModel(val);
+                    setAutoFilled(false);
+                  }}
+                  options={productOptions}
+                  loading={productsLoading}
+                  placeholder="Search or type a model..."
+                  onSelect={handleModelSelect}
+                  emptyMessage="No models found"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className={inputClassName}
+                  placeholder="e.g. RF28R7351SR"
+                />
+              )}
+            </div>
           </div>
+
+          {autoFilled && (
+            <p className="text-[11px] text-accent -mt-2">
+              Product details auto-filled
+            </p>
+          )}
 
           {/* Serial Number */}
           <label className="flex flex-col gap-1.5">
@@ -158,7 +363,7 @@ export default function AddHomeAssetModal({
               type="text"
               value={serialNumber}
               onChange={(e) => setSerialNumber(e.target.value)}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className={inputClassName}
               placeholder="Found on the appliance label"
             />
           </label>
@@ -194,7 +399,7 @@ export default function AddHomeAssetModal({
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className={inputClassName}
               placeholder="e.g. Kitchen, Garage, Basement"
             />
           </label>
@@ -208,7 +413,7 @@ export default function AddHomeAssetModal({
               type="url"
               value={productUrl}
               onChange={(e) => setProductUrl(e.target.value)}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className={inputClassName}
               placeholder="https://www.amazon.com/..."
             />
           </label>
@@ -222,7 +427,7 @@ export default function AddHomeAssetModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className={`${inputClassName} resize-none`}
               placeholder="Filter sizes, special instructions, maintenance tips..."
             />
           </label>
