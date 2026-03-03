@@ -131,7 +131,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .returns<DbProjectImage[]>(),
         supabase
           .from("home_assets")
-          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, created_at")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
         supabase
@@ -180,6 +180,10 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const contractorMap = new Map(contractors.map((c) => [c.id, c]));
   const contractor = project?.contractorId
     ? contractorMap.get(project.contractorId) ?? null
+    : null;
+
+  const linkedAsset = project?.homeAssetId
+    ? homeAssets.find((a) => a.id === project.homeAssetId) ?? null
     : null;
 
   // Build unified timeline sorted by created_at
@@ -605,14 +609,36 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       </header>
 
       {/* Description card */}
-      {project.description && (
+      {(project.description || linkedAsset?.imageUrl) && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
-          <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-2">
-            Project Description
-          </span>
-          <p className="text-[14px] text-text-primary leading-relaxed">
-            {project.description}
-          </p>
+          <div className="flex gap-6">
+            {/* Linked asset image — left side */}
+            {linkedAsset?.imageUrl && (
+              <div className="shrink-0 self-start">
+                <Link href={`/home-assets/${linkedAsset.id}`}>
+                  <div className="rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)] hover:border-accent transition-colors duration-[120ms]">
+                    <img
+                      src={linkedAsset.imageUrl}
+                      alt={`${linkedAsset.make} ${linkedAsset.model}`.trim() || linkedAsset.name}
+                      className="h-[140px] w-[140px] object-contain"
+                    />
+                  </div>
+                </Link>
+              </div>
+            )}
+
+            {/* Description — right side */}
+            {project.description && (
+              <div className="flex-1 min-w-0">
+                <span className="block text-[11px] font-medium text-text-4 uppercase tracking-wide mb-2">
+                  Project Description
+                </span>
+                <p className="text-[14px] text-text-primary leading-relaxed">
+                  {project.description}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
