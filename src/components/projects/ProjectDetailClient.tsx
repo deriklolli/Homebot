@@ -674,7 +674,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           {/* Details — right side */}
           <div className="flex-1 min-w-0">
             <div className="mb-4">
-              <span className="block text-[11px] font-medium text-[#6b9ece] uppercase tracking-wide mb-1">
+              <span className="block text-[11px] font-medium text-[#9CBFDF] uppercase tracking-wide mb-1">
                 Project Added
               </span>
               <span className="text-[14px] text-text-primary">
@@ -684,7 +684,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
             {project.description && (
               <div className={linkedAsset ? "mb-4" : ""}>
-                <span className="block text-[11px] font-medium text-[#6b9ece] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#9CBFDF] uppercase tracking-wide mb-1">
                   Project Description
                 </span>
                 <p className="text-[14px] text-text-primary leading-relaxed">
@@ -695,7 +695,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
             {linkedAsset && (
               <div>
-                <span className="block text-[11px] font-medium text-[#6b9ece] uppercase tracking-wide mb-1">
+                <span className="block text-[11px] font-medium text-[#9CBFDF] uppercase tracking-wide mb-1">
                   Home Asset
                 </span>
                 <p className="text-[14px] text-text-primary">
