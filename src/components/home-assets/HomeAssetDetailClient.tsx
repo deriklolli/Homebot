@@ -593,7 +593,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           </div>
           <ul role="list">
             {linkedInventory.map((inv) => (
-              <li key={inv.id} className={`border-b border-border last:border-b-0 ${!inv.tracked ? "opacity-50" : ""}`}>
+              <li key={inv.id} className="border-b border-border last:border-b-0">
                 <div className="flex items-center">
                   <Link
                     href={`/inventory/${inv.id}`}
