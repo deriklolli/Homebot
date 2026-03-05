@@ -397,13 +397,13 @@ export default function HomeAssetsClient() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[13px] text-text-3">View by</span>
-          <div className="flex gap-0 rounded-[var(--radius-sm)] border border-border bg-surface overflow-hidden">
+          <div className="flex gap-1">
             <button
               type="button"
               onClick={() => setViewMode("location")}
-              className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
+              className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
                 viewMode === "location"
-                  ? "bg-accent text-white"
+                  ? "bg-border text-text-primary"
                   : "text-text-3 hover:text-text-primary hover:bg-bg"
               }`}
             >
@@ -412,9 +412,9 @@ export default function HomeAssetsClient() {
             <button
               type="button"
               onClick={() => setViewMode("category")}
-              className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
+              className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
                 viewMode === "category"
-                  ? "bg-accent text-white"
+                  ? "bg-border text-text-primary"
                   : "text-text-3 hover:text-text-primary hover:bg-bg"
               }`}
             >
