@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CATEGORY_OPTIONS, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
-import { isProductLookupSupported, type ProductBrand, type ProductSummary, type ProductDetail } from "@/lib/product-data";
-import { XIcon, ChevronDownIcon } from "@/components/icons";
+import { isSkulyticsSupported, type SkulyticsBrand, type SkulyticsProductSummary, type SkulyticsProductDetail } from "@/lib/skulytics";
+import { XIcon, ChevronDownIcon, CameraIcon } from "@/components/icons";
+import LabelScannerModal from "./LabelScannerModal";
 import DatePicker from "@/components/ui/DatePicker";
 import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
@@ -35,11 +36,15 @@ export default function AddHomeAssetModal({
   const nameRef = useRef<HTMLInputElement>(null);
   const isValid = name.trim() !== "";
 
+  // Label scanner state
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanError, setScanError] = useState("");
+
   // Product lookup state
   const [lookupEnabled, setLookupEnabled] = useState(false);
-  const [brands, setBrands] = useState<ProductBrand[]>([]);
+  const [brands, setBrands] = useState<SkulyticsBrand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(false);
-  const [products, setProducts] = useState<ProductSummary[]>([]);
+  const [products, setProducts] = useState<SkulyticsProductSummary[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(asset?.make ?? null);
 
@@ -57,7 +62,7 @@ export default function AddHomeAssetModal({
 
   // Fetch brands when category changes
   useEffect(() => {
-    const supported = isProductLookupSupported(category);
+    const supported = isSkulyticsSupported(category);
     setLookupEnabled(supported);
 
     if (!supported) {
@@ -69,7 +74,7 @@ export default function AddHomeAssetModal({
     let cancelled = false;
     setBrandsLoading(true);
 
-    fetch(`/api/product-lookup/brands?category=${encodeURIComponent(category)}`)
+    fetch(`/api/skulytics/brands?category=${encodeURIComponent(category)}`)
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled) {
@@ -77,7 +82,7 @@ export default function AddHomeAssetModal({
           // If editing and make matches a brand, load products
           if (isEditing && asset?.make) {
             const matchesBrand = (data.brands ?? []).some(
-              (b: ProductBrand) => b.name.toLowerCase() === asset.make.toLowerCase()
+              (b: SkulyticsBrand) => b.name.toLowerCase() === asset.make.toLowerCase()
             );
             if (matchesBrand) {
               setSelectedBrand(asset.make);
@@ -110,7 +115,7 @@ export default function AddHomeAssetModal({
     setProductsLoading(true);
 
     fetch(
-      `/api/product-lookup/products?brand=${encodeURIComponent(selectedBrand)}&category=${encodeURIComponent(category)}`
+      `/api/skulytics/products?brand=${encodeURIComponent(selectedBrand)}&category=${encodeURIComponent(category)}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -146,10 +151,10 @@ export default function AddHomeAssetModal({
 
       try {
         const res = await fetch(
-          `/api/product-lookup/product-detail?sku=${encodeURIComponent(option.value)}&brand=${encodeURIComponent(make)}`
+          `/api/skulytics/product-detail?sku=${encodeURIComponent(option.value)}&brand=${encodeURIComponent(make)}`
         );
         const data = await res.json();
-        const product: ProductDetail | null = data.product;
+        const product: SkulyticsProductDetail | null = data.product;
 
         if (product) {
           // Auto-fill name if empty or still the prefill value
@@ -176,6 +181,18 @@ export default function AddHomeAssetModal({
     [name, prefill?.name, purchaseDate, make]
   );
 
+  // Handle scan result — auto-fill empty fields
+  const handleScanResult = useCallback(
+    (result: { brand: string; model: string; serialNumber: string; name: string }) => {
+      setScanError("");
+      if (result.brand && !make.trim()) setMake(result.brand);
+      if (result.model && !model.trim()) setModel(result.model);
+      if (result.serialNumber && !serialNumber.trim()) setSerialNumber(result.serialNumber);
+      if (result.name && !name.trim()) setName(result.name);
+    },
+    [make, model, serialNumber, name]
+  );
+
   // Brand combobox options
   const brandOptions: ComboboxOption[] = brands.map((b) => ({
     label: b.name,
@@ -183,10 +200,11 @@ export default function AddHomeAssetModal({
     icon: b.image,
   }));
 
-  // Product combobox options
+  // Product combobox options — SKU as label (goes into Model field), name as subtitle
   const productOptions: ComboboxOption[] = products.map((p) => ({
-    label: p.name,
+    label: p.sku,
     value: p.sku,
+    subtitle: p.name,
   }));
 
   function handleSubmit(e: React.FormEvent) {
@@ -281,6 +299,24 @@ export default function AddHomeAssetModal({
               <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
             </div>
           </label>
+
+          {/* Scan Product Label */}
+          {!isEditing && (
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => { setScanError(""); setScannerOpen(true); }}
+                className="inline-flex items-center justify-center gap-2 w-full px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-dashed border-border-strong bg-bg/50 text-text-2 text-[14px] font-medium hover:border-accent/50 hover:text-accent transition-all duration-[120ms]"
+                aria-label="Scan product label to auto-fill make, model, and serial number"
+              >
+                <CameraIcon width={16} height={16} />
+                Scan Product Label
+              </button>
+              {scanError && (
+                <p className="text-[12px] text-red">{scanError}</p>
+              )}
+            </div>
+          )}
 
           {/* Make & Model */}
           <div className="flex gap-3">
@@ -443,6 +479,13 @@ export default function AddHomeAssetModal({
           </div>
         </form>
       </div>
+      {/* Label Scanner */}
+      {scannerOpen && (
+        <LabelScannerModal
+          onScan={handleScanResult}
+          onClose={() => setScannerOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -52,6 +52,10 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   const documentsRef = useRef<HomeAssetDocumentsHandle>(null);
   const [imagePromptOpen, setImagePromptOpen] = useState(false);
   const [imageInput, setImageInput] = useState("");
+  const [dimensions, setDimensions] = useState<{ width: string | null; height: string | null; depth: string | null; weight: string | null } | null>(null);
+  const [skulyticsWarrantyMonths, setSkulyticsWarrantyMonths] = useState<number | null>(null);
+  const [manualUrl, setManualUrl] = useState<string | null>(null);
+  const [productDocuments, setProductDocuments] = useState<Array<{ role: string; url: string }>>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -104,6 +108,35 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
     }
     fetchData();
   }, [id]);
+
+  // Fetch product details from Skulytics when asset has a model
+  useEffect(() => {
+    if (!asset?.model) return;
+    let cancelled = false;
+    fetch(`/api/skulytics/product-detail?sku=${encodeURIComponent(asset.model)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || !data.product) return;
+        const p = data.product;
+        if (p.dimensions) {
+          const d = p.dimensions;
+          if (d.width || d.height || d.depth || d.weight) {
+            setDimensions(d);
+          }
+        }
+        if (typeof p.warrantyMonths === "number") {
+          setSkulyticsWarrantyMonths(p.warrantyMonths);
+        }
+        if (p.manualUrl) {
+          setManualUrl(p.manualUrl);
+        }
+        if (p.productDocuments?.length) {
+          setProductDocuments(p.productDocuments);
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [asset?.model]);
 
   // Close add files menu on outside click
   useEffect(() => {
@@ -407,7 +440,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             </div>
 
             {/* Row 3: Purchase Date & Warranty */}
-            <div className={`flex gap-5 pt-4${asset.productUrl ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+            <div className={`flex gap-5 pt-4${asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 || dimensions ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
               <div className="flex-1">
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Purchase / Install Date
@@ -435,7 +468,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
             {/* Row 4: Product Link (if set) */}
             {asset.productUrl && (
-              <div className="pt-4">
+              <div className={`pt-4${dimensions || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Product Link
                 </span>
@@ -447,6 +480,87 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 >
                   View Product
                 </a>
+              </div>
+            )}
+
+            {/* Row 5: Dimensions (from Skulytics) */}
+            {dimensions && (
+              <div className={`flex gap-5 pt-4${skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+                {dimensions.width && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                      Width
+                    </span>
+                    <span className="text-[14px] text-text-primary">{dimensions.width}</span>
+                  </div>
+                )}
+                {dimensions.height && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                      Height
+                    </span>
+                    <span className="text-[14px] text-text-primary">{dimensions.height}</span>
+                  </div>
+                )}
+                {dimensions.depth && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                      Depth
+                    </span>
+                    <span className="text-[14px] text-text-primary">{dimensions.depth}</span>
+                  </div>
+                )}
+                {dimensions.weight && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                      Weight
+                    </span>
+                    <span className="text-[14px] text-text-primary">{dimensions.weight}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Row 6: Warranty Period (from Skulytics) */}
+            {skulyticsWarrantyMonths && (
+              <div className={`flex gap-5 pt-4${manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+                <div className="flex-1">
+                  <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                    Manufacturer Warranty
+                  </span>
+                  <span className="text-[14px] text-text-primary">
+                    {skulyticsWarrantyMonths >= 12
+                      ? `${Math.floor(skulyticsWarrantyMonths / 12)} Year${Math.floor(skulyticsWarrantyMonths / 12) > 1 ? "s" : ""}`
+                      : `${skulyticsWarrantyMonths} Month${skulyticsWarrantyMonths > 1 ? "s" : ""}`}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Row 7: Product Documents (from Skulytics) */}
+            {productDocuments.length > 0 && (
+              <div className="pt-4">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-2">
+                  Product Documents
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {productDocuments.map((doc, i) => (
+                    <a
+                      key={i}
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-[var(--radius-sm)] border border-border-strong bg-bg text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                      </svg>
+                      {doc.role.replace(/\s*\(PDF\)\s*$/i, "")}
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>{/* end flex-1 details */}

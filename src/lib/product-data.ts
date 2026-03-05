@@ -28,6 +28,12 @@ export interface ProductDetail {
   productUrl: string;
   warrantyMonths: number | null;
   manualUrl: string | null;
+  dimensions?: {
+    width: string | null;
+    height: string | null;
+    depth: string | null;
+    weight: string | null;
+  };
 }
 
 // --- ENERGY STAR Dataset Configuration ---
