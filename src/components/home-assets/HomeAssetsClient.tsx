@@ -284,29 +284,29 @@ export default function HomeAssetsClient() {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       {/* Header */}
-      <header className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
-          Home Assets
-        </h1>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setScannerOpen(true)}
-            className="inline-flex md:hidden items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-            aria-label="Scan product label to add a new asset"
-          >
-            <CameraIcon width={14} height={14} />
-            Scan to Add
-          </button>
+      <header className="mb-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-[22px] font-bold tracking-tight text-text-primary whitespace-nowrap">
+            Home Assets
+          </h1>
           <button
             type="button"
             onClick={() => setImportModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <UploadIcon width={14} height={14} />
             Import CSV
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => setScannerOpen(true)}
+          className="flex md:hidden items-center justify-center gap-1.5 w-full mt-3 py-[9px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          aria-label="Scan product label to add a new asset"
+        >
+          <CameraIcon width={14} height={14} />
+          Scan to Add
+        </button>
       </header>
 
       {/* Search */}
