@@ -52,7 +52,7 @@ export default function HomeAssetsClient() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [pendingScanResult, setPendingScanResult] = useState<ScanResult | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<"category" | "location">("category");
+  const [viewMode, setViewMode] = useState<"category" | "location">("location");
   const [rooms, setRooms] = useState<string[]>([]);
   const [collapsedLocations, setCollapsedLocations] = useState<Set<string>>(new Set());
   const [addingRoom, setAddingRoom] = useState(false);
@@ -410,29 +410,32 @@ export default function HomeAssetsClient() {
             className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
           />
         </div>
-        <div className="flex gap-0 rounded-[var(--radius-sm)] border border-border bg-surface overflow-hidden shrink-0">
-          <button
-            type="button"
-            onClick={() => setViewMode("category")}
-            className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
-              viewMode === "category"
-                ? "bg-accent text-white"
-                : "text-text-3 hover:text-text-primary hover:bg-bg"
-            }`}
-          >
-            Category
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("location")}
-            className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
-              viewMode === "location"
-                ? "bg-accent text-white"
-                : "text-text-3 hover:text-text-primary hover:bg-bg"
-            }`}
-          >
-            Location
-          </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[13px] text-text-3">View by</span>
+          <div className="flex gap-0 rounded-[var(--radius-sm)] border border-border bg-surface overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setViewMode("location")}
+              className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
+                viewMode === "location"
+                  ? "bg-accent text-white"
+                  : "text-text-3 hover:text-text-primary hover:bg-bg"
+              }`}
+            >
+              Location
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("category")}
+              className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
+                viewMode === "category"
+                  ? "bg-accent text-white"
+                  : "text-text-3 hover:text-text-primary hover:bg-bg"
+              }`}
+            >
+              Category
+            </button>
+          </div>
         </div>
       </div>
 
