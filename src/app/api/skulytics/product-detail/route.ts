@@ -34,11 +34,12 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Try exact match first
     const url = new URL(`${BASE_URL}/product`);
     url.searchParams.set("sku", sku);
     url.searchParams.set("matching_rule", "exact");
 
-    const res = await fetch(url.toString(), {
+    let res = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(10000),
     });
@@ -47,8 +48,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ product: null });
     }
 
-    const json: SkulyticsApiProductResponse = await res.json();
-    const item = json.data?.[0];
+    let json: SkulyticsApiProductResponse = await res.json();
+    let item = json.data?.[0];
+
+    // Fallback: try "contains" matching if exact didn't find anything
+    if (!item) {
+      const fallbackUrl = new URL(`${BASE_URL}/product`);
+      fallbackUrl.searchParams.set("sku", sku);
+      fallbackUrl.searchParams.set("matching_rule", "contains");
+      fallbackUrl.searchParams.set("per_page", "5");
+
+      const fallbackRes = await fetch(fallbackUrl.toString(), {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (fallbackRes.ok) {
+        json = await fallbackRes.json();
+        item = json.data?.[0];
+      }
+    }
+
     if (!item) {
       return NextResponse.json({ product: null });
     }

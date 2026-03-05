@@ -181,16 +181,59 @@ export default function AddHomeAssetModal({
     [name, prefill?.name, purchaseDate, make]
   );
 
-  // Handle scan result — auto-fill empty fields
+  // Handle scan result — auto-fill empty fields + fetch product details from Skulytics
   const handleScanResult = useCallback(
-    (result: { brand: string; model: string; serialNumber: string; name: string }) => {
+    async (result: { brand: string; model: string; serialNumber: string; name: string }) => {
       setScanError("");
+      const useBrand = result.brand && !make.trim() ? result.brand : make;
+      const useModel = result.model && !model.trim() ? result.model : model;
+
       if (result.brand && !make.trim()) setMake(result.brand);
       if (result.model && !model.trim()) setModel(result.model);
       if (result.serialNumber && !serialNumber.trim()) setSerialNumber(result.serialNumber);
       if (result.name && !name.trim()) setName(result.name);
+
+      // Match scanned brand to a Skulytics brand to populate products dropdown
+      if (useBrand && lookupEnabled) {
+        const matchedBrand = brands.find(
+          (b) => b.name.toLowerCase() === useBrand.toLowerCase()
+        );
+        if (matchedBrand) {
+          setSelectedBrand(matchedBrand.name);
+        }
+      }
+
+      // Fetch product details directly using the scanned model number
+      if (useModel && useBrand) {
+        try {
+          const res = await fetch(
+            `/api/skulytics/product-detail?sku=${encodeURIComponent(useModel)}&brand=${encodeURIComponent(useBrand)}`
+          );
+          const data = await res.json();
+          const product: SkulyticsProductDetail | null = data.product;
+
+          if (product) {
+            if (product.name && !name.trim() && !result.name) {
+              setName(product.name);
+            }
+            if (product.image) {
+              setImageUrl(product.image);
+            }
+            if (product.productUrl) {
+              setProductUrl(product.productUrl);
+            }
+            if (product.warrantyMonths && purchaseDate) {
+              const date = new Date(purchaseDate);
+              date.setMonth(date.getMonth() + product.warrantyMonths);
+              setWarrantyExpiration(date.toISOString().slice(0, 10));
+            }
+          }
+        } catch {
+          // Best-effort — scan already filled the basic fields
+        }
+      }
     },
-    [make, model, serialNumber, name]
+    [make, model, serialNumber, name, brands, lookupEnabled, purchaseDate]
   );
 
   // Brand combobox options
