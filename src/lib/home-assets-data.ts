@@ -15,6 +15,15 @@ export function isValidCategory(value: string): value is AssetCategory {
   return (CATEGORY_OPTIONS as readonly string[]).includes(value);
 }
 
+export const DEFAULT_ROOMS = [
+  "Living Room",
+  "Kitchen",
+  "Master Bedroom",
+  "Dining Room",
+  "Utility Room",
+  "Laundry Room",
+] as const;
+
 export const DEFAULT_ASSETS: Record<AssetCategory, string[]> = {
   Kitchen: [
     "Refrigerator",

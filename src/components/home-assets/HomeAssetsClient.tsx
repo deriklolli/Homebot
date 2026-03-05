@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { type HomeAsset, type AssetCategory, CATEGORY_OPTIONS, DEFAULT_ASSETS } from "@/lib/home-assets-data";
-import { supabase, type DbHomeAsset, type DbInventoryItem } from "@/lib/supabase";
+import { type HomeAsset, type AssetCategory, CATEGORY_OPTIONS, DEFAULT_ASSETS, DEFAULT_ROOMS } from "@/lib/home-assets-data";
+import { supabase, type DbHomeAsset, type DbInventoryItem, type DbRoom } from "@/lib/supabase";
 import { dbToHomeAsset, homeAssetToDb } from "@/lib/mappers";
 import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, UploadIcon, CameraIcon } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
@@ -52,6 +52,45 @@ export default function HomeAssetsClient() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [pendingScanResult, setPendingScanResult] = useState<ScanResult | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<"category" | "location">("category");
+  const [rooms, setRooms] = useState<string[]>([]);
+  const [collapsedLocations, setCollapsedLocations] = useState<Set<string>>(new Set());
+  const [addingRoom, setAddingRoom] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
+
+  useEffect(() => {
+    async function fetchRooms() {
+      const { data, error } = await supabase
+        .from("rooms")
+        .select("id, name")
+        .order("name", { ascending: true })
+        .returns<Pick<DbRoom, "id" | "name">[]>();
+
+      if (error) {
+        console.error("Failed to fetch rooms:", error);
+        return;
+      }
+
+      if (data.length === 0) {
+        // Seed default rooms for this user
+        const inserts = DEFAULT_ROOMS.map((name) => ({ name }));
+        const { data: seeded, error: seedErr } = await supabase
+          .from("rooms")
+          .insert(inserts as Record<string, unknown>[])
+          .select("id, name")
+          .returns<Pick<DbRoom, "id" | "name">[]>();
+
+        if (seedErr) {
+          console.error("Failed to seed rooms:", seedErr);
+        } else {
+          setRooms(seeded.map((r) => r.name).sort((a, b) => a.localeCompare(b)));
+        }
+      } else {
+        setRooms(data.map((r) => r.name).sort((a, b) => a.localeCompare(b)));
+      }
+    }
+    fetchRooms();
+  }, []);
 
   useEffect(() => {
     async function fetchAssets() {
@@ -243,6 +282,52 @@ export default function HomeAssetsClient() {
     });
   }
 
+  function toggleLocation(loc: string) {
+    setCollapsedLocations((prev) => {
+      const next = new Set(prev);
+      if (next.has(loc)) next.delete(loc);
+      else next.add(loc);
+      return next;
+    });
+  }
+
+  async function handleAddRoom() {
+    const trimmed = newRoomName.trim();
+    if (!trimmed) return;
+    if (rooms.some((r) => r.toLowerCase() === trimmed.toLowerCase())) {
+      setNewRoomName("");
+      setAddingRoom(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("rooms")
+      .insert({ name: trimmed } as Record<string, unknown>);
+
+    if (error) {
+      console.error("Failed to add room:", error);
+      return;
+    }
+
+    setRooms((prev) => [...prev, trimmed].sort((a, b) => a.localeCompare(b)));
+    setNewRoomName("");
+    setAddingRoom(false);
+  }
+
+  function buildLocationRows(location: string): HomeAsset[] {
+    const q = searchQuery.toLowerCase();
+    return assets
+      .filter((a) => a.location === location)
+      .filter((a) =>
+        !q ||
+        a.name.toLowerCase().includes(q) ||
+        a.make.toLowerCase().includes(q) ||
+        a.model.toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q)
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   // Build rows per category: saved assets + placeholder defaults
   const savedNamesByCategory = new Map<string, Set<string>>();
   for (const asset of assets) {
@@ -309,9 +394,9 @@ export default function HomeAssetsClient() {
         </button>
       </header>
 
-      {/* Search */}
-      <div className="mb-4">
-        <div className="relative max-w-full sm:max-w-[350px]">
+      {/* Search + View Toggle */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative max-w-full sm:max-w-[350px] w-full">
           <SearchIcon
             className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
             width={15}
@@ -325,12 +410,36 @@ export default function HomeAssetsClient() {
             className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
           />
         </div>
+        <div className="flex gap-0 rounded-[var(--radius-sm)] border border-border bg-surface overflow-hidden shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode("category")}
+            className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
+              viewMode === "category"
+                ? "bg-accent text-white"
+                : "text-text-3 hover:text-text-primary hover:bg-bg"
+            }`}
+          >
+            Category
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("location")}
+            className={`px-3.5 py-[6px] text-[13px] font-medium transition-all duration-[120ms] ${
+              viewMode === "location"
+                ? "bg-accent text-white"
+                : "text-text-3 hover:text-text-primary hover:bg-bg"
+            }`}
+          >
+            Location
+          </button>
+        </div>
       </div>
 
       {/* Content */}
       {loading ? (
         <p className="text-[14px] text-text-3">Loading assets...</p>
-      ) : (
+      ) : viewMode === "category" ? (
         <div className="flex flex-col gap-4">
           {categoriesToShow.map((category) => {
             const rows = buildCategoryRows(category);
@@ -459,6 +568,236 @@ export default function HomeAssetsClient() {
               </div>
             );
           })}
+        </div>
+      ) : (
+        /* Location View */
+        <div className="flex flex-col gap-4">
+          {rooms.map((room) => {
+            const roomAssets = buildLocationRows(room);
+            const isCollapsed = collapsedLocations.has(room);
+            return (
+              <div
+                key={room}
+                className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden"
+              >
+                {/* Room header */}
+                <div
+                  className={`flex items-center gap-2 px-5 py-3 bg-bg/50 ${
+                    !isCollapsed && roomAssets.length > 0 ? "border-b border-border" : ""
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleLocation(room)}
+                    className="flex items-center gap-2 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
+                    aria-expanded={!isCollapsed}
+                    aria-controls={`location-${room}`}
+                  >
+                    {isCollapsed ? (
+                      <ChevronRightIcon width={14} height={14} className="text-text-3 shrink-0" />
+                    ) : (
+                      <ChevronDownIcon width={14} height={14} className="text-text-3 shrink-0" />
+                    )}
+                    <span className="text-[14px] font-semibold text-text-primary">
+                      {room}
+                    </span>
+                    <span className="text-[12px] text-text-3">
+                      ({roomAssets.length})
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPrefillAsset({ name: "", category: "Kitchen" });
+                      setModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-sm)] text-[12px] font-medium text-accent hover:bg-accent-light transition-all duration-[120ms] shrink-0"
+                  >
+                    <PlusIcon width={12} height={12} />
+                    Add Asset
+                  </button>
+                </div>
+
+                {/* Asset list — collapsible */}
+                {!isCollapsed && (
+                  <ul role="list" id={`location-${room}`} aria-label={`${room} assets`}>
+                    {roomAssets.length === 0 ? (
+                      <li className="px-5 py-4 text-center">
+                        <p className="text-[13px] text-text-4">No assets in this room</p>
+                      </li>
+                    ) : (
+                      roomAssets.map((asset) => {
+                        const warranty = warrantyStatus(asset.warrantyExpiration);
+                        return (
+                          <li key={asset.id} className="border-b border-border last:border-b-0">
+                            <Link
+                              href={`/home-assets/${asset.id}`}
+                              className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                            >
+                              {asset.imageUrl ? (
+                                <img
+                                  src={asset.imageUrl}
+                                  alt={asset.name}
+                                  className="w-10 h-10 rounded-full shrink-0 object-cover bg-bg"
+                                  onError={(e) => {
+                                    const el = e.target as HTMLImageElement;
+                                    el.style.display = "none";
+                                    el.nextElementSibling?.classList.remove("hidden");
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center ${asset.imageUrl ? "hidden" : ""}`}>
+                                <HomeIcon width={18} height={18} className="text-white" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="text-[14px] font-semibold text-text-primary truncate">
+                                    {asset.name}
+                                  </span>
+                                  {warranty && (
+                                    <span className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
+                                      {warranty.label}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[12px] text-text-3 truncate">
+                                  {[asset.make, asset.model].filter(Boolean).join(" ") || "No make/model"}
+                                  {asset.category && ` · ${asset.category}`}
+                                </p>
+                              </div>
+                            </Link>
+                          </li>
+                        );
+                      })
+                    )}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Unassigned room — assets with no location */}
+          {(() => {
+            const unassigned = buildLocationRows("");
+            if (unassigned.length === 0 && !searchQuery) return null;
+            const isCollapsed = collapsedLocations.has("__unassigned__");
+            return (
+              <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
+                <div
+                  className={`flex items-center gap-2 px-5 py-3 bg-bg/50 ${
+                    !isCollapsed && unassigned.length > 0 ? "border-b border-border" : ""
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleLocation("__unassigned__")}
+                    className="flex items-center gap-2 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
+                    aria-expanded={!isCollapsed}
+                  >
+                    {isCollapsed ? (
+                      <ChevronRightIcon width={14} height={14} className="text-text-3 shrink-0" />
+                    ) : (
+                      <ChevronDownIcon width={14} height={14} className="text-text-3 shrink-0" />
+                    )}
+                    <span className="text-[14px] font-semibold text-text-3 italic">
+                      No Room Assigned
+                    </span>
+                    <span className="text-[12px] text-text-3">
+                      ({unassigned.length})
+                    </span>
+                  </button>
+                </div>
+                {!isCollapsed && unassigned.length > 0 && (
+                  <ul role="list" aria-label="Unassigned assets">
+                    {unassigned.map((asset) => {
+                      const warranty = warrantyStatus(asset.warrantyExpiration);
+                      return (
+                        <li key={asset.id} className="border-b border-border last:border-b-0">
+                          <Link
+                            href={`/home-assets/${asset.id}`}
+                            className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                          >
+                            {asset.imageUrl ? (
+                              <img
+                                src={asset.imageUrl}
+                                alt={asset.name}
+                                className="w-10 h-10 rounded-full shrink-0 object-cover bg-bg"
+                                onError={(e) => {
+                                  const el = e.target as HTMLImageElement;
+                                  el.style.display = "none";
+                                  el.nextElementSibling?.classList.remove("hidden");
+                                }}
+                              />
+                            ) : null}
+                            <div className={`w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center ${asset.imageUrl ? "hidden" : ""}`}>
+                              <HomeIcon width={18} height={18} className="text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[14px] font-semibold text-text-primary truncate">
+                                  {asset.name}
+                                </span>
+                                {warranty && (
+                                  <span className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
+                                    {warranty.label}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[12px] text-text-3 truncate">
+                                {[asset.make, asset.model].filter(Boolean).join(" ") || "No make/model"}
+                                {asset.category && ` · ${asset.category}`}
+                              </p>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Add Room button */}
+          {addingRoom ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddRoom();
+                  if (e.key === "Escape") { setAddingRoom(false); setNewRoomName(""); }
+                }}
+                placeholder="Room name"
+                className="flex-1 max-w-[250px] px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={handleAddRoom}
+                className="px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAddingRoom(false); setNewRoomName(""); }}
+                className="px-3 py-[7px] rounded-[var(--radius-sm)] border border-border text-text-3 text-[13px] font-medium hover:bg-bg transition-all duration-[120ms]"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddingRoom(true)}
+              className="inline-flex items-center gap-1.5 self-start px-3 py-[7px] rounded-[var(--radius-sm)] text-[13px] font-medium text-accent hover:bg-accent-light transition-all duration-[120ms]"
+            >
+              <PlusIcon width={13} height={13} />
+              Add Room
+            </button>
+          )}
         </div>
       )}
 

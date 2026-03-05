@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { CATEGORY_OPTIONS, isValidCategory, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
+import { CATEGORY_OPTIONS, DEFAULT_ROOMS, isValidCategory, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
+import { supabase, type DbRoom } from "@/lib/supabase";
 import { isSkulyticsSupported, type SkulyticsBrand, type SkulyticsProductSummary, type SkulyticsProductDetail } from "@/lib/skulytics";
 import { XIcon, ChevronDownIcon, CameraIcon } from "@/components/icons";
 import LabelScannerModal, { type ScanResult } from "./LabelScannerModal";
@@ -41,7 +42,41 @@ export default function AddHomeAssetModal({
   const [imageUrl, setImageUrl] = useState(asset?.imageUrl ?? "");
   const [notes, setNotes] = useState(asset?.notes ?? "");
   const nameRef = useRef<HTMLInputElement>(null);
-  const isValid = name.trim() !== "";
+  const isValid = name.trim() !== "" && location.trim() !== "";
+
+  // Rooms state
+  const [rooms, setRooms] = useState<string[]>([]);
+  const [addingRoom, setAddingRoom] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
+
+  useEffect(() => {
+    async function fetchRooms() {
+      const { data } = await supabase
+        .from("rooms")
+        .select("name")
+        .order("name", { ascending: true })
+        .returns<Pick<DbRoom, "name">[]>();
+      if (data && data.length > 0) {
+        setRooms(data.map((r) => r.name));
+      } else {
+        // Seed defaults for this user
+        const toInsert = DEFAULT_ROOMS.map((name) => ({ name }));
+        await supabase.from("rooms").insert(toInsert as Record<string, unknown>[]);
+        setRooms([...DEFAULT_ROOMS]);
+      }
+    }
+    fetchRooms();
+  }, []);
+
+  async function handleAddRoom() {
+    const trimmed = newRoomName.trim();
+    if (!trimmed || rooms.includes(trimmed)) return;
+    await supabase.from("rooms").insert({ name: trimmed } as Record<string, unknown>);
+    setRooms((prev) => [...prev, trimmed].sort((a, b) => a.localeCompare(b)));
+    setLocation(trimmed);
+    setNewRoomName("");
+    setAddingRoom(false);
+  }
 
   // Label scanner state
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -516,18 +551,66 @@ export default function AddHomeAssetModal({
           </div>
 
           {/* Location */}
-          <label className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5">
             <span className="text-[14px] font-medium text-text-primary">
-              Location
+              Location <span className="text-red">*</span>
             </span>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className={inputClassName}
-              placeholder="e.g. Kitchen, Garage, Basement"
-            />
-          </label>
+            {addingRoom ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newRoomName}
+                  onChange={(e) => setNewRoomName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddRoom(); } }}
+                  className={`${inputClassName} flex-1`}
+                  placeholder="Room name"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleAddRoom}
+                  disabled={!newRoomName.trim()}
+                  className="px-3 py-[7px] text-[13px] font-medium bg-accent text-white rounded-[var(--radius-sm)] hover:brightness-110 disabled:opacity-40 transition-all duration-[120ms]"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAddingRoom(false); setNewRoomName(""); }}
+                  className="px-3 py-[7px] text-[13px] font-medium text-text-3 hover:text-text-primary transition-all duration-[120ms]"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <select
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className={`${inputClassName} w-full appearance-none pr-8`}
+                  >
+                    <option value="">Select a room</option>
+                    {rooms.map((room) => (
+                      <option key={room} value={room}>{room}</option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon
+                    width={14}
+                    height={14}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-3 pointer-events-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAddingRoom(true)}
+                  className="shrink-0 px-2.5 py-[7px] text-[13px] font-medium text-accent hover:bg-accent-light rounded-[var(--radius-sm)] transition-all duration-[120ms]"
+                >
+                  + Add Room
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Product URL */}
           <label className="flex flex-col gap-1.5">
