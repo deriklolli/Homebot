@@ -168,45 +168,44 @@ export default function HomeAssetsClient() {
       });
   }
 
-  // Try Skulytics first for product image, then fall back to Google CSE
-  function fetchProductImage(assetId: string, make: string, model: string) {
-    // 1. Try Skulytics product detail (has high-quality manufacturer images)
-    fetch(`/api/skulytics/product-detail?sku=${encodeURIComponent(model)}&brand=${encodeURIComponent(make)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.product?.image) {
-          updateAssetImage(assetId, data.product.image);
-        } else {
-          // 2. Fall back to Google CSE image search
-          fetch("/api/search-product-image", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ make, model }),
-          })
-            .then((res) => res.json())
-            .then((result) => {
-              if (result.imageUrl) {
-                updateAssetImage(assetId, result.imageUrl);
-              }
-            })
-            .catch(() => {});
-        }
-      })
-      .catch(() => {
-        // Skulytics failed, try Google CSE
-        fetch("/api/search-product-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ make, model }),
-        })
-          .then((res) => res.json())
-          .then((result) => {
-            if (result.imageUrl) {
-              updateAssetImage(assetId, result.imageUrl);
-            }
-          })
-          .catch(() => {});
+  // Try multiple sources for product image: Skulytics product → Google CSE → Skulytics brand logo
+  async function fetchProductImage(assetId: string, make: string, model: string, category?: string) {
+    try {
+      // 1. Try Skulytics product detail (high-quality manufacturer images)
+      const skulyticsRes = await fetch(`/api/skulytics/product-detail?sku=${encodeURIComponent(model)}&brand=${encodeURIComponent(make)}`);
+      const skulyticsData = await skulyticsRes.json();
+      if (skulyticsData.product?.image) {
+        updateAssetImage(assetId, skulyticsData.product.image);
+        return;
+      }
+    } catch { /* continue to next source */ }
+
+    try {
+      // 2. Try Google CSE image search
+      const cseRes = await fetch("/api/search-product-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ make, model }),
       });
+      const cseData = await cseRes.json();
+      if (cseData.imageUrl) {
+        updateAssetImage(assetId, cseData.imageUrl);
+        return;
+      }
+    } catch { /* continue to next source */ }
+
+    try {
+      // 3. Fall back to brand logo from Skulytics
+      const cat = category || "Kitchen";
+      const brandsRes = await fetch(`/api/skulytics/brands?category=${encodeURIComponent(cat)}`);
+      const brandsData = await brandsRes.json();
+      const matchedBrand = (brandsData.brands ?? []).find(
+        (b: { name: string; image: string }) => b.name.toLowerCase() === make.toLowerCase()
+      );
+      if (matchedBrand?.image) {
+        updateAssetImage(assetId, matchedBrand.image);
+      }
+    } catch { /* all sources exhausted */ }
   }
 
   async function handleAdd(data: Omit<HomeAsset, "id" | "createdAt">) {
@@ -234,7 +233,7 @@ export default function HomeAssetsClient() {
 
     // Auto-fetch product image if none was provided
     if (data.make && data.model && !data.imageUrl) {
-      fetchProductImage(newAsset.id, data.make, data.model);
+      fetchProductImage(newAsset.id, data.make, data.model, data.category);
     }
   }
 

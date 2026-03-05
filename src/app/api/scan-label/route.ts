@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 256,
+        max_tokens: 512,
         messages: [
           {
             role: "user",
@@ -52,16 +52,24 @@ export async function POST(req: NextRequest) {
               },
               {
                 type: "text",
-                text: `You are reading a product label, sticker, or nameplate on a home appliance or device. Extract the following information from the image:
+                text: `You are reading a product label, sticker, or nameplate on a home appliance or device. Extract the following information from the image.
 
+CRITICAL: Read model numbers and serial numbers character by character. These are alphanumeric codes where every character matters. Pay close attention to:
+- Distinguish 0 (zero) from O (letter) — model numbers almost always use zero, not the letter O
+- Distinguish 5 from S, 1 from I/l, 8 from B
+- Include all characters including slashes, dashes, and suffixes (e.g. "/AA", "-SS")
+- The model number is the COMPLETE string next to "Model", "Mod.", or "M/N"
+- The serial number is the COMPLETE string next to "S/N", "Serial No.", or "SN"
+
+Fields to extract:
 - brand: The manufacturer or brand name
-- model: The model number (often labeled "Model", "Mod.", "M/N", etc.)
-- serialNumber: The serial number (often labeled "S/N", "Serial No.", "SN", etc.)
+- model: The full model number exactly as printed
+- serialNumber: The full serial number exactly as printed
 - name: A descriptive product name if visible (e.g. "French Door Refrigerator"), or construct one from the brand and type of appliance
 - category: Classify this product into exactly one of these categories: "Kitchen", "Laundry", "HVAC & Climate", "Water Systems", "Electrical & Safety", "Outdoor / Exterior", "Plumbing Fixtures", "Entertainment / Tech"
 
 Return ONLY a JSON object with these five fields. Use empty string "" for any field you cannot determine with confidence.
-Example: {"brand":"Samsung","model":"RF28R7351SR","serialNumber":"0A8B1234567","name":"Samsung French Door Refrigerator","category":"Kitchen"}`,
+Example: {"brand":"Samsung","model":"RS28A500ASG/AA","serialNumber":"0A8B1234567","name":"Samsung Side-by-Side Refrigerator","category":"Kitchen"}`,
               },
             ],
           },
