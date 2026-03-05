@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   const sku = req.nextUrl.searchParams.get("sku");
+  const brand = req.nextUrl.searchParams.get("brand");
   if (!sku) {
     return NextResponse.json({ product: null });
   }
@@ -56,7 +57,7 @@ export async function GET(req: NextRequest) {
       const fallbackUrl = new URL(`${BASE_URL}/product`);
       fallbackUrl.searchParams.set("sku", sku);
       fallbackUrl.searchParams.set("matching_rule", "contains");
-      fallbackUrl.searchParams.set("per_page", "5");
+      fallbackUrl.searchParams.set("per_page", "10");
 
       const fallbackRes = await fetch(fallbackUrl.toString(), {
         headers: { Authorization: `Bearer ${apiKey}` },
@@ -65,7 +66,16 @@ export async function GET(req: NextRequest) {
 
       if (fallbackRes.ok) {
         json = await fallbackRes.json();
-        item = json.data?.[0];
+        // If brand provided, prefer a result from the same brand
+        if (brand && json.data?.length) {
+          const brandLower = brand.toLowerCase();
+          const brandMatch = json.data.find(
+            (p) => p.brand.brand_name.toLowerCase() === brandLower
+          );
+          item = brandMatch ?? json.data[0];
+        } else {
+          item = json.data?.[0];
+        }
       }
     }
 
