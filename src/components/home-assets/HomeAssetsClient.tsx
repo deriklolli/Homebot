@@ -403,7 +403,7 @@ export default function HomeAssetsClient() {
               onClick={() => setViewMode("location")}
               className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
                 viewMode === "location"
-                  ? "bg-border text-text-primary"
+                  ? "bg-white text-text-primary"
                   : "text-text-3 hover:text-text-primary hover:bg-bg"
               }`}
             >
@@ -414,7 +414,7 @@ export default function HomeAssetsClient() {
               onClick={() => setViewMode("category")}
               className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
                 viewMode === "category"
-                  ? "bg-border text-text-primary"
+                  ? "bg-white text-text-primary"
                   : "text-text-3 hover:text-text-primary hover:bg-bg"
               }`}
             >
