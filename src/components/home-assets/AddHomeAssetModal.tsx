@@ -401,53 +401,6 @@ export default function AddHomeAssetModal({
             />
           </label>
 
-          {/* Category — hidden when editing (category is fixed) */}
-          {!isEditing && (
-            <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
-                Category <span className="text-red">*</span>
-              </span>
-              <div className="relative">
-                <select
-                  value={category}
-                  onChange={(e) => {
-                    const newCat = e.target.value as AssetCategory;
-                    setCategory(newCat);
-                    setMake("");
-                    setModel("");
-                    setSelectedBrand(null);
-                    setProducts([]);
-                  }}
-                  className={`${inputClassName} w-full appearance-none pr-8 cursor-pointer`}
-                >
-                  {CATEGORY_OPTIONS.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
-              </div>
-            </label>
-          )}
-
-          {/* Scan Product Label */}
-          {!isEditing && (
-            <div className="flex flex-col gap-1.5">
-              <button
-                type="button"
-                onClick={() => { setScanError(""); setScannerOpen(true); }}
-                className="inline-flex items-center justify-center gap-2 w-full px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-dashed border-border-strong bg-bg/50 text-text-2 text-[14px] font-medium hover:border-accent/50 hover:text-accent transition-all duration-[120ms]"
-                aria-label="Scan product label to auto-fill make, model, and serial number"
-              >
-                <CameraIcon width={16} height={16} />
-                Scan Product Label
-              </button>
-              {scanError && (
-                <p className="text-[12px] text-red">{scanError}</p>
-              )}
-            </div>
-          )}
 
           {/* Make & Model */}
           <div className="flex gap-3">

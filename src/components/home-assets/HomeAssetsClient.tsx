@@ -646,7 +646,6 @@ export default function HomeAssetsClient() {
                               </div>
                               <p className="text-[12px] text-text-3 truncate">
                                 {[asset.make, asset.model].filter(Boolean).join(" ") || "No make/model"}
-                                {asset.category && ` · ${asset.category}`}
                               </p>
                             </div>
                           </Link>
@@ -728,7 +727,6 @@ export default function HomeAssetsClient() {
                               </div>
                               <p className="text-[12px] text-text-3 truncate">
                                 {[asset.make, asset.model].filter(Boolean).join(" ") || "No make/model"}
-                                {asset.category && ` · ${asset.category}`}
                               </p>
                             </div>
                           </Link>
