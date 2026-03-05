@@ -349,14 +349,24 @@ export default function HomeAssetsClient() {
           <h1 className="text-[22px] font-bold tracking-tight text-text-primary whitespace-nowrap">
             Home Assets
           </h1>
-          <button
-            type="button"
-            onClick={() => setImportModalOpen(true)}
-            className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-          >
-            <UploadIcon width={14} height={14} />
-            Import CSV
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setImportModalOpen(true)}
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            >
+              <UploadIcon width={14} height={14} />
+              Import CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => { setPrefillAsset(null); setModalOpen(true); }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            >
+              <PlusIcon width={14} height={14} />
+              Add Asset
+            </button>
+          </div>
         </div>
         <button
           type="button"
