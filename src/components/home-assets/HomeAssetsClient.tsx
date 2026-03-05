@@ -260,7 +260,8 @@ export default function HomeAssetsClient() {
         a.make.toLowerCase().includes(q) ||
         a.model.toLowerCase().includes(q) ||
         a.location.toLowerCase().includes(q)
-      );
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     const savedNames = savedNamesByCategory.get(category) ?? new Set();
     const defaults = (DEFAULT_ASSETS[category] ?? [])
