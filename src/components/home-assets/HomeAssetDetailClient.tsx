@@ -578,22 +578,26 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Linked Inventory Items */}
       {linkedInventory.length > 0 && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-[#e8f4f8]">
-            <PackageIcon width={14} height={14} className="text-teal" />
-            <span className="text-[14px] font-semibold text-text-primary flex-1">
-              Tracked Inventory
-            </span>
-            <span className="text-[11px] font-medium text-text-3 uppercase tracking-wide shrink-0">
-              Reminder
-            </span>
+          <div className="flex items-center border-b border-border bg-[#e8f4f8]">
+            <div className="flex items-center gap-2 px-5 py-3 flex-1 min-w-0">
+              <PackageIcon width={14} height={14} className="text-teal" />
+              <span className="text-[14px] font-semibold text-text-primary">
+                Tracked Inventory
+              </span>
+            </div>
+            <div className="shrink-0 w-[72px] border-l border-border flex items-center justify-center py-3">
+              <span className="text-[11px] font-medium text-text-3 uppercase tracking-wide">
+                Reminder
+              </span>
+            </div>
           </div>
           <ul role="list">
             {linkedInventory.map((inv) => (
               <li key={inv.id} className={`border-b border-border last:border-b-0 ${!inv.tracked ? "opacity-50" : ""}`}>
-                <div className="flex items-center gap-3 px-5 py-3.5">
+                <div className="flex items-center">
                   <Link
                     href={`/inventory/${inv.id}`}
-                    className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
+                    className="flex items-center gap-3 flex-1 min-w-0 px-5 py-3.5 hover:opacity-70 transition-opacity duration-[120ms]"
                   >
                     <div className="flex-1 min-w-0">
                       <span className="text-[14px] font-semibold text-text-primary truncate block">
@@ -609,31 +613,33 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                       {frequencyLabel(inv.frequencyMonths)}
                     </span>
                   </Link>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const newTracked = !inv.tracked;
-                      setLinkedInventory((prev) =>
-                        prev.map((i) => i.id === inv.id ? { ...i, tracked: newTracked } : i)
-                      );
-                      await supabase
-                        .from("inventory_items")
-                        .update({ tracked: newTracked })
-                        .eq("id", inv.id);
-                    }}
-                    className={`shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-[120ms] ${
-                      inv.tracked
-                        ? "bg-accent border-accent"
-                        : "bg-transparent border-text-4 hover:border-text-3"
-                    }`}
-                    aria-label={inv.tracked ? `Stop tracking ${inv.name}` : `Track ${inv.name}`}
-                  >
-                    {inv.tracked && (
-                      <svg width={12} height={12} viewBox="0 0 12 12" fill="none">
-                        <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </button>
+                  <div className="shrink-0 w-[72px] border-l border-border flex items-center justify-center self-stretch">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const newTracked = !inv.tracked;
+                        setLinkedInventory((prev) =>
+                          prev.map((i) => i.id === inv.id ? { ...i, tracked: newTracked } : i)
+                        );
+                        await supabase
+                          .from("inventory_items")
+                          .update({ tracked: newTracked })
+                          .eq("id", inv.id);
+                      }}
+                      className={`shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-[120ms] ${
+                        inv.tracked
+                          ? "bg-accent border-accent"
+                          : "bg-transparent border-text-4 hover:border-text-3"
+                      }`}
+                      aria-label={inv.tracked ? `Stop tracking ${inv.name}` : `Track ${inv.name}`}
+                    >
+                      {inv.tracked && (
+                        <svg width={12} height={12} viewBox="0 0 12 12" fill="none">
+                          <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}
