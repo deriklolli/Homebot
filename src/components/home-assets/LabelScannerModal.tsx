@@ -160,7 +160,7 @@ export default function LabelScannerModal({
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-black">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/60 backdrop-blur-sm z-10">
+      <div className="flex items-center justify-between px-4 py-3 bg-black/60 backdrop-blur-sm z-10" style={{ paddingTop: "max(12px, env(safe-area-inset-top, 12px))" }}>
         <button
           onClick={handleClose}
           disabled={processing}
@@ -259,7 +259,7 @@ export default function LabelScannerModal({
 
       {/* Capture button */}
       {!cameraError && (
-        <div className="flex items-center justify-center py-6 bg-black/60 backdrop-blur-sm">
+        <div className="flex items-center justify-center py-6 bg-black/60 backdrop-blur-sm" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom, 24px))" }}>
           <button
             onClick={handleCapture}
             disabled={!cameraReady || processing}
