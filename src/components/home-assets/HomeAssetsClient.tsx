@@ -55,8 +55,6 @@ export default function HomeAssetsClient() {
   const [viewMode, setViewMode] = useState<"category" | "location">("location");
   const [rooms, setRooms] = useState<string[]>([]);
   const [collapsedLocations, setCollapsedLocations] = useState<Set<string>>(new Set());
-  const [addingRoom, setAddingRoom] = useState(false);
-  const [newRoomName, setNewRoomName] = useState("");
 
   useEffect(() => {
     async function fetchRooms() {
@@ -289,29 +287,6 @@ export default function HomeAssetsClient() {
       else next.add(loc);
       return next;
     });
-  }
-
-  async function handleAddRoom() {
-    const trimmed = newRoomName.trim();
-    if (!trimmed) return;
-    if (rooms.some((r) => r.toLowerCase() === trimmed.toLowerCase())) {
-      setNewRoomName("");
-      setAddingRoom(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from("rooms")
-      .insert({ name: trimmed } as Record<string, unknown>);
-
-    if (error) {
-      console.error("Failed to add room:", error);
-      return;
-    }
-
-    setRooms((prev) => [...prev, trimmed].sort((a, b) => a.localeCompare(b)));
-    setNewRoomName("");
-    setAddingRoom(false);
   }
 
   function buildLocationRows(location: string): HomeAsset[] {
@@ -756,46 +731,6 @@ export default function HomeAssetsClient() {
             );
           })()}
 
-          {/* Add Room button */}
-          {addingRoom ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newRoomName}
-                onChange={(e) => setNewRoomName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleAddRoom();
-                  if (e.key === "Escape") { setAddingRoom(false); setNewRoomName(""); }
-                }}
-                placeholder="Room name"
-                className="flex-1 max-w-[250px] px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
-                autoFocus
-              />
-              <button
-                type="button"
-                onClick={handleAddRoom}
-                className="px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[13px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-              >
-                Add
-              </button>
-              <button
-                type="button"
-                onClick={() => { setAddingRoom(false); setNewRoomName(""); }}
-                className="px-3 py-[7px] rounded-[var(--radius-sm)] border border-border text-text-3 text-[13px] font-medium hover:bg-bg transition-all duration-[120ms]"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setAddingRoom(true)}
-              className="inline-flex items-center gap-1.5 self-start px-3 py-[7px] rounded-[var(--radius-sm)] text-[13px] font-medium text-accent hover:bg-accent-light transition-all duration-[120ms]"
-            >
-              <PlusIcon width={13} height={13} />
-              Add Room
-            </button>
-          )}
         </div>
       )}
 
