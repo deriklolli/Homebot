@@ -181,21 +181,7 @@ export default function HomeAssetsClient() {
     } catch { /* continue to next source */ }
 
     try {
-      // 2. Try Google CSE image search
-      const cseRes = await fetch("/api/search-product-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ make, model }),
-      });
-      const cseData = await cseRes.json();
-      if (cseData.imageUrl) {
-        updateAssetImage(assetId, cseData.imageUrl);
-        return;
-      }
-    } catch { /* continue to next source */ }
-
-    try {
-      // 3. Fall back to brand logo from Skulytics
+      // 2. Fall back to brand logo from Skulytics
       const cat = category || "Kitchen";
       const brandsRes = await fetch(`/api/skulytics/brands?category=${encodeURIComponent(cat)}`);
       const brandsData = await brandsRes.json();
