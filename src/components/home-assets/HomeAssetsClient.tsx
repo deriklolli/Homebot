@@ -5,9 +5,10 @@ import Link from "next/link";
 import { type HomeAsset, type AssetCategory, CATEGORY_OPTIONS, DEFAULT_ASSETS } from "@/lib/home-assets-data";
 import { supabase, type DbHomeAsset, type DbInventoryItem } from "@/lib/supabase";
 import { dbToHomeAsset, homeAssetToDb } from "@/lib/mappers";
-import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, UploadIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, UploadIcon, CameraIcon } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
 import ImportAssetsModal from "./ImportAssetsModal";
+import LabelScannerModal, { type ScanResult } from "./LabelScannerModal";
 import { buyNowUrl } from "@/lib/utils";
 import { computeNextReminderDate } from "@/lib/date-utils";
 
@@ -48,6 +49,8 @@ export default function HomeAssetsClient() {
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const [prefillAsset, setPrefillAsset] = useState<{ name: string; category: AssetCategory } | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [pendingScanResult, setPendingScanResult] = useState<ScanResult | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -268,14 +271,25 @@ export default function HomeAssetsClient() {
         <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
           Home Assets
         </h1>
-        <button
-          type="button"
-          onClick={() => setImportModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-        >
-          <UploadIcon width={14} height={14} />
-          Import CSV
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setScannerOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            aria-label="Scan product label to add a new asset"
+          >
+            <CameraIcon width={14} height={14} />
+            Scan to Add
+          </button>
+          <button
+            type="button"
+            onClick={() => setImportModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+          >
+            <UploadIcon width={14} height={14} />
+            Import CSV
+          </button>
+        </div>
       </header>
 
       {/* Search */}
@@ -435,8 +449,9 @@ export default function HomeAssetsClient() {
       {modalOpen && (
         <AddHomeAssetModal
           prefill={prefillAsset ?? undefined}
+          scanResult={pendingScanResult ?? undefined}
           onSave={handleAdd}
-          onClose={() => { setModalOpen(false); setPrefillAsset(null); }}
+          onClose={() => { setModalOpen(false); setPrefillAsset(null); setPendingScanResult(null); }}
         />
       )}
 
@@ -445,6 +460,18 @@ export default function HomeAssetsClient() {
         <ImportAssetsModal
           onImportComplete={handleImportComplete}
           onClose={() => setImportModalOpen(false)}
+        />
+      )}
+
+      {/* Label scanner (from header button) */}
+      {scannerOpen && (
+        <LabelScannerModal
+          onScan={(result) => {
+            setScannerOpen(false);
+            setPendingScanResult(result);
+            setModalOpen(true);
+          }}
+          onClose={() => setScannerOpen(false)}
         />
       )}
     </div>

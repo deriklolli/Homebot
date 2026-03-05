@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { CATEGORY_OPTIONS, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
+import { CATEGORY_OPTIONS, isValidCategory, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
 import { isSkulyticsSupported, type SkulyticsBrand, type SkulyticsProductSummary, type SkulyticsProductDetail } from "@/lib/skulytics";
 import { XIcon, ChevronDownIcon, CameraIcon } from "@/components/icons";
-import LabelScannerModal from "./LabelScannerModal";
+import LabelScannerModal, { type ScanResult } from "./LabelScannerModal";
 import DatePicker from "@/components/ui/DatePicker";
 import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
 interface AddHomeAssetModalProps {
   asset?: HomeAsset;
   prefill?: { name: string; category: AssetCategory };
+  scanResult?: ScanResult;
   onSave: (data: Omit<HomeAsset, "id" | "createdAt">) => void;
   onClose: () => void;
 }
@@ -18,15 +19,21 @@ interface AddHomeAssetModalProps {
 export default function AddHomeAssetModal({
   asset,
   prefill,
+  scanResult,
   onSave,
   onClose,
 }: AddHomeAssetModalProps) {
   const isEditing = !!asset;
-  const [name, setName] = useState(asset?.name ?? prefill?.name ?? "");
-  const [category, setCategory] = useState<AssetCategory>(asset?.category ?? prefill?.category ?? "Kitchen");
-  const [make, setMake] = useState(asset?.make ?? "");
-  const [model, setModel] = useState(asset?.model ?? "");
-  const [serialNumber, setSerialNumber] = useState(asset?.serialNumber ?? "");
+  const [name, setName] = useState(asset?.name ?? scanResult?.name ?? prefill?.name ?? "");
+  const [category, setCategory] = useState<AssetCategory>(
+    asset?.category
+    ?? (scanResult?.category && isValidCategory(scanResult.category) ? scanResult.category : undefined)
+    ?? prefill?.category
+    ?? "Kitchen"
+  );
+  const [make, setMake] = useState(asset?.make ?? scanResult?.brand ?? "");
+  const [model, setModel] = useState(asset?.model ?? scanResult?.model ?? "");
+  const [serialNumber, setSerialNumber] = useState(asset?.serialNumber ?? scanResult?.serialNumber ?? "");
   const [purchaseDate, setPurchaseDate] = useState(asset?.purchaseDate ?? "");
   const [warrantyExpiration, setWarrantyExpiration] = useState(asset?.warrantyExpiration ?? "");
   const [location, setLocation] = useState(asset?.location ?? "");
@@ -46,10 +53,48 @@ export default function AddHomeAssetModal({
   const [brandsLoading, setBrandsLoading] = useState(false);
   const [products, setProducts] = useState<SkulyticsProductSummary[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(asset?.make ?? null);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(asset?.make ?? scanResult?.brand ?? null);
 
   useEffect(() => {
     nameRef.current?.focus();
+  }, []);
+
+  // Auto-enrich from Skulytics when opened via external scan (scanResult prop)
+  useEffect(() => {
+    if (!scanResult?.model) return;
+    const sku = scanResult.model;
+    const brand = scanResult.brand;
+    if (!sku || !brand) return;
+
+    let cancelled = false;
+
+    async function enrichFromScan() {
+      try {
+        const res = await fetch(
+          `/api/skulytics/product-detail?sku=${encodeURIComponent(sku)}&brand=${encodeURIComponent(brand)}`
+        );
+        const data = await res.json();
+        const product: SkulyticsProductDetail | null = data.product;
+
+        if (cancelled || !product) return;
+
+        if (product.name && !scanResult!.name) {
+          setName(product.name);
+        }
+        if (product.image) {
+          setImageUrl(product.image);
+        }
+        if (product.productUrl) {
+          setProductUrl(product.productUrl);
+        }
+      } catch {
+        // Best-effort
+      }
+    }
+
+    enrichFromScan();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -86,6 +131,15 @@ export default function AddHomeAssetModal({
             );
             if (matchesBrand) {
               setSelectedBrand(asset.make);
+            }
+          }
+          // If opened via scan, auto-select scanned brand
+          if (scanResult?.brand) {
+            const matchesBrand = (data.brands ?? []).some(
+              (b: SkulyticsBrand) => b.name.toLowerCase() === scanResult.brand.toLowerCase()
+            );
+            if (matchesBrand) {
+              setSelectedBrand(scanResult.brand);
             }
           }
         }

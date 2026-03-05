@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { XIcon, CameraIcon } from "@/components/icons";
 
-interface ScanResult {
+export interface ScanResult {
   brand: string;
   model: string;
   serialNumber: string;
   name: string;
+  category: string;
 }
 
 interface LabelScannerModalProps {

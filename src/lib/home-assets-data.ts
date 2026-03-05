@@ -11,6 +11,10 @@ export const CATEGORY_OPTIONS = [
 
 export type AssetCategory = (typeof CATEGORY_OPTIONS)[number];
 
+export function isValidCategory(value: string): value is AssetCategory {
+  return (CATEGORY_OPTIONS as readonly string[]).includes(value);
+}
+
 export const DEFAULT_ASSETS: Record<AssetCategory, string[]> = {
   Kitchen: [
     "Refrigerator",

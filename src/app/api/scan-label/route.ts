@@ -58,9 +58,10 @@ export async function POST(req: NextRequest) {
 - model: The model number (often labeled "Model", "Mod.", "M/N", etc.)
 - serialNumber: The serial number (often labeled "S/N", "Serial No.", "SN", etc.)
 - name: A descriptive product name if visible (e.g. "French Door Refrigerator"), or construct one from the brand and type of appliance
+- category: Classify this product into exactly one of these categories: "Kitchen", "Laundry", "HVAC & Climate", "Water Systems", "Electrical & Safety", "Outdoor / Exterior", "Plumbing Fixtures", "Entertainment / Tech"
 
-Return ONLY a JSON object with these four fields. Use empty string "" for any field you cannot determine with confidence.
-Example: {"brand":"Samsung","model":"RF28R7351SR","serialNumber":"0A8B1234567","name":"Samsung French Door Refrigerator"}`,
+Return ONLY a JSON object with these five fields. Use empty string "" for any field you cannot determine with confidence.
+Example: {"brand":"Samsung","model":"RF28R7351SR","serialNumber":"0A8B1234567","name":"Samsung French Door Refrigerator","category":"Kitchen"}`,
               },
             ],
           },
@@ -94,6 +95,7 @@ Example: {"brand":"Samsung","model":"RF28R7351SR","serialNumber":"0A8B1234567","
       serialNumber:
         typeof parsed.serialNumber === "string" ? parsed.serialNumber : "",
       name: typeof parsed.name === "string" ? parsed.name : "",
+      category: typeof parsed.category === "string" ? parsed.category : "",
     });
   } catch (err) {
     if (err instanceof SyntaxError) {
