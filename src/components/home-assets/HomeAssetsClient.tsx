@@ -290,7 +290,7 @@ export default function HomeAssetsClient() {
           <button
             type="button"
             onClick={() => setScannerOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex md:hidden items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
             aria-label="Scan product label to add a new asset"
           >
             <CameraIcon width={14} height={14} />
