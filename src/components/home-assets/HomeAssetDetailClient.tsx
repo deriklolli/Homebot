@@ -580,14 +580,35 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-[#e8f4f8]">
             <PackageIcon width={14} height={14} className="text-teal" />
-            <span className="text-[14px] font-semibold text-text-primary">
+            <span className="text-[14px] font-semibold text-text-primary flex-1">
               Tracked Inventory
+            </span>
+            <span className="text-[11px] font-medium text-text-3 uppercase tracking-wide shrink-0">
+              Reminder
             </span>
           </div>
           <ul role="list">
             {linkedInventory.map((inv) => (
               <li key={inv.id} className={`border-b border-border last:border-b-0 ${!inv.tracked ? "opacity-50" : ""}`}>
                 <div className="flex items-center gap-3 px-5 py-3.5">
+                  <Link
+                    href={`/inventory/${inv.id}`}
+                    className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[14px] font-semibold text-text-primary truncate block">
+                        {inv.name}
+                      </span>
+                      {inv.description && (
+                        <p className="text-[12px] text-text-3 truncate">
+                          {inv.description}
+                        </p>
+                      )}
+                    </div>
+                    <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
+                      {frequencyLabel(inv.frequencyMonths)}
+                    </span>
+                  </Link>
                   <button
                     type="button"
                     onClick={async () => {
@@ -613,24 +634,6 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                       </svg>
                     )}
                   </button>
-                  <Link
-                    href={`/inventory/${inv.id}`}
-                    className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-semibold text-text-primary truncate block">
-                        {inv.name}
-                      </span>
-                      {inv.description && (
-                        <p className="text-[12px] text-text-3 truncate">
-                          {inv.description}
-                        </p>
-                      )}
-                    </div>
-                    <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
-                      {frequencyLabel(inv.frequencyMonths)}
-                    </span>
-                  </Link>
                 </div>
               </li>
             ))}
