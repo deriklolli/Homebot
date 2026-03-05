@@ -56,6 +56,7 @@ export default function HomeAlerts() {
       const { data, error } = await supabase
         .from("inventory_items")
         .select("id, name, thumbnail_url, purchase_url, frequency_months, next_reminder_date")
+        .eq("tracked", true)
         .lte("next_reminder_date", cutoff)
         .order("next_reminder_date", { ascending: true })
         .returns<{ id: string; name: string; thumbnail_url: string; purchase_url: string; frequency_months: number; next_reminder_date: string }[]>();

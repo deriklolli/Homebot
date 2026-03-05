@@ -58,6 +58,7 @@ export default function CalendarClient() {
         supabase
           .from("inventory_items")
           .select("id, name, next_reminder_date")
+          .eq("tracked", true)
           .order("next_reminder_date", { ascending: true })
           .returns<DbInventoryReminder[]>(),
         supabase

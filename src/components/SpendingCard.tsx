@@ -115,6 +115,7 @@ export default function SpendingCard() {
         supabase
           .from("inventory_items")
           .select("cost, last_ordered_date")
+          .eq("tracked", true)
           .not("last_ordered_date", "is", null)
           .not("cost", "is", null),
         supabase

@@ -74,7 +74,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           .returns<DbProject[]>(),
         supabase
           .from("inventory_items")
-          .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, created_at")
+          .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, tracked, created_at")
           .eq("home_asset_id", id)
           .order("next_reminder_date", { ascending: true })
           .returns<DbInventoryItem[]>(),
@@ -586,25 +586,52 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           </div>
           <ul role="list">
             {linkedInventory.map((inv) => (
-              <li key={inv.id} className="border-b border-border last:border-b-0">
-                <Link
-                  href={`/inventory/${inv.id}`}
-                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
-                >
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[14px] font-semibold text-text-primary truncate block">
-                      {inv.name}
-                    </span>
-                    {inv.description && (
-                      <p className="text-[12px] text-text-3 truncate">
-                        {inv.description}
-                      </p>
+              <li key={inv.id} className={`border-b border-border last:border-b-0 ${!inv.tracked ? "opacity-50" : ""}`}>
+                <div className="flex items-center gap-3 px-5 py-3.5">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const newTracked = !inv.tracked;
+                      setLinkedInventory((prev) =>
+                        prev.map((i) => i.id === inv.id ? { ...i, tracked: newTracked } : i)
+                      );
+                      await supabase
+                        .from("inventory_items")
+                        .update({ tracked: newTracked })
+                        .eq("id", inv.id);
+                    }}
+                    className={`shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-[120ms] ${
+                      inv.tracked
+                        ? "bg-accent border-accent"
+                        : "bg-transparent border-text-4 hover:border-text-3"
+                    }`}
+                    aria-label={inv.tracked ? `Stop tracking ${inv.name}` : `Track ${inv.name}`}
+                  >
+                    {inv.tracked && (
+                      <svg width={12} height={12} viewBox="0 0 12 12" fill="none">
+                        <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
                     )}
-                  </div>
-                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
-                    {frequencyLabel(inv.frequencyMonths)}
-                  </span>
-                </Link>
+                  </button>
+                  <Link
+                    href={`/inventory/${inv.id}`}
+                    className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[14px] font-semibold text-text-primary truncate block">
+                        {inv.name}
+                      </span>
+                      {inv.description && (
+                        <p className="text-[12px] text-text-3 truncate">
+                          {inv.description}
+                        </p>
+                      )}
+                    </div>
+                    <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
+                      {frequencyLabel(inv.frequencyMonths)}
+                    </span>
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

@@ -24,5 +24,6 @@ export interface InventoryItem {
   notes: string;
   cost: number | null;
   homeAssetId: string | null;
+  tracked: boolean;
   createdAt: string;
 }

@@ -95,7 +95,8 @@ export default function InventoryClient() {
       const [itemsResult, assetsResult] = await Promise.all([
         supabase
           .from("inventory_items")
-          .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, created_at")
+          .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, tracked, created_at")
+          .eq("tracked", true)
           .order("next_reminder_date", { ascending: true })
           .returns<DbInventoryItem[]>(),
         supabase

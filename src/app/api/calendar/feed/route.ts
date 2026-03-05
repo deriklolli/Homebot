@@ -92,6 +92,7 @@ export async function GET(req: NextRequest) {
     .from("inventory_items")
     .select("id, name, description, next_reminder_date, frequency_months")
     .eq("user_id", userId)
+    .eq("tracked", true)
     .order("next_reminder_date", { ascending: true })
     .returns<DbInventoryItem[]>();
 

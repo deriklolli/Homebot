@@ -84,6 +84,7 @@ export async function GET(req: NextRequest) {
   const { data: items, error } = await supabase
     .from("inventory_items")
     .select("id, name, next_reminder_date, user_id")
+    .eq("tracked", true)
     .lte("next_reminder_date", cutoff)
     .order("next_reminder_date", { ascending: true })
     .returns<DbInventoryAlert[]>();

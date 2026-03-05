@@ -112,6 +112,7 @@ export default function HomeAssetsClient() {
             notes: `Auto-suggested for ${asset.name}`,
             cost: s.products[0]?.estimatedCost ?? null,
             home_asset_id: assetId,
+            tracked: true,
           }));
 
         if (itemsToInsert.length > 0) {

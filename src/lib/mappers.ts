@@ -133,6 +133,7 @@ export function dbToInventoryItem(row: DbInventoryItem): InventoryItem {
     notes: row.notes,
     cost: row.cost,
     homeAssetId: row.home_asset_id,
+    tracked: row.tracked,
     createdAt: row.created_at,
   };
 }
@@ -151,6 +152,7 @@ export function inventoryItemToDb(
     notes: data.notes,
     cost: data.cost,
     home_asset_id: data.homeAssetId,
+    tracked: data.tracked,
   };
 }
 

@@ -62,6 +62,7 @@ export interface DbInventoryItem {
   notes: string;
   cost: number | null;
   home_asset_id: string | null;
+  tracked: boolean;
   created_at: string;
 }
 
