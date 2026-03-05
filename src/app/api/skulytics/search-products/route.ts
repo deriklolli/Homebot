@@ -29,13 +29,12 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Search by SKU without brand filter (API doesn't support combining them)
+    // Filter by brand client-side instead
     const url = new URL(`${BASE_URL}/product`);
     url.searchParams.set("sku", query);
     url.searchParams.set("matching_rule", "contains");
     url.searchParams.set("per_page", "20");
-    if (brand) {
-      url.searchParams.set("brand", brand);
-    }
 
     const res = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${apiKey}` },
@@ -51,7 +50,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ products: [] });
     }
 
-    const products: SkulyticsProductSummary[] = json.data.map((p) => ({
+    let products: SkulyticsProductSummary[] = json.data.map((p) => ({
       productId: p.product_id,
       sku: p.sku,
       name: p.name,
@@ -59,6 +58,14 @@ export async function GET(req: NextRequest) {
       image: p.image,
       status: p.status,
     }));
+
+    // Filter by brand client-side if provided
+    if (brand) {
+      const brandLower = brand.toLowerCase();
+      products = products.filter(
+        (p) => p.brand.toLowerCase() === brandLower
+      );
+    }
 
     return NextResponse.json({ products });
   } catch (err) {
