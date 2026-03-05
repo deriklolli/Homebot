@@ -585,7 +585,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 Tracked Inventory
               </span>
             </div>
-            <div className="shrink-0 w-[72px] border-l border-border flex items-center justify-center py-3">
+            <div className="shrink-0 w-[72px] flex items-center justify-center py-3">
               <span className="text-[11px] font-medium text-text-3 uppercase tracking-wide">
                 Reminder
               </span>
@@ -613,7 +613,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                       {frequencyLabel(inv.frequencyMonths)}
                     </span>
                   </Link>
-                  <div className="shrink-0 w-[72px] border-l border-border flex items-center justify-center self-stretch">
+                  <div className="shrink-0 w-[72px] flex items-center justify-center self-stretch">
                     <button
                       type="button"
                       onClick={async () => {
