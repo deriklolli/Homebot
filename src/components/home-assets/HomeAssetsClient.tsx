@@ -361,7 +361,7 @@ export default function HomeAssetsClient() {
             <button
               type="button"
               onClick={() => { setPrefillAsset(null); setModalOpen(true); }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
             >
               <PlusIcon width={14} height={14} />
               Add Asset
