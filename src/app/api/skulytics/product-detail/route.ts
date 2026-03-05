@@ -66,13 +66,12 @@ export async function GET(req: NextRequest) {
 
       if (fallbackRes.ok) {
         json = await fallbackRes.json();
-        // If brand provided, prefer a result from the same brand
+        // If brand provided, only use a result from the same brand
         if (brand && json.data?.length) {
           const brandLower = brand.toLowerCase();
-          const brandMatch = json.data.find(
+          item = json.data.find(
             (p) => p.brand.brand_name.toLowerCase() === brandLower
-          );
-          item = brandMatch ?? json.data[0];
+          ) ?? undefined;
         } else {
           item = json.data?.[0];
         }
