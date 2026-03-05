@@ -156,27 +156,57 @@ export default function HomeAssetsClient() {
       .catch(() => { /* ignore */ });
   }
 
+  function updateAssetImage(assetId: string, imageUrl: string) {
+    supabase
+      .from("home_assets")
+      .update({ image_url: imageUrl })
+      .eq("id", assetId)
+      .then(() => {
+        setAssets((prev) =>
+          prev.map((a) => (a.id === assetId ? { ...a, imageUrl } : a))
+        );
+      });
+  }
+
+  // Try Skulytics first for product image, then fall back to Google CSE
   function fetchProductImage(assetId: string, make: string, model: string) {
-    fetch("/api/search-product-image", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ make, model }),
-    })
+    // 1. Try Skulytics product detail (has high-quality manufacturer images)
+    fetch(`/api/skulytics/product-detail?sku=${encodeURIComponent(model)}&brand=${encodeURIComponent(make)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.imageUrl) {
-          supabase
-            .from("home_assets")
-            .update({ image_url: data.imageUrl })
-            .eq("id", assetId)
-            .then(() => {
-              setAssets((prev) =>
-                prev.map((a) => (a.id === assetId ? { ...a, imageUrl: data.imageUrl } : a))
-              );
-            });
+        if (data.product?.image) {
+          updateAssetImage(assetId, data.product.image);
+        } else {
+          // 2. Fall back to Google CSE image search
+          fetch("/api/search-product-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ make, model }),
+          })
+            .then((res) => res.json())
+            .then((result) => {
+              if (result.imageUrl) {
+                updateAssetImage(assetId, result.imageUrl);
+              }
+            })
+            .catch(() => {});
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Skulytics failed, try Google CSE
+        fetch("/api/search-product-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ make, model }),
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            if (result.imageUrl) {
+              updateAssetImage(assetId, result.imageUrl);
+            }
+          })
+          .catch(() => {});
+      });
   }
 
   async function handleAdd(data: Omit<HomeAsset, "id" | "createdAt">) {
@@ -202,7 +232,7 @@ export default function HomeAssetsClient() {
     // Prime the consumable cache + auto-create inventory items
     primeSuggestionCache(data, newAsset.id);
 
-    // Auto-fetch product image if make + model are provided
+    // Auto-fetch product image if none was provided
     if (data.make && data.model && !data.imageUrl) {
       fetchProductImage(newAsset.id, data.make, data.model);
     }
