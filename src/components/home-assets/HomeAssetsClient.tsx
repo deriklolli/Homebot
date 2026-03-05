@@ -594,17 +594,6 @@ export default function HomeAssetsClient() {
                       ({roomAssets.length})
                     </span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPrefillAsset({ name: "", category: "Kitchen" });
-                      setModalOpen(true);
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-sm)] text-[12px] font-medium text-accent hover:bg-accent-light transition-all duration-[120ms] shrink-0"
-                  >
-                    <PlusIcon width={12} height={12} />
-                    Add Asset
-                  </button>
                 </div>
 
                 {/* Asset list — collapsible */}
