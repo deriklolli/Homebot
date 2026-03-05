@@ -570,10 +570,11 @@ export default function HomeAssetsClient() {
           })}
         </div>
       ) : (
-        /* Location View */
+        /* Location View — only show rooms that have assets */
         <div className="flex flex-col gap-4">
-          {rooms.map((room) => {
+          {rooms.filter((room) => assets.some((a) => a.location === room)).map((room) => {
             const roomAssets = buildLocationRows(room);
+            if (roomAssets.length === 0) return null; // filtered by search
             const isCollapsed = collapsedLocations.has(room);
             return (
               <div
@@ -583,7 +584,7 @@ export default function HomeAssetsClient() {
                 {/* Room header */}
                 <div
                   className={`flex items-center gap-2 px-5 py-3 bg-bg/50 ${
-                    !isCollapsed && roomAssets.length > 0 ? "border-b border-border" : ""
+                    !isCollapsed ? "border-b border-border" : ""
                   }`}
                 >
                   <button
@@ -621,55 +622,49 @@ export default function HomeAssetsClient() {
                 {/* Asset list — collapsible */}
                 {!isCollapsed && (
                   <ul role="list" id={`location-${room}`} aria-label={`${room} assets`}>
-                    {roomAssets.length === 0 ? (
-                      <li className="px-5 py-4 text-center">
-                        <p className="text-[13px] text-text-4">No assets in this room</p>
-                      </li>
-                    ) : (
-                      roomAssets.map((asset) => {
-                        const warranty = warrantyStatus(asset.warrantyExpiration);
-                        return (
-                          <li key={asset.id} className="border-b border-border last:border-b-0">
-                            <Link
-                              href={`/home-assets/${asset.id}`}
-                              className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
-                            >
-                              {asset.imageUrl ? (
-                                <img
-                                  src={asset.imageUrl}
-                                  alt={asset.name}
-                                  className="w-10 h-10 rounded-full shrink-0 object-cover bg-bg"
-                                  onError={(e) => {
-                                    const el = e.target as HTMLImageElement;
-                                    el.style.display = "none";
-                                    el.nextElementSibling?.classList.remove("hidden");
-                                  }}
-                                />
-                              ) : null}
-                              <div className={`w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center ${asset.imageUrl ? "hidden" : ""}`}>
-                                <HomeIcon width={18} height={18} className="text-white" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  <span className="text-[14px] font-semibold text-text-primary truncate">
-                                    {asset.name}
+                    {roomAssets.map((asset) => {
+                      const warranty = warrantyStatus(asset.warrantyExpiration);
+                      return (
+                        <li key={asset.id} className="border-b border-border last:border-b-0">
+                          <Link
+                            href={`/home-assets/${asset.id}`}
+                            className="flex flex-wrap items-center gap-x-3 gap-y-2 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
+                          >
+                            {asset.imageUrl ? (
+                              <img
+                                src={asset.imageUrl}
+                                alt={asset.name}
+                                className="w-10 h-10 rounded-full shrink-0 object-cover bg-bg"
+                                onError={(e) => {
+                                  const el = e.target as HTMLImageElement;
+                                  el.style.display = "none";
+                                  el.nextElementSibling?.classList.remove("hidden");
+                                }}
+                              />
+                            ) : null}
+                            <div className={`w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center ${asset.imageUrl ? "hidden" : ""}`}>
+                              <HomeIcon width={18} height={18} className="text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[14px] font-semibold text-text-primary truncate">
+                                  {asset.name}
+                                </span>
+                                {warranty && (
+                                  <span className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
+                                    {warranty.label}
                                   </span>
-                                  {warranty && (
-                                    <span className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
-                                      {warranty.label}
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-[12px] text-text-3 truncate">
-                                  {[asset.make, asset.model].filter(Boolean).join(" ") || "No make/model"}
-                                  {asset.category && ` · ${asset.category}`}
-                                </p>
+                                )}
                               </div>
-                            </Link>
-                          </li>
-                        );
-                      })
-                    )}
+                              <p className="text-[12px] text-text-3 truncate">
+                                {[asset.make, asset.model].filter(Boolean).join(" ") || "No make/model"}
+                                {asset.category && ` · ${asset.category}`}
+                              </p>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -679,7 +674,7 @@ export default function HomeAssetsClient() {
           {/* Unassigned room — assets with no location */}
           {(() => {
             const unassigned = buildLocationRows("");
-            if (unassigned.length === 0 && !searchQuery) return null;
+            if (unassigned.length === 0) return null;
             const isCollapsed = collapsedLocations.has("__unassigned__");
             return (
               <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
