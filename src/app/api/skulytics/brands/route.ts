@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const category = req.nextUrl.searchParams.get("category") as AssetCategory | null;
+  const category = req.nextUrl.searchParams.get("category") as AssetCategory | "all" | null;
   if (!category) {
     return NextResponse.json({ brands: [] });
   }
@@ -32,9 +32,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ brands: [] });
   }
 
-  const mapping = SKULYTICS_CATEGORY_MAP[category];
-  if (!mapping?.supported || mapping.categories.length === 0) {
-    return NextResponse.json({ brands: [] });
+  // Collect all Skulytics categories to search
+  let skulyticsCategories: string[] = [];
+
+  if (category === "all") {
+    for (const mapping of Object.values(SKULYTICS_CATEGORY_MAP)) {
+      if (mapping.supported) {
+        skulyticsCategories.push(...mapping.categories);
+      }
+    }
+    skulyticsCategories = [...new Set(skulyticsCategories)];
+  } else {
+    const mapping = SKULYTICS_CATEGORY_MAP[category];
+    if (!mapping?.supported || mapping.categories.length === 0) {
+      return NextResponse.json({ brands: [] });
+    }
+    skulyticsCategories = mapping.categories;
   }
 
   // Check cache
@@ -45,8 +58,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Fetch brands for each mapped Skulytics category in parallel
-    const fetches = mapping.categories.map(async (skulyticsCat) => {
+    // Fetch brands for each Skulytics category in parallel
+    const fetches = skulyticsCategories.map(async (skulyticsCat) => {
       const url = new URL(`${BASE_URL}/brand`);
       url.searchParams.set("category", skulyticsCat);
 

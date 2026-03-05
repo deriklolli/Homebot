@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CATEGORY_OPTIONS, DEFAULT_ROOMS, isValidCategory, type HomeAsset, type AssetCategory } from "@/lib/home-assets-data";
 import { supabase, type DbRoom } from "@/lib/supabase";
-import { isSkulyticsSupported, type SkulyticsBrand, type SkulyticsProductSummary, type SkulyticsProductDetail } from "@/lib/skulytics";
+import { type SkulyticsBrand, type SkulyticsProductSummary, type SkulyticsProductDetail } from "@/lib/skulytics";
 import { XIcon, ChevronDownIcon, CameraIcon } from "@/components/icons";
 import LabelScannerModal, { type ScanResult } from "./LabelScannerModal";
 import DatePicker from "@/components/ui/DatePicker";
@@ -140,21 +140,14 @@ export default function AddHomeAssetModal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Fetch brands when category changes
+  // Fetch brands from all supported categories on mount
   useEffect(() => {
-    const supported = isSkulyticsSupported(category);
-    setLookupEnabled(supported);
-
-    if (!supported) {
-      setBrands([]);
-      setProducts([]);
-      return;
-    }
+    setLookupEnabled(true);
 
     let cancelled = false;
     setBrandsLoading(true);
 
-    fetch(`/api/skulytics/brands?category=${encodeURIComponent(category)}`)
+    fetch("/api/skulytics/brands?category=all")
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled) {
@@ -189,11 +182,10 @@ export default function AddHomeAssetModal({
     return () => {
       cancelled = true;
     };
-    // Only re-fetch when category changes, not on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
+  }, []);
 
-  // Fetch products when a brand is selected
+  // Fetch products when a brand is selected (search all categories)
   useEffect(() => {
     if (!lookupEnabled || !selectedBrand) {
       setProducts([]);
@@ -204,7 +196,7 @@ export default function AddHomeAssetModal({
     setProductsLoading(true);
 
     fetch(
-      `/api/skulytics/products?brand=${encodeURIComponent(selectedBrand)}&category=${encodeURIComponent(category)}`
+      `/api/skulytics/products?brand=${encodeURIComponent(selectedBrand)}&category=all`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -220,7 +212,7 @@ export default function AddHomeAssetModal({
     return () => {
       cancelled = true;
     };
-  }, [lookupEnabled, selectedBrand, category]);
+  }, [lookupEnabled, selectedBrand]);
 
   // Handle brand selection from dropdown
   const handleBrandSelect = useCallback(
