@@ -395,7 +395,7 @@ export default function AddHomeAssetModal({
 
 
           {/* Make & Model */}
-          <div className="flex gap-3">
+          <div className="flex flex-col md:flex-row gap-3">
             <div className="flex flex-col gap-1.5 flex-1">
               <span className="text-[14px] font-medium text-text-primary">
                 Make
@@ -457,7 +457,7 @@ export default function AddHomeAssetModal({
           </div>
 
           {/* Serial Number */}
-          <label className="flex flex-col gap-1.5">
+          <label className={`${scanResult?.serialNumber ? 'flex' : 'hidden md:flex'} flex-col gap-1.5`}>
             <span className="text-[14px] font-medium text-text-primary">
               Serial Number
             </span>
@@ -471,7 +471,7 @@ export default function AddHomeAssetModal({
           </label>
 
           {/* Purchase Date & Warranty */}
-          <div className="flex gap-3">
+          <div className="hidden md:flex gap-3">
             <label className="flex flex-col gap-1.5 flex-1">
               <span className="text-[14px] font-medium text-text-primary">
                 Purchase / Install Date
@@ -555,7 +555,7 @@ export default function AddHomeAssetModal({
           </div>
 
           {/* Product URL */}
-          <label className="flex flex-col gap-1.5">
+          <label className="hidden md:flex flex-col gap-1.5">
             <span className="text-[14px] font-medium text-text-primary">
               Product URL
             </span>
@@ -569,7 +569,7 @@ export default function AddHomeAssetModal({
           </label>
 
           {/* Notes */}
-          <label className="flex flex-col gap-1.5">
+          <label className="hidden md:flex flex-col gap-1.5">
             <span className="text-[14px] font-medium text-text-primary">
               Notes
             </span>
@@ -583,18 +583,18 @@ export default function AddHomeAssetModal({
           </label>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-border">
+          <div className="flex flex-col md:flex-row md:justify-end gap-3 pt-2 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-1.5 w-full md:w-auto px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isEditing ? "Save Changes" : "Add Asset"}
             </button>
