@@ -272,14 +272,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Header */}
       <header className="flex items-start justify-between gap-4 mb-6">
         <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
-              {asset.name}
-            </h1>
-            <span className="shrink-0 px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
-              {asset.category}
-            </span>
-          </div>
+          <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
+            {asset.name}
+          </h1>
         </div>
 
         {/* Actions */}
