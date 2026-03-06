@@ -434,7 +434,7 @@ export default function AddHomeAssetModal({
               <span className="text-[14px] font-medium text-text-primary">
                 Model
               </span>
-              {lookupEnabled && selectedBrand && productOptions.length > 0 ? (
+              {lookupEnabled && selectedBrand ? (
                 <ComboboxInput
                   value={model}
                   onChange={(val) => setModel(val)}
