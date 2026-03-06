@@ -8,6 +8,7 @@ import { dbToHomeAsset, homeAssetToDb } from "@/lib/mappers";
 import { PlusIcon, SearchIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, UploadIcon } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
 import ImportAssetsModal from "./ImportAssetsModal";
+import LabelScannerModal, { type ScanResult } from "./LabelScannerModal";
 
 import { buyNowUrl } from "@/lib/utils";
 import { computeNextReminderDate } from "@/lib/date-utils";
@@ -49,6 +50,8 @@ export default function HomeAssetsClient() {
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const [prefillAsset, setPrefillAsset] = useState<{ name: string; category: AssetCategory } | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [pendingScanResult, setPendingScanResult] = useState<ScanResult | null>(null);
 
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<"category" | "location">("location");
@@ -694,19 +697,32 @@ export default function HomeAssetsClient() {
       {/* Mobile floating add button */}
       <button
         type="button"
-        onClick={() => { setPrefillAsset(null); setModalOpen(true); }}
-        className="fixed bottom-6 right-6 z-40 flex md:hidden items-center justify-center w-14 h-14 rounded-full bg-accent text-white shadow-lg hover:brightness-110 active:scale-95 transition-all duration-[120ms]"
-        aria-label="Add a new asset"
+        onClick={() => setScannerOpen(true)}
+        className="fixed bottom-6 right-6 z-40 flex md:hidden items-center justify-center w-[68px] h-[68px] rounded-full bg-accent text-white shadow-lg hover:brightness-110 active:scale-95 transition-all duration-[120ms]"
+        aria-label="Scan to add a new asset"
       >
-        <PlusIcon width={24} height={24} />
+        <PlusIcon width={28} height={28} />
       </button>
+
+      {/* Label scanner (from FAB) */}
+      {scannerOpen && (
+        <LabelScannerModal
+          onScan={(result) => {
+            setScannerOpen(false);
+            setPendingScanResult(result);
+            setModalOpen(true);
+          }}
+          onClose={() => setScannerOpen(false)}
+        />
+      )}
 
       {/* Add modal */}
       {modalOpen && (
         <AddHomeAssetModal
           prefill={prefillAsset ?? undefined}
+          scanResult={pendingScanResult ?? undefined}
           onSave={handleAdd}
-          onClose={() => { setModalOpen(false); setPrefillAsset(null); }}
+          onClose={() => { setModalOpen(false); setPrefillAsset(null); setPendingScanResult(null); }}
         />
       )}
 
