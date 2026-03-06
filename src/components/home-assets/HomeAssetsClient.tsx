@@ -386,33 +386,6 @@ export default function HomeAssetsClient() {
               className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
             />
           </div>
-          <div className="hidden sm:flex items-center gap-2 shrink-0">
-            <span className="text-[13px] text-text-3">View by</span>
-            <div className="flex gap-1">
-              <button
-                type="button"
-                onClick={() => setViewMode("location")}
-                className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
-                  viewMode === "location"
-                    ? "bg-white text-text-primary"
-                    : "text-text-3 hover:text-text-primary hover:bg-bg"
-                }`}
-              >
-                Location
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("category")}
-                className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
-                  viewMode === "category"
-                    ? "bg-white text-text-primary"
-                    : "text-text-3 hover:text-text-primary hover:bg-bg"
-                }`}
-              >
-                Category
-              </button>
-            </div>
-          </div>
         </div>
         <button
           type="button"
@@ -423,35 +396,6 @@ export default function HomeAssetsClient() {
           Add Asset
         </button>
       </div>
-      {/* Mobile view toggle */}
-      <div className="flex sm:hidden items-center gap-2 mb-4">
-        <span className="text-[13px] text-text-3">View by</span>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => setViewMode("location")}
-            className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
-              viewMode === "location"
-                ? "bg-white text-text-primary"
-                : "text-text-3 hover:text-text-primary hover:bg-bg"
-            }`}
-          >
-            Location
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("category")}
-            className={`px-3 py-[5px] text-[13px] font-medium rounded-[var(--radius-sm)] transition-all duration-[120ms] ${
-              viewMode === "category"
-                ? "bg-white text-text-primary"
-                : "text-text-3 hover:text-text-primary hover:bg-bg"
-            }`}
-          >
-            Category
-          </button>
-        </div>
-      </div>
-
       {/* Content */}
       {loading ? (
         <p className="text-[14px] text-text-3">Loading assets...</p>
