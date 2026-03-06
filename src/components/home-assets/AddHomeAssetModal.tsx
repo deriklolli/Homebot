@@ -185,11 +185,9 @@ export default function AddHomeAssetModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch initial products when a brand is selected (search all categories)
-  const [brandProducts, setBrandProducts] = useState<SkulyticsProductSummary[]>([]);
+  // Fetch ALL products when a brand is selected (full pagination, all categories)
   useEffect(() => {
     if (!lookupEnabled || !selectedBrand) {
-      setBrandProducts([]);
       setProducts([]);
       return;
     }
@@ -202,17 +200,10 @@ export default function AddHomeAssetModal({
     )
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled) {
-          const fetched = data.products ?? [];
-          setBrandProducts(fetched);
-          setProducts(fetched);
-        }
+        if (!cancelled) setProducts(data.products ?? []);
       })
       .catch(() => {
-        if (!cancelled) {
-          setBrandProducts([]);
-          setProducts([]);
-        }
+        if (!cancelled) setProducts([]);
       })
       .finally(() => {
         if (!cancelled) setProductsLoading(false);
@@ -222,65 +213,6 @@ export default function AddHomeAssetModal({
       cancelled = true;
     };
   }, [lookupEnabled, selectedBrand]);
-
-  // Server-side SKU search when user types 3+ chars in model field
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-
-    const query = model.trim();
-    if (query.length < 3 || !lookupEnabled) {
-      // Reset to brand products only
-      setProducts(brandProducts);
-      return;
-    }
-
-    // Check if current typed value already matches something in brandProducts
-    const q = query.toLowerCase();
-    const clientMatches = brandProducts.filter(
-      (p) => p.sku.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
-    );
-    if (clientMatches.length > 0) {
-      // Already have matches locally, no need for server search
-      return;
-    }
-
-    // Show loading immediately so user sees "Loading..." instead of "No models found"
-    setProductsLoading(true);
-
-    // Debounce server search
-    searchTimerRef.current = setTimeout(() => {
-      let cancelled = false;
-
-      fetch(`/api/skulytics/search-products?query=${encodeURIComponent(query)}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (cancelled) return;
-          const searchResults: SkulyticsProductSummary[] = data.products ?? [];
-          // Merge with brand products, deduplicating by productId
-          const seen = new Set(brandProducts.map((p) => p.productId));
-          const merged = [...brandProducts];
-          for (const p of searchResults) {
-            if (!seen.has(p.productId)) {
-              seen.add(p.productId);
-              merged.push(p);
-            }
-          }
-          setProducts(merged);
-        })
-        .catch(() => {})
-        .finally(() => {
-          if (!cancelled) setProductsLoading(false);
-        });
-
-      return () => { cancelled = true; };
-    }, 350);
-
-    return () => {
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, lookupEnabled, selectedBrand]);
 
   // Handle brand selection from dropdown
   const handleBrandSelect = useCallback(
@@ -502,17 +434,25 @@ export default function AddHomeAssetModal({
               <span className="text-[14px] font-medium text-text-primary">
                 Model
               </span>
-              <ComboboxInput
-                value={model}
-                onChange={(val) => {
-                  setModel(val);
-                }}
-                options={productOptions}
-                loading={productsLoading}
-                placeholder="Search or type a model..."
-                onSelect={handleModelSelect}
-                emptyMessage={model.trim().length >= 3 ? "No models found" : "Type 3+ characters to search"}
-              />
+              {lookupEnabled && selectedBrand && productOptions.length > 0 ? (
+                <ComboboxInput
+                  value={model}
+                  onChange={(val) => setModel(val)}
+                  options={productOptions}
+                  loading={productsLoading}
+                  placeholder="Search or type a model..."
+                  onSelect={handleModelSelect}
+                  emptyMessage="No models found"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className={inputClassName}
+                  placeholder="e.g. RF28R7351SR"
+                />
+              )}
             </div>
           </div>
 
