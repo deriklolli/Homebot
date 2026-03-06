@@ -252,10 +252,7 @@ export default function AddHomeAssetModal({
     searchTimerRef.current = setTimeout(() => {
       let cancelled = false;
 
-      const params = new URLSearchParams({ query });
-      if (selectedBrand) params.set("brand", selectedBrand);
-
-      fetch(`/api/skulytics/search-products?${params}`)
+      fetch(`/api/skulytics/search-products?query=${encodeURIComponent(query)}`)
         .then((res) => res.json())
         .then((data) => {
           if (cancelled) return;
