@@ -359,40 +359,40 @@ export default function HomeAssetsClient() {
         </button>
       </header>
 
-      {/* Search */}
-      <div className="mb-3 relative max-w-full sm:max-w-[350px] w-full">
-        <SearchIcon
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
-          width={15}
-          height={15}
-        />
-        <input
-          type="text"
-          placeholder="Search Assets"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
-        />
-      </div>
-
-      {/* Add Asset + Import CSV */}
-      <div className="hidden md:flex items-center justify-end gap-2 mb-3">
-        <button
-          type="button"
-          onClick={() => { setPrefillAsset(null); setModalOpen(true); }}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-        >
-          <PlusIcon width={14} height={14} />
-          Add Asset
-        </button>
-        <button
-          type="button"
-          onClick={() => setImportModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-        >
-          <UploadIcon width={14} height={14} />
-          Import CSV
-        </button>
+      {/* Search + Add Asset + Import CSV */}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="relative max-w-full sm:max-w-[350px] w-full">
+          <SearchIcon
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4"
+            width={15}
+            height={15}
+          />
+          <input
+            type="text"
+            placeholder="Search Assets"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+          />
+        </div>
+        <div className="hidden md:flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => { setPrefillAsset(null); setModalOpen(true); }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          >
+            <PlusIcon width={14} height={14} />
+            Add Asset
+          </button>
+          <button
+            type="button"
+            onClick={() => setImportModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+          >
+            <UploadIcon width={14} height={14} />
+            Import CSV
+          </button>
+        </div>
       </div>
       {/* Content */}
       {loading ? (
