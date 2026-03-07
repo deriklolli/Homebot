@@ -109,34 +109,73 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
     fetchData();
   }, [id]);
 
-  // Fetch product details from Skulytics when asset has a model
+  // Fetch product details from Skulytics when asset has a model, with Google fallback
   useEffect(() => {
     if (!asset?.model) return;
     let cancelled = false;
-    fetch(`/api/skulytics/product-detail?sku=${encodeURIComponent(asset.model)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (cancelled || !data.product) return;
-        const p = data.product;
-        if (p.dimensions) {
-          const d = p.dimensions;
+
+    async function fetchProductDetails() {
+      // Try Skulytics first
+      try {
+        const res = await fetch(`/api/skulytics/product-detail?sku=${encodeURIComponent(asset!.model)}`);
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (data.product) {
+          const p = data.product;
+          if (p.dimensions) {
+            const d = p.dimensions;
+            if (d.width || d.height || d.depth || d.weight) {
+              setDimensions(d);
+            }
+          }
+          if (typeof p.warrantyMonths === "number") {
+            setSkulyticsWarrantyMonths(p.warrantyMonths);
+          }
+          if (p.manualUrl) {
+            setManualUrl(p.manualUrl);
+          }
+          if (p.productDocuments?.length) {
+            setProductDocuments(p.productDocuments);
+          }
+          return; // Skulytics had it — done
+        }
+      } catch { /* continue to fallback */ }
+
+      // Google fallback for dimensions and documents
+      if (!asset!.make) return;
+      try {
+        const res = await fetch("/api/enrich-product", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ make: asset!.make, model: asset!.model }),
+        });
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (data.dimensions) {
+          const d = data.dimensions;
           if (d.width || d.height || d.depth || d.weight) {
             setDimensions(d);
           }
         }
-        if (typeof p.warrantyMonths === "number") {
-          setSkulyticsWarrantyMonths(p.warrantyMonths);
+        if (data.warrantyYears) {
+          setSkulyticsWarrantyMonths(data.warrantyYears * 12);
         }
-        if (p.manualUrl) {
-          setManualUrl(p.manualUrl);
+        if (data.documents?.length) {
+          setProductDocuments(
+            data.documents.map((doc: { label: string; url: string }) => ({
+              role: doc.label,
+              url: doc.url,
+            }))
+          );
         }
-        if (p.productDocuments?.length) {
-          setProductDocuments(p.productDocuments);
-        }
-      })
-      .catch(() => {});
+      } catch { /* best-effort */ }
+    }
+
+    fetchProductDetails();
     return () => { cancelled = true; };
-  }, [asset?.model]);
+  }, [asset?.model, asset?.make]);
 
   // Close add files menu on outside click
   useEffect(() => {

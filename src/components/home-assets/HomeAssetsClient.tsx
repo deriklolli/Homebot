@@ -208,7 +208,7 @@ export default function HomeAssetsClient() {
       });
   }
 
-  // Try multiple sources for product image: Skulytics product → Google CSE → Skulytics brand logo
+  // Try multiple sources for product image: Skulytics product → Google search → Skulytics brand logo
   async function fetchProductImage(assetId: string, make: string, model: string, category?: string) {
     try {
       // 1. Try Skulytics product detail (high-quality manufacturer images)
@@ -221,7 +221,33 @@ export default function HomeAssetsClient() {
     } catch { /* continue to next source */ }
 
     try {
-      // 2. Fall back to brand logo from Skulytics
+      // 2. Try Google search fallback (web search + page scrape)
+      const enrichRes = await fetch("/api/enrich-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ make, model }),
+      });
+      const enrichData = await enrichRes.json();
+      if (enrichData.imageUrl) {
+        updateAssetImage(assetId, enrichData.imageUrl);
+        // Also save product URL if Google found one
+        if (enrichData.productUrl) {
+          supabase
+            .from("home_assets")
+            .update({ product_url: enrichData.productUrl })
+            .eq("id", assetId)
+            .then(() => {
+              setAssets((prev) =>
+                prev.map((a) => (a.id === assetId ? { ...a, productUrl: enrichData.productUrl } : a))
+              );
+            });
+        }
+        return;
+      }
+    } catch { /* continue to next source */ }
+
+    try {
+      // 3. Fall back to brand logo from Skulytics
       const cat = category || "Kitchen";
       const brandsRes = await fetch(`/api/skulytics/brands?category=${encodeURIComponent(cat)}`);
       const brandsData = await brandsRes.json();

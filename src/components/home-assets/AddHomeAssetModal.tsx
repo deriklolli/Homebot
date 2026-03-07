@@ -111,16 +111,47 @@ export default function AddHomeAssetModal({
         const data = await res.json();
         const product: SkulyticsProductDetail | null = data.product;
 
-        if (cancelled || !product) return;
+        if (cancelled) return;
 
-        if (product.name && !scanResult!.name) {
-          setName(product.name);
+        if (product) {
+          if (product.name && !scanResult!.name) {
+            setName(product.name);
+          }
+          if (product.image) {
+            setImageUrl(product.image);
+          }
+          if (product.productUrl) {
+            setProductUrl(product.productUrl);
+          }
+          return; // Skulytics had it — done
         }
-        if (product.image) {
-          setImageUrl(product.image);
+
+        // Skulytics didn't have this product — try Google fallback
+        const fallbackRes = await fetch("/api/enrich-product", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ make: brand, model: sku }),
+        });
+        const fallback = await fallbackRes.json();
+
+        if (cancelled) return;
+
+        if (fallback.name && !scanResult!.name) {
+          setName(fallback.name);
         }
-        if (product.productUrl) {
-          setProductUrl(product.productUrl);
+        if (fallback.imageUrl) {
+          setImageUrl(fallback.imageUrl);
+        }
+        if (fallback.productUrl) {
+          setProductUrl(fallback.productUrl);
+        }
+        if (fallback.warrantyYears && purchaseDate) {
+          const date = new Date(purchaseDate);
+          date.setFullYear(date.getFullYear() + fallback.warrantyYears);
+          setWarrantyExpiration(date.toISOString().slice(0, 10));
+        }
+        if (fallback.description && !notes.trim()) {
+          setNotes(fallback.description);
         }
       } catch {
         // Best-effort
@@ -308,13 +339,39 @@ export default function AddHomeAssetModal({
               date.setMonth(date.getMonth() + product.warrantyMonths);
               setWarrantyExpiration(date.toISOString().slice(0, 10));
             }
+          } else {
+            // Skulytics didn't have this product — try Google fallback
+            const fallbackRes = await fetch("/api/enrich-product", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ make: useBrand, model: useModel }),
+            });
+            const fallback = await fallbackRes.json();
+
+            if (fallback.name && !name.trim() && !result.name) {
+              setName(fallback.name);
+            }
+            if (fallback.imageUrl) {
+              setImageUrl(fallback.imageUrl);
+            }
+            if (fallback.productUrl) {
+              setProductUrl(fallback.productUrl);
+            }
+            if (fallback.warrantyYears && purchaseDate) {
+              const date = new Date(purchaseDate);
+              date.setFullYear(date.getFullYear() + fallback.warrantyYears);
+              setWarrantyExpiration(date.toISOString().slice(0, 10));
+            }
+            if (fallback.description && !notes.trim()) {
+              setNotes(fallback.description);
+            }
           }
         } catch {
           // Best-effort — scan already filled the basic fields
         }
       }
     },
-    [make, model, serialNumber, name, brands, lookupEnabled, purchaseDate]
+    [make, model, serialNumber, name, notes, brands, lookupEnabled, purchaseDate]
   );
 
   // Brand combobox options
