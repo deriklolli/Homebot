@@ -6,8 +6,15 @@ import type { Project, ProjectStatus } from "@/lib/projects-data";
 import { UserIcon } from "@/components/icons";
 
 const STATUS_BADGE: Record<ProjectStatus, string> = {
-  "In Progress": "bg-accent-light text-accent",
-  Completed: "bg-green-light text-green",
+  "Not Started": "bg-purple-light text-purple",
+  "In Progress": "bg-teal-light text-teal",
+  Completed: "bg-accent-light text-accent",
+};
+
+const STATUS_EDGE_COLOR: Record<ProjectStatus, string> = {
+  "Not Started": "bg-purple",
+  "In Progress": "bg-teal",
+  Completed: "bg-accent",
 };
 
 export default function ProjectCard({
@@ -23,8 +30,9 @@ export default function ProjectCard({
 
   return (
     <Link href={`/projects/${project.id}`}>
-      <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out h-full">
-        <div className="p-5">
+      <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out h-full flex">
+        <div className={`w-[4px] shrink-0 ${STATUS_EDGE_COLOR[project.status]}`} />
+        <div className="p-5 flex-1 min-w-0">
           {/* Name + status */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <p className="text-[14px] font-semibold text-text-primary truncate">

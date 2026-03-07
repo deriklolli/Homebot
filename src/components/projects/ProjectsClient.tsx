@@ -128,7 +128,7 @@ export default function ProjectsClient() {
 
       {/* Tabs */}
       <div className="flex gap-0 border-b border-border mb-4" role="tablist" aria-label="Project status">
-        {(["In Progress", "Completed"] as const).map((tab) => {
+        {(["Not Started", "In Progress", "Completed"] as const).map((tab) => {
           const isActive = selectedStatus === tab;
           const count = projects.filter((p) => p.status === tab).length;
           return (

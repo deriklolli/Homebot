@@ -1,4 +1,5 @@
 export const PROJECT_STATUSES = [
+  "Not Started",
   "In Progress",
   "Completed",
 ] as const;

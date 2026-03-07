@@ -2,8 +2,9 @@ import Link from "next/link";
 import type { Project, ProjectStatus } from "@/lib/projects-data";
 
 const STATUS_BADGE: Record<ProjectStatus, string> = {
-  "In Progress": "bg-accent-light text-accent",
-  Completed: "bg-green-light text-green",
+  "Not Started": "bg-purple-light text-purple",
+  "In Progress": "bg-teal-light text-teal",
+  Completed: "bg-accent-light text-accent",
 };
 
 export default function ProjectRow({

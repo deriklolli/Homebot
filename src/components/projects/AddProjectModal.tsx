@@ -33,7 +33,7 @@ export default function AddProjectModal({
     description: project?.description ?? "",
     contractorId: project?.contractorId ?? "",
     homeAssetId: project?.homeAssetId ?? "",
-    status: (project?.status ?? "In Progress") as ProjectStatus,
+    status: (project?.status ?? "Not Started") as ProjectStatus,
     notes: project?.notes ?? "",
   });
 
