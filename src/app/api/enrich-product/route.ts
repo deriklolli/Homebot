@@ -10,7 +10,35 @@ const SKIP_DOMAINS = [
   "pinterest.com",
   "tiktok.com",
   "quora.com",
+  "bing.com",
 ];
+
+/** Domains more likely to have good product pages */
+const PREFERRED_DOMAINS = [
+  "homedepot.com",
+  "lowes.com",
+  "ajmadison.com",
+  "build.com",
+  "subzero-wolf.com",
+  "samsung.com",
+  "lg.com",
+  "whirlpool.com",
+  "ge.com",
+  "bosch-home.com",
+  "thermador.com",
+  "kitchenaid.com",
+  "maytag.com",
+  "frigidaire.com",
+  "electrolux.com",
+];
+
+const FETCH_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+};
 
 interface EnrichResult {
   name: string;
@@ -46,12 +74,34 @@ function shouldSkipUrl(url: string): boolean {
   }
 }
 
+function isPreferredDomain(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return PREFERRED_DOMAINS.some((d) => hostname.includes(d));
+  } catch {
+    return false;
+  }
+}
+
 function resolveUrl(src: string, base: string): string {
   try {
     return new URL(src, base).href;
   } catch {
     return src;
   }
+}
+
+/** Decode common HTML entities in URLs and text */
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&#x26;/g, "&")
+    .replace(/&#x22;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
 }
 
 /** Extract og:image or twitter:image from HTML */
@@ -63,7 +113,7 @@ function extractImage(html: string): string {
     html.match(
       /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i
     );
-  if (ogMatch?.[1]) return ogMatch[1];
+  if (ogMatch?.[1]) return decodeHtmlEntities(ogMatch[1]);
 
   const twMatch =
     html.match(
@@ -72,7 +122,7 @@ function extractImage(html: string): string {
     html.match(
       /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i
     );
-  return twMatch?.[1] ?? "";
+  return twMatch?.[1] ? decodeHtmlEntities(twMatch[1]) : "";
 }
 
 /** Extract meta description */
@@ -90,17 +140,20 @@ function extractDescription(html: string): string {
     html.match(
       /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i
     );
-  return match?.[1]?.trim() ?? "";
+  return match?.[1] ? decodeHtmlEntities(match[1].trim()) : "";
 }
 
 /** Extract and clean page title */
 function extractTitle(html: string): string {
   const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
   if (!match?.[1]) return "";
-  return match[1]
-    .replace(/\s*[|\-–—]\s*(Home Depot|Lowe's|Amazon|Best Buy|Walmart|Wayfair).*$/i, "")
-    .replace(/\s*[|\-–—]\s*Official Site.*$/i, "")
-    .trim();
+  return decodeHtmlEntities(
+    match[1]
+      .replace(/\s*[|\-–—]\s*(Home Depot|Lowe's|Amazon|Best Buy|Walmart|Wayfair).*$/i, "")
+      .replace(/\s*[|\-–—]\s*Official Site.*$/i, "")
+      .replace(/\*{1,2}/g, "")  // strip markdown bold markers
+      .trim()
+  );
 }
 
 /** Extract JSON-LD Product structured data */
@@ -111,7 +164,6 @@ function extractJsonLd(html: string): {
   dimensions?: { width: string; height: string; depth: string; weight: string };
   warrantyYears?: number;
 } {
-  // Find all JSON-LD script blocks
   const regex = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let match;
 
@@ -126,7 +178,6 @@ function extractJsonLd(html: string): {
         if (product.name) result.name = String(product.name);
         if (product.description) result.description = String(product.description);
 
-        // Image — can be string, array of strings, or ImageObject
         if (product.image) {
           if (typeof product.image === "string") {
             result.image = product.image;
@@ -141,11 +192,9 @@ function extractJsonLd(html: string): {
           }
         }
 
-        // Dimensions — look in additionalProperty, or direct fields
         const dims = extractDimensionsFromJsonLd(product);
         if (dims) result.dimensions = dims;
 
-        // Warranty — look in warranty field or offers
         const warrantyYears = extractWarrantyFromJsonLd(product);
         if (warrantyYears) result.warrantyYears = warrantyYears;
 
@@ -174,14 +223,12 @@ function findProducts(data: unknown): Record<string, unknown>[] {
 
   const obj = data as Record<string, unknown>;
 
-  // Check @graph array
   if (Array.isArray(obj["@graph"])) {
     for (const item of obj["@graph"]) {
       products.push(...findProducts(item));
     }
   }
 
-  // Check if this object is a Product
   const type = obj["@type"];
   if (
     type === "Product" ||
@@ -202,7 +249,6 @@ function extractDimensionsFromJsonLd(
   let depth = "";
   let weight = "";
 
-  // Check additionalProperty array (common in manufacturer sites)
   if (Array.isArray(product.additionalProperty)) {
     for (const prop of product.additionalProperty) {
       if (!prop || typeof prop !== "object") continue;
@@ -216,7 +262,6 @@ function extractDimensionsFromJsonLd(
     }
   }
 
-  // Check direct dimension fields
   if (product.width && typeof product.width === "object") {
     width = String((product.width as Record<string, unknown>).value ?? "") +
       " " + String((product.width as Record<string, unknown>).unitCode ?? "");
@@ -242,7 +287,6 @@ function extractDimensionsFromJsonLd(
 
 /** Extract warranty years from JSON-LD */
 function extractWarrantyFromJsonLd(product: Record<string, unknown>): number | undefined {
-  // Check warranty field
   if (product.warranty && typeof product.warranty === "object") {
     const w = product.warranty as Record<string, unknown>;
     const duration = w.durationOfWarranty as Record<string, unknown> | undefined;
@@ -257,7 +301,6 @@ function extractWarrantyFromJsonLd(product: Record<string, unknown>): number | u
 
 /** Extract warranty years from page text via regex */
 function extractWarrantyFromText(html: string): number | null {
-  // Match patterns like "2-year warranty", "5 year limited warranty", etc.
   const match = html.match(/(\d+)\s*[-–]?\s*year\s+(?:limited\s+)?warranty/i);
   if (match?.[1]) {
     const years = parseInt(match[1], 10);
@@ -270,7 +313,6 @@ function extractWarrantyFromText(html: string): number | null {
 function extractDimensionsFromText(html: string): {
   width: string; height: string; depth: string; weight: string;
 } | null {
-  // Match patterns like '30" W x 18" H x 20" D' or '30 x 18 x 20 inches'
   const dimMatch = html.match(
     /(\d+[\d./\s]*(?:"|in\.?|inches?))\s*[Ww]?\s*[x×]\s*(\d+[\d./\s]*(?:"|in\.?|inches?))\s*[Hh]?\s*[x×]\s*(\d+[\d./\s]*(?:"|in\.?|inches?))/
   );
@@ -290,7 +332,6 @@ function extractPdfLinks(html: string, baseUrl: string): { label: string; url: s
   const docs: { label: string; url: string }[] = [];
   const seen = new Set<string>();
 
-  // Match <a> tags with .pdf hrefs
   const regex = /<a[^>]+href=["']([^"']*\.pdf[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let match;
 
@@ -299,19 +340,29 @@ function extractPdfLinks(html: string, baseUrl: string): { label: string; url: s
     if (seen.has(url.toLowerCase())) continue;
     seen.add(url.toLowerCase());
 
-    // Clean the link text
     let label = match[2]
-      .replace(/<[^>]+>/g, "") // strip inner HTML tags
+      .replace(/<[^>]+>/g, "")  // strip HTML tags
       .replace(/\s+/g, " ")
       .trim();
 
-    // Guess label from URL if link text is empty or generic
-    if (!label || label.length < 3) {
-      const filename = url.split("/").pop()?.replace(/\.pdf$/i, "").replace(/[-_]/g, " ") ?? "Document";
-      label = filename;
+    // Clean up labels that captured data attributes or are too long/noisy
+    // Take only the last meaningful segment if it contains quotes or data attrs
+    if (label.includes('"') || label.includes("data-")) {
+      const lastSegment = label.split(">").pop()?.trim() ?? "";
+      label = lastSegment || label;
     }
 
-    // Categorize the document
+    if (!label || label.length < 3 || label.toLowerCase() === "download") {
+      // Derive label from filename in URL
+      const filename = url.split("/").pop()?.split("?")[0]?.replace(/\.pdf$/i, "").replace(/[-_]/g, " ") ?? "Document";
+      label = filename.length > 3 ? filename : "Document";
+    }
+
+    // Truncate overly long labels
+    if (label.length > 80) {
+      label = label.slice(0, 77) + "...";
+    }
+
     const lowerLabel = label.toLowerCase();
     const lowerUrl = url.toLowerCase();
     const combined = lowerLabel + " " + lowerUrl;
@@ -332,8 +383,147 @@ function extractPdfLinks(html: string, baseUrl: string): { label: string; url: s
     docs.push({ label, url });
   }
 
-  return docs.slice(0, 10); // Cap at 10 documents
+  return docs.slice(0, 10);
 }
+
+// ─── Bing Search (no API key needed) ────────────────────────────────
+
+interface BingSearchResult {
+  url: string;
+  title: string;
+  imageUrl?: string;
+}
+
+/**
+ * Use Bing Image Search to find product pages and images.
+ * Bing image search returns both image URLs (murl) and the source page URLs (purl),
+ * making it an effective web search proxy that also provides product images.
+ * Unlike Bing web search, the image search endpoint doesn't trigger CAPTCHAs.
+ */
+async function bingImageSearchFull(query: string): Promise<{
+  pages: BingSearchResult[];
+  bestImage: string;
+}> {
+  const bingUrl = new URL("https://www.bing.com/images/search");
+  bingUrl.searchParams.set("q", query);
+  bingUrl.searchParams.set("first", "1");
+  bingUrl.searchParams.set("count", "20");
+
+  const res = await fetch(bingUrl.toString(), {
+    headers: { ...FETCH_HEADERS, Accept: "text/html" },
+    signal: AbortSignal.timeout(8000),
+  });
+
+  if (!res.ok) return { pages: [], bestImage: "" };
+
+  const html = await res.text();
+
+  // Extract page URLs, image URLs, and descriptions from Bing's embedded data
+  const purls = [...html.matchAll(/purl&quot;:&quot;(https?:\/\/[^&]+)/g)].map((m) => m[1]);
+  const murls = [...html.matchAll(/murl&quot;:&quot;(https?:\/\/[^&]+)/g)].map((m) => m[1]);
+  const descs = [...html.matchAll(/desc&quot;:&quot;(.*?)&quot;/g)].map((m) =>
+    m[1].replace(/&amp;/g, "&").replace(/&#39;/g, "'")
+  );
+
+  // Deduplicate page URLs, keeping first occurrence
+  const seen = new Set<string>();
+  const pages: BingSearchResult[] = [];
+
+  for (let i = 0; i < purls.length; i++) {
+    const url = purls[i];
+    const host = (() => { try { return new URL(url).hostname; } catch { return ""; } })();
+    if (seen.has(host) || shouldSkipUrl(url)) continue;
+    seen.add(host);
+
+    pages.push({
+      url,
+      title: descs[i] ?? "",
+      imageUrl: murls[i] ?? "",
+    });
+  }
+
+  return {
+    pages,
+    bestImage: murls[0] ?? "",
+  };
+}
+
+// ─── Google CSE Search (optional, needs API key) ────────────────────
+
+async function googleCseSearch(
+  apiKey: string,
+  cseId: string,
+  query: string,
+  num = 5,
+  searchType?: "image"
+): Promise<{ link: string; title?: string; pagemap?: { cse_image?: { src: string }[] } }[]> {
+  const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
+  searchUrl.searchParams.set("key", apiKey);
+  searchUrl.searchParams.set("cx", cseId);
+  searchUrl.searchParams.set("q", query);
+  searchUrl.searchParams.set("num", String(num));
+  if (searchType) searchUrl.searchParams.set("searchType", searchType);
+
+  const res = await fetch(searchUrl.toString(), {
+    signal: AbortSignal.timeout(8000),
+  });
+  const data = await res.json();
+
+  if (data.error) {
+    console.warn("[enrich-product] Google CSE error:", data.error.message);
+    return [];
+  }
+
+  return data.items ?? [];
+}
+
+// ─── Scrape a product page for all enrichment data ──────────────────
+
+async function scrapePage(url: string): Promise<{
+  imageUrl: string;
+  name: string;
+  description: string;
+  dimensions: EnrichResult["dimensions"];
+  warrantyYears: number | null;
+  documents: { label: string; url: string }[];
+}> {
+  const pageRes = await fetch(url, {
+    headers: FETCH_HEADERS,
+    signal: AbortSignal.timeout(10000),
+    redirect: "follow",
+  });
+
+  if (!pageRes.ok) {
+    return { imageUrl: "", name: "", description: "", dimensions: null, warrantyYears: null, documents: [] };
+  }
+
+  const html = await pageRes.text();
+
+  let imageUrl = extractImage(html);
+  let name = extractTitle(html);
+  let description = extractDescription(html);
+  let dimensions: EnrichResult["dimensions"] = null;
+  let warrantyYears: number | null = null;
+
+  // JSON-LD takes priority (higher quality structured data)
+  const jsonLd = extractJsonLd(html);
+  if (jsonLd.name) name = jsonLd.name;
+  if (jsonLd.image) imageUrl = jsonLd.image;
+  if (jsonLd.description) description = jsonLd.description;
+  if (jsonLd.dimensions) dimensions = jsonLd.dimensions;
+  if (jsonLd.warrantyYears) warrantyYears = jsonLd.warrantyYears;
+
+  // Fallback: extract dimensions and warranty from page text
+  if (!dimensions) dimensions = extractDimensionsFromText(html);
+  if (!warrantyYears) warrantyYears = extractWarrantyFromText(html);
+
+  // Extract PDF document links
+  const documents = extractPdfLinks(html, url);
+
+  return { imageUrl, name, description, dimensions, warrantyYears, documents };
+}
+
+// ─── Main handler ───────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   const { make, model } = await req.json();
@@ -342,132 +532,126 @@ export async function POST(req: Request) {
     return NextResponse.json(EMPTY_RESULT);
   }
 
-  const apiKey = process.env.GOOGLE_CSE_API_KEY;
-  const cseId = process.env.GOOGLE_CSE_ID;
-
-  if (!apiKey || !cseId) {
-    return NextResponse.json(EMPTY_RESULT);
-  }
-
+  const query = `${make} ${model}`;
   const result: EnrichResult = { ...EMPTY_RESULT, documents: [] };
 
-  try {
-    // Step 1: Google CSE web search
-    const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
-    searchUrl.searchParams.set("key", apiKey);
-    searchUrl.searchParams.set("cx", cseId);
-    searchUrl.searchParams.set("q", `${make} ${model}`);
-    searchUrl.searchParams.set("num", "5");
+  const apiKey = process.env.GOOGLE_CSE_API_KEY;
+  const cseId = process.env.GOOGLE_CSE_ID;
+  const hasGoogleCse = !!(apiKey && cseId);
 
-    const searchRes = await fetch(searchUrl.toString(), {
-      signal: AbortSignal.timeout(8000),
-    });
-    const searchData = await searchRes.json();
+  // ─── Step 1: Get search results (Google CSE or Bing image search) ─
+  let searchResults: BingSearchResult[] = [];
 
-    const items: { link: string; title?: string; pagemap?: { cse_image?: { src: string }[] } }[] =
-      searchData.items ?? [];
+  if (hasGoogleCse) {
+    try {
+      const items = await googleCseSearch(apiKey, cseId, query, 5);
+      searchResults = items
+        .filter((item) => !shouldSkipUrl(item.link))
+        .map((item) => ({ url: item.link, title: item.title ?? "" }));
 
-    // Pick the best result (skip forums/social media)
-    const bestItem = items.find((item) => !shouldSkipUrl(item.link));
-
-    if (bestItem) {
-      result.productUrl = bestItem.link;
-
-      // Google CSE sometimes includes images in pagemap
-      if (bestItem.pagemap?.cse_image?.[0]?.src) {
-        result.imageUrl = bestItem.pagemap.cse_image[0].src;
-      }
-
-      // Step 2: Scrape the product page
-      try {
-        const pageRes = await fetch(result.productUrl, {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            Accept:
-              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-          },
-          signal: AbortSignal.timeout(8000),
-        });
-
-        if (pageRes.ok) {
-          const html = await pageRes.text();
-
-          // Extract from meta tags
-          const scraped = extractImage(html);
-          if (scraped) result.imageUrl = scraped;
-          const title = extractTitle(html);
-          if (title) result.name = title;
-          result.description = extractDescription(html);
-
-          // Extract from JSON-LD (higher quality structured data)
-          const jsonLd = extractJsonLd(html);
-          if (jsonLd.name) result.name = jsonLd.name;
-          if (jsonLd.image) result.imageUrl = jsonLd.image;
-          if (jsonLd.description) result.description = jsonLd.description;
-          if (jsonLd.dimensions) result.dimensions = jsonLd.dimensions;
-          if (jsonLd.warrantyYears) result.warrantyYears = jsonLd.warrantyYears;
-
-          // Fallback: extract dimensions and warranty from page text
-          if (!result.dimensions) {
-            result.dimensions = extractDimensionsFromText(html);
-          }
-          if (!result.warrantyYears) {
-            result.warrantyYears = extractWarrantyFromText(html);
-          }
-
-          // Extract PDF document links
-          result.documents = extractPdfLinks(html, result.productUrl);
+      // Also grab pagemap images from Google CSE
+      for (const item of items) {
+        if (item.pagemap?.cse_image?.[0]?.src && !result.imageUrl) {
+          result.imageUrl = item.pagemap.cse_image[0].src;
         }
-      } catch {
-        // Page scrape failed — use what we have from search results
-        if (bestItem.title) result.name = bestItem.title;
+      }
+    } catch {
+      console.warn("[enrich-product] Google CSE search failed, falling back to Bing");
+    }
+  }
+
+  // Fall back to Bing image search (also returns source page URLs)
+  if (searchResults.length === 0) {
+    try {
+      const bing = await bingImageSearchFull(query);
+      searchResults = bing.pages;
+      if (bing.bestImage && !result.imageUrl) {
+        result.imageUrl = bing.bestImage;
+      }
+    } catch {
+      console.warn("[enrich-product] Bing image search failed");
+    }
+  }
+
+  // Sort results: prefer retailer/manufacturer domains
+  searchResults.sort((a, b) => {
+    const aPreferred = isPreferredDomain(a.url) ? 0 : 1;
+    const bPreferred = isPreferredDomain(b.url) ? 0 : 1;
+    return aPreferred - bPreferred;
+  });
+
+  // ─── Step 2: Scrape top result pages (try up to 3) ──────────────
+  for (const searchResult of searchResults.slice(0, 3)) {
+    try {
+      const scraped = await scrapePage(searchResult.url);
+
+      // Use first URL as product URL
+      if (!result.productUrl) result.productUrl = searchResult.url;
+
+      // Merge scraped data (first non-empty value wins)
+      if (scraped.imageUrl && !result.imageUrl) result.imageUrl = scraped.imageUrl;
+      if (scraped.name && !result.name) result.name = scraped.name;
+      if (scraped.description && !result.description) result.description = scraped.description;
+      if (scraped.dimensions && !result.dimensions) result.dimensions = scraped.dimensions;
+      if (scraped.warrantyYears && !result.warrantyYears) result.warrantyYears = scraped.warrantyYears;
+
+      // Accumulate PDF documents from all pages
+      for (const doc of scraped.documents) {
+        if (!result.documents.some((d) => d.url.toLowerCase() === doc.url.toLowerCase())) {
+          result.documents.push(doc);
+        }
       }
 
-      // Use search result title as fallback name
-      if (!result.name && bestItem.title) {
-        result.name = bestItem.title;
+      // If we got a good image and product URL from a preferred domain, stop early
+      if (result.imageUrl && result.name && isPreferredDomain(searchResult.url)) {
+        result.productUrl = searchResult.url;
+        break;
       }
+    } catch {
+      // Scrape failed — try next result
+    }
+  }
+
+  // Use search result title as fallback name
+  if (!result.name && searchResults.length > 0) {
+    result.name = searchResults[0].title;
+    if (!result.productUrl) result.productUrl = searchResults[0].url;
+  }
+
+  // ─── Step 3: Image fallback ──────────────────────────────────────
+  if (!result.imageUrl) {
+    // Try Google CSE image search if available
+    if (hasGoogleCse) {
+      try {
+        const items = await googleCseSearch(apiKey, cseId, query, 1, "image");
+        result.imageUrl = items[0]?.link ?? "";
+      } catch { /* continue */ }
     }
 
-    // Step 3: If still no image, fall back to Google CSE image search
+    // Try Bing image search if still no image
     if (!result.imageUrl) {
       try {
-        const imgUrl = new URL("https://www.googleapis.com/customsearch/v1");
-        imgUrl.searchParams.set("key", apiKey);
-        imgUrl.searchParams.set("cx", cseId);
-        imgUrl.searchParams.set("q", `${make} ${model}`);
-        imgUrl.searchParams.set("searchType", "image");
-        imgUrl.searchParams.set("num", "1");
-
-        const imgRes = await fetch(imgUrl.toString(), {
-          signal: AbortSignal.timeout(8000),
-        });
-        const imgData = await imgRes.json();
-        result.imageUrl = imgData.items?.[0]?.link ?? "";
-      } catch {
-        // Image search failed — continue with what we have
-      }
+        const bing = await bingImageSearchFull(query);
+        result.imageUrl = bing.bestImage;
+      } catch { /* continue */ }
     }
+  }
 
-    // Step 4: If no PDF docs from the main page, check other search results for PDFs
-    if (result.documents.length === 0) {
-      // Search specifically for manuals/specs
+  // Also use Bing image URL from search results if available
+  if (!result.imageUrl) {
+    const withImage = searchResults.find((r) => r.imageUrl);
+    if (withImage?.imageUrl) result.imageUrl = withImage.imageUrl;
+  }
+
+  // ─── Step 4: PDF document search fallback ───────────────────────
+  if (result.documents.length === 0) {
+    const docQuery = `${make} ${model} manual OR brochure OR specifications`;
+
+    // Try Google CSE for PDF docs
+    if (hasGoogleCse) {
       try {
-        const docSearchUrl = new URL("https://www.googleapis.com/customsearch/v1");
-        docSearchUrl.searchParams.set("key", apiKey);
-        docSearchUrl.searchParams.set("cx", cseId);
-        docSearchUrl.searchParams.set("q", `${make} ${model} manual OR brochure OR specifications filetype:pdf`);
-        docSearchUrl.searchParams.set("num", "5");
-
-        const docRes = await fetch(docSearchUrl.toString(), {
-          signal: AbortSignal.timeout(8000),
-        });
-        const docData = await docRes.json();
-        const docItems: { link: string; title?: string }[] = docData.items ?? [];
-
-        for (const item of docItems) {
+        const items = await googleCseSearch(apiKey, cseId, `${docQuery} filetype:pdf`, 5);
+        for (const item of items) {
           if (item.link?.toLowerCase().endsWith(".pdf")) {
             result.documents.push({
               label: item.title ?? "Document",
@@ -475,13 +659,27 @@ export async function POST(req: Request) {
             });
           }
         }
-      } catch {
-        // Document search failed — continue
-      }
+      } catch { /* continue */ }
     }
-  } catch {
-    // Entire enrichment failed — return empty
+
+    // Try Bing image search for document-related pages
+    if (result.documents.length === 0) {
+      try {
+        const bing = await bingImageSearchFull(`${docQuery} pdf`);
+        for (const item of bing.pages) {
+          if (item.url.toLowerCase().endsWith(".pdf")) {
+            result.documents.push({
+              label: item.title || "Document",
+              url: item.url,
+            });
+          }
+        }
+      } catch { /* continue */ }
+    }
   }
+
+  // Cap documents
+  result.documents = result.documents.slice(0, 10);
 
   return NextResponse.json(result);
 }
