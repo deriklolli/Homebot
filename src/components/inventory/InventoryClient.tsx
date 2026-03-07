@@ -54,10 +54,6 @@ function InventoryItemRow({
             <p className="text-[12px] text-text-3 truncate">
               {assetLabel}
             </p>
-          ) : item.description ? (
-            <p className="text-[12px] text-text-3 truncate">
-              {item.description}
-            </p>
           ) : null}
         </div>
         <span
@@ -89,6 +85,7 @@ export default function InventoryClient() {
   const [modalOpen, setModalOpen] = useState(false);
   const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [assetLabels, setAssetLabels] = useState<Map<string, string>>(new Map());
+  const [assetLocations, setAssetLocations] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     async function fetchData() {
@@ -137,14 +134,14 @@ export default function InventoryClient() {
     if (!data) return;
 
     const labels = new Map<string, string>();
+    const locations = new Map<string, string>();
     for (const asset of data) {
-      const assetName = [asset.make, asset.name].filter(Boolean).join(" ");
-      let label = `For ${assetName}`;
-      if (asset.model) label += ` - ${asset.model}`;
-      if (asset.location) label += `, ${asset.location}`;
-      labels.set(asset.id, label);
+      const parts = [asset.name, asset.location].filter(Boolean);
+      if (parts.length > 0) labels.set(asset.id, parts.join(" · "));
+      if (asset.location) locations.set(asset.id, asset.location);
     }
     setAssetLabels(labels);
+    setAssetLocations(locations);
   }
 
   async function backfillThumbnails(inventoryItems: InventoryItem[]) {
@@ -239,6 +236,27 @@ export default function InventoryClient() {
     );
   });
 
+  // Group filtered items by room (asset location), sorted alphabetically
+  const groupedByRoom = (() => {
+    const groups = new Map<string, InventoryItem[]>();
+    for (const item of filtered) {
+      const room = (item.homeAssetId && assetLocations.get(item.homeAssetId)) || "Other";
+      if (!groups.has(room)) groups.set(room, []);
+      groups.get(room)!.push(item);
+    }
+    // Sort items alphabetically within each room
+    for (const roomItems of groups.values()) {
+      roomItems.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    // Sort room names alphabetically, "Other" last
+    const sortedRooms = [...groups.keys()].sort((a, b) => {
+      if (a === "Other") return 1;
+      if (b === "Other") return -1;
+      return a.localeCompare(b);
+    });
+    return sortedRooms.map((room) => ({ room, items: groups.get(room)! }));
+  })();
+
   async function handleAdd(data: Omit<InventoryItem, "id" | "createdAt">) {
     let thumbnailUrl = data.thumbnailUrl;
     if (!thumbnailUrl && data.purchaseUrl) {
@@ -325,13 +343,15 @@ export default function InventoryClient() {
         </div>
       ) : (
         <>
-          {/* Main inventory list */}
-          {(() => {
-            if (filtered.length === 0) return null;
-            return (
+          {/* Inventory grouped by room */}
+          {groupedByRoom.map(({ room, items: roomItems }) => (
+            <div key={room} className="mb-4 last:mb-0">
+              <h2 className="text-[13px] font-semibold text-text-3 uppercase tracking-wide mb-2">
+                {room}
+              </h2>
               <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
-                <ul role="list" aria-label="Inventory items">
-                  {filtered.map((item) => {
+                <ul role="list" aria-label={`${room} inventory items`}>
+                  {roomItems.map((item) => {
                     const days = daysUntil(item.nextReminderDate);
                     const isSoon = days > 0 && days <= 30;
                     const dueLabel = `in ${days} day${days !== 1 ? "s" : ""}`;
@@ -358,8 +378,8 @@ export default function InventoryClient() {
                   })}
                 </ul>
               </div>
-            );
-          })()}
+            </div>
+          ))}
         </>
       )}
 
