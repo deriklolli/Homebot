@@ -1,26 +1,146 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { type Project, type ProjectStatus, PROJECT_STATUSES } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
 import { type HomeAsset } from "@/lib/home-assets-data";
 import { supabase, type DbProject, type DbContractor, type DbHomeAsset } from "@/lib/supabase";
 import { dbToProject, dbToContractor, dbToHomeAsset, projectToDb } from "@/lib/mappers";
-import { PlusIcon } from "@/components/icons";
+import { PlusIcon, ChevronDownIcon } from "@/components/icons";
 import ProjectCard from "./ProjectCard";
 import ProjectSearchFilterBar from "./ProjectSearchFilterBar";
 import AddProjectModal from "./AddProjectModal";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  useDroppable,
+  type DragStartEvent,
+  type DragEndEvent,
+  type DragOverEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
+/* ── Sortable card wrapper ── */
+function SortableProjectCard({
+  project,
+  contractorCompany,
+  contractorLogoUrl,
+}: {
+  project: Project;
+  contractorCompany: string | null;
+  contractorLogoUrl?: string | null;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: project.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.35 : 1,
+    cursor: isDragging ? "grabbing" : "grab",
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <ProjectCard
+        project={project}
+        contractorCompany={contractorCompany}
+        contractorLogoUrl={contractorLogoUrl}
+      />
+    </div>
+  );
+}
+
+/* ── Kanban column ── */
+function KanbanColumn({
+  status,
+  projectIds,
+  projectMap,
+  contractorMap,
+  isOver,
+}: {
+  status: ProjectStatus;
+  projectIds: string[];
+  projectMap: Map<string, Project>;
+  contractorMap: Map<string, Contractor>;
+  isOver: boolean;
+}) {
+  const { setNodeRef } = useDroppable({ id: `column-${status}` });
+
+  return (
+    <div className="flex flex-col min-h-0 h-full">
+      <div className="flex items-baseline gap-2 mb-3 shrink-0">
+        <h2 className="text-[16px] font-semibold text-text-primary">{status}</h2>
+        <span className="text-xs text-text-3">{projectIds.length}</span>
+      </div>
+      <SortableContext items={projectIds} strategy={verticalListSortingStrategy}>
+        <div
+          ref={setNodeRef}
+          className={`flex flex-col gap-4 min-h-[120px] flex-1 overflow-y-auto custom-scroll rounded-[var(--radius-lg)] p-2 -m-2 transition-colors duration-200 ${
+            isOver ? "bg-accent/[0.06] border-2 border-dashed border-accent/20" : "border-2 border-transparent"
+          }`}
+        >
+          {projectIds.map((id) => {
+            const p = projectMap.get(id);
+            if (!p) return null;
+            return (
+              <SortableProjectCard
+                key={id}
+                project={p}
+                contractorCompany={
+                  p.contractorId
+                    ? contractorMap.get(p.contractorId)?.company ?? null
+                    : null
+                }
+                contractorLogoUrl={
+                  p.contractorId
+                    ? contractorMap.get(p.contractorId)?.logoUrl ?? null
+                    : null
+                }
+              />
+            );
+          })}
+        </div>
+      </SortableContext>
+    </div>
+  );
+}
+
+/* ── Main component ── */
 export default function ProjectsClient() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [contractors, setContractors] = useState<Contractor[]>([]);
   const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<
-    ProjectStatus | "All"
-  >("All");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Drag-and-drop state
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [dragSourceColumn, setDragSourceColumn] = useState<ProjectStatus | null>(null);
+  const [overColumn, setOverColumn] = useState<ProjectStatus | null>(null);
+  const [columnItems, setColumnItems] = useState<Record<ProjectStatus, string[]>>({
+    "Not Started": [],
+    "In Progress": [],
+    Completed: [],
+  });
 
   useEffect(() => {
     async function fetchData() {
@@ -65,17 +185,183 @@ export default function ProjectsClient() {
     fetchData();
   }, []);
 
-  const contractorMap = new Map(contractors.map((c) => [c.id, c]));
+  const projectMap = useMemo(
+    () => new Map(projects.map((p) => [p.id, p])),
+    [projects]
+  );
+  const contractorMap = useMemo(
+    () => new Map(contractors.map((c) => [c.id, c])),
+    [contractors]
+  );
 
-  const filtered = projects.filter((p) => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch =
-      p.name.toLowerCase().includes(query) ||
-      p.description.toLowerCase().includes(query);
-    const matchesStatus =
-      selectedStatus === "All" || p.status === selectedStatus;
-    return matchesSearch && matchesStatus;
-  });
+  // Available years (current year + any year with projects)
+  const availableYears = useMemo(() => {
+    const years = new Set<number>([new Date().getFullYear()]);
+    for (const p of projects) {
+      years.add(new Date(p.createdAt).getFullYear());
+    }
+    return [...years].sort((a, b) => b - a);
+  }, [projects]);
+
+  // Build column items from filtered projects
+  const buildColumns = useCallback(() => {
+    const cols: Record<ProjectStatus, string[]> = {
+      "Not Started": [],
+      "In Progress": [],
+      Completed: [],
+    };
+    for (const p of projects) {
+      const year = new Date(p.createdAt).getFullYear();
+      if (year !== selectedYear) continue;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (
+          !p.name.toLowerCase().includes(q) &&
+          !p.description.toLowerCase().includes(q)
+        )
+          continue;
+      }
+      cols[p.status].push(p.id);
+    }
+    return cols;
+  }, [projects, selectedYear, searchQuery]);
+
+  // Re-initialize columns when projects or filters change
+  useEffect(() => {
+    setColumnItems(buildColumns());
+  }, [buildColumns]);
+
+  // DnD sensors — 8px distance prevents accidental drags on click
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
+  );
+
+  function findColumnForId(id: string): ProjectStatus | null {
+    for (const status of PROJECT_STATUSES) {
+      if (id === `column-${status}`) return status;
+    }
+    for (const status of PROJECT_STATUSES) {
+      if (columnItems[status].includes(id)) return status;
+    }
+    return null;
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const id = event.active.id as string;
+    setActiveId(id);
+    setDragSourceColumn(findColumnForId(id));
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over) {
+      setOverColumn(null);
+      return;
+    }
+
+    const activeColumn = findColumnForId(active.id as string);
+    const targetColumn = findColumnForId(over.id as string);
+    setOverColumn(targetColumn);
+
+    if (!activeColumn || !targetColumn || activeColumn === targetColumn) return;
+
+    // Move item across columns
+    setColumnItems((prev) => {
+      const sourceItems = prev[activeColumn].filter((id) => id !== active.id);
+      const destItems = [...prev[targetColumn]];
+      const overIndex = destItems.indexOf(over.id as string);
+      const insertAt = overIndex >= 0 ? overIndex : destItems.length;
+      destItems.splice(insertAt, 0, active.id as string);
+
+      return {
+        ...prev,
+        [activeColumn]: sourceItems,
+        [targetColumn]: destItems,
+      };
+    });
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveId(null);
+    setOverColumn(null);
+
+    if (!over || !dragSourceColumn) {
+      setDragSourceColumn(null);
+      setColumnItems(buildColumns());
+      return;
+    }
+
+    const currentColumn = findColumnForId(active.id as string);
+    if (!currentColumn) {
+      setDragSourceColumn(null);
+      return;
+    }
+
+    // Reorder within same column
+    const overTargetColumn = findColumnForId(over.id as string);
+    if (currentColumn === overTargetColumn && active.id !== over.id) {
+      const items = columnItems[currentColumn];
+      const oldIndex = items.indexOf(active.id as string);
+      const newIndex = items.indexOf(over.id as string);
+      if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+        setColumnItems((prev) => ({
+          ...prev,
+          [currentColumn]: arrayMove(prev[currentColumn], oldIndex, newIndex),
+        }));
+      }
+    }
+
+    // Status changed — persist to Supabase
+    if (dragSourceColumn !== currentColumn) {
+      const projectId = active.id as string;
+      const newStatus = currentColumn;
+      const project = projectMap.get(projectId);
+      if (!project) {
+        setDragSourceColumn(null);
+        return;
+      }
+
+      const oldStatus = project.status;
+      const oldCompletedAt = project.completedAt;
+      const completedAt = newStatus === "Completed" ? new Date().toISOString() : null;
+
+      // Optimistic update
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === projectId ? { ...p, status: newStatus, completedAt } : p
+        )
+      );
+
+      const { error } = await supabase
+        .from("projects")
+        .update({ status: newStatus, completed_at: completedAt })
+        .eq("id", projectId);
+
+      if (error) {
+        console.error("Failed to update project status:", error);
+        // Revert on failure
+        setProjects((prev) =>
+          prev.map((p) =>
+            p.id === projectId
+              ? { ...p, status: oldStatus, completedAt: oldCompletedAt }
+              : p
+          )
+        );
+      }
+    }
+
+    setDragSourceColumn(null);
+  }
+
+  function handleDragCancel() {
+    setActiveId(null);
+    setOverColumn(null);
+    setDragSourceColumn(null);
+    setColumnItems(buildColumns());
+  }
 
   async function handleAdd(
     data: Omit<
@@ -110,13 +396,40 @@ export default function ProjectsClient() {
     );
   }
 
+  const activeProject = activeId ? projectMap.get(activeId) : null;
+  const totalFiltered = PROJECT_STATUSES.reduce(
+    (sum, s) => sum + columnItems[s].length,
+    0
+  );
+
   return (
-    <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
+    <div className="flex-1 flex flex-col overflow-hidden p-6 md:p-8">
       {/* Header */}
-      <header className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
-          Projects
-        </h1>
+      <header className="flex items-center justify-between mb-6 shrink-0">
+        <div className="flex items-center gap-3">
+          <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+            Projects
+          </h1>
+          <div className="relative inline-flex items-center">
+            <select
+              className="appearance-none bg-border border-none rounded-[var(--radius-sm)] py-[5px] pl-2.5 pr-[26px] text-xs font-medium text-text-primary cursor-pointer hover:bg-border-strong transition-[background] duration-[120ms]"
+              aria-label="Filter by year"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+            >
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <ChevronDownIcon
+              className="absolute right-[7px] pointer-events-none text-text-3"
+              width={13}
+              height={13}
+            />
+          </div>
+        </div>
         <button
           onClick={() => setModalOpen(true)}
           className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
@@ -126,117 +439,58 @@ export default function ProjectsClient() {
         </button>
       </header>
 
-      {/* Tabs */}
-      <div className="flex gap-0 border-b border-border mb-4" role="tablist" aria-label="Project status">
-        {(["All", "Not Started", "In Progress", "Completed"] as const).map((tab) => {
-          const isActive = selectedStatus === tab;
-          return (
-            <button
-              key={tab}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setSelectedStatus(tab)}
-              className={`relative px-4 py-2.5 text-[14px] font-medium transition-colors duration-[120ms] ${
-                isActive
-                  ? "text-accent"
-                  : "text-text-3 hover:text-text-primary"
-              }`}
-            >
-              {tab === "All" ? "All Projects" : tab}
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent rounded-full" />
-              )}
-            </button>
-          );
-        })}
+      {/* Search */}
+      <div className="shrink-0">
+        <ProjectSearchFilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
       </div>
 
-      {/* Search */}
-      <ProjectSearchFilterBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedStatus={selectedStatus}
-        onStatusChange={setSelectedStatus}
-      />
-
-      <div className="mt-[25px]">
-        {filtered.length > 0 ? (
-          selectedStatus === "All" ? (
-            /* Kanban columns for All Projects view */
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {PROJECT_STATUSES.map((status) => {
-                const columnProjects = filtered.filter((p) => p.status === status);
-                return (
-                  <div key={status}>
-                    <div className="flex items-baseline gap-2 mb-3">
-                      <h2 className="text-[16px] font-semibold text-text-primary">{status}</h2>
-                      <span className="text-xs text-text-3">{columnProjects.length}</span>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                      {columnProjects.map((p) => (
-                        <ProjectCard
-                          key={p.id}
-                          project={p}
-                          contractorCompany={
-                            p.contractorId
-                              ? contractorMap.get(p.contractorId)?.company ?? null
-                              : null
-                          }
-                          contractorLogoUrl={
-                            p.contractorId
-                              ? contractorMap.get(p.contractorId)?.logoUrl ?? null
-                              : null
-                          }
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+      {/* Kanban board — columns scroll independently */}
+      <div className="mt-[25px] flex-1 min-h-0">
+        {totalFiltered > 0 ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+              {PROJECT_STATUSES.map((status) => (
+                <KanbanColumn
+                  key={status}
+                  status={status}
+                  projectIds={columnItems[status]}
+                  projectMap={projectMap}
+                  contractorMap={contractorMap}
+                  isOver={overColumn === status && dragSourceColumn !== status}
+                />
+              ))}
             </div>
-          ) : (
-            /* Year-grouped view for individual status tabs */
-            (() => {
-              const grouped = new Map<number, Project[]>();
-              for (const p of filtered) {
-                const year = new Date(p.createdAt).getFullYear();
-                if (!grouped.has(year)) grouped.set(year, []);
-                grouped.get(year)!.push(p);
-              }
-              const sortedYears = [...grouped.keys()].sort((a, b) => b - a);
-              return sortedYears.map((year) => {
-                const yearProjects = grouped.get(year)!;
-                return (
-                  <div key={year} className="mb-6 last:mb-0">
-                    <div className="flex items-baseline gap-2 mb-3">
-                      <h2 className="text-[16px] font-semibold text-text-primary">{year}</h2>
-                      <span className="text-xs text-text-3">
-                        {yearProjects.length} project{yearProjects.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {yearProjects.map((p) => (
-                        <ProjectCard
-                          key={p.id}
-                          project={p}
-                          contractorCompany={
-                            p.contractorId
-                              ? contractorMap.get(p.contractorId)?.company ?? null
-                              : null
-                          }
-                          contractorLogoUrl={
-                            p.contractorId
-                              ? contractorMap.get(p.contractorId)?.logoUrl ?? null
-                              : null
-                          }
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              });
-            })()
-          )
+
+            <DragOverlay dropAnimation={null}>
+              {activeProject ? (
+                <div style={{ cursor: "grabbing" }}>
+                  <ProjectCard
+                    project={activeProject}
+                    contractorCompany={
+                      activeProject.contractorId
+                        ? contractorMap.get(activeProject.contractorId)?.company ?? null
+                        : null
+                    }
+                    contractorLogoUrl={
+                      activeProject.contractorId
+                        ? contractorMap.get(activeProject.contractorId)?.logoUrl ?? null
+                        : null
+                    }
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         ) : (
           <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
             <p className="text-[15px] font-semibold text-text-primary mb-1">

@@ -1,11 +1,8 @@
-import { type ProjectStatus } from "@/lib/projects-data";
 import { SearchIcon } from "@/components/icons";
 
 interface ProjectSearchFilterBarProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  selectedStatus: ProjectStatus | "All";
-  onStatusChange: (value: ProjectStatus | "All") => void;
 }
 
 export default function ProjectSearchFilterBar({
