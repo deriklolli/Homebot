@@ -372,7 +372,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 <img
                   src={asset.imageUrl}
                   alt={`${asset.make} ${asset.model}`}
-                  className="h-[195px] w-[195px] object-cover rounded-[var(--radius-sm)]"
+                  className="h-[195px] w-[195px] object-contain"
                   onError={() => {
                     // Clear broken image URL so placeholder shows
                     setAsset((prev) => prev ? { ...prev, imageUrl: "" } : prev);
