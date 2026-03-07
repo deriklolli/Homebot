@@ -170,6 +170,17 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             }))
           );
         }
+        // Apply image and product URL if the asset doesn't have them
+        if (data.imageUrl && !asset!.imageUrl) {
+          supabase.from("home_assets").update({ image_url: data.imageUrl }).eq("id", asset!.id).then(() => {
+            setAsset((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : prev);
+          });
+        }
+        if (data.productUrl && !asset!.productUrl) {
+          supabase.from("home_assets").update({ product_url: data.productUrl }).eq("id", asset!.id).then(() => {
+            setAsset((prev) => prev ? { ...prev, productUrl: data.productUrl } : prev);
+          });
+        }
       } catch { /* best-effort */ }
     }
 
