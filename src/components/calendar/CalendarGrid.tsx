@@ -34,8 +34,9 @@ export interface ServiceCalendarEvent {
 export type CalendarEvent = ProjectCalendarEvent | InventoryCalendarEvent | ServiceCalendarEvent;
 
 const STATUS_PILL: Record<ProjectStatus, string> = {
-  "In Progress": "bg-accent-light text-accent",
-  Completed: "bg-green-light text-green",
+  "Not Started": "bg-purple-light text-purple",
+  "In Progress": "bg-teal-light text-teal",
+  Completed: "bg-accent-light text-accent",
 };
 
 export function formatShortTime(time: string): string {
