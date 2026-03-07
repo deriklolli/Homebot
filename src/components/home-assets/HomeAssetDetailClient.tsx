@@ -474,7 +474,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             </div>
 
             {/* Row 3: Purchase Date & Warranty */}
-            <div className={`flex gap-5 pt-4${asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 || dimensions ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+            <div className={`flex gap-5 pt-4${dimensions || asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
               <div className="flex-1">
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Purchase / Install Date
@@ -500,26 +500,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
               </div>
             </div>
 
-            {/* Row 4: Product Link (if set) */}
-            {asset.productUrl && (
-              <div className={`pt-4${dimensions || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
-                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
-                  Product Link
-                </span>
-                <a
-                  href={affiliateUrl(asset.productUrl)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[14px] text-accent hover:underline"
-                >
-                  View Product
-                </a>
-              </div>
-            )}
-
-            {/* Row 5: Dimensions (from Skulytics) */}
+            {/* Row 4: Dimensions */}
             {dimensions && (
-              <div className={`flex gap-5 pt-4${skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+              <div className={`flex gap-5 pt-4${asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
                 {dimensions.width && (
                   <div className="flex-1">
                     <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
@@ -552,6 +535,23 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                     <span className="text-[14px] text-text-primary">{dimensions.weight}</span>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Row 5: Product Link (if set) */}
+            {asset.productUrl && (
+              <div className={`pt-4${skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                  Product Link
+                </span>
+                <a
+                  href={affiliateUrl(asset.productUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[14px] text-accent hover:underline"
+                >
+                  View Product
+                </a>
               </div>
             )}
             {/* Row 6: Warranty Period (from Skulytics) */}

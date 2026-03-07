@@ -150,9 +150,6 @@ export default function AddHomeAssetModal({
           date.setFullYear(date.getFullYear() + fallback.warrantyYears);
           setWarrantyExpiration(date.toISOString().slice(0, 10));
         }
-        if (fallback.description && !notes.trim()) {
-          setNotes(fallback.description);
-        }
       } catch {
         // Best-effort
       }
@@ -362,16 +359,13 @@ export default function AddHomeAssetModal({
               date.setFullYear(date.getFullYear() + fallback.warrantyYears);
               setWarrantyExpiration(date.toISOString().slice(0, 10));
             }
-            if (fallback.description && !notes.trim()) {
-              setNotes(fallback.description);
-            }
           }
         } catch {
           // Best-effort — scan already filled the basic fields
         }
       }
     },
-    [make, model, serialNumber, name, notes, brands, lookupEnabled, purchaseDate]
+    [make, model, serialNumber, name, brands, lookupEnabled, purchaseDate]
   );
 
   // Brand combobox options

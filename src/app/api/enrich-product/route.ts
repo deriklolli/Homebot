@@ -44,7 +44,6 @@ interface EnrichResult {
   name: string;
   productUrl: string;
   imageUrl: string;
-  description: string;
   dimensions: {
     width: string;
     height: string;
@@ -59,7 +58,6 @@ const EMPTY_RESULT: EnrichResult = {
   name: "",
   productUrl: "",
   imageUrl: "",
-  description: "",
   dimensions: null,
   warrantyYears: null,
   documents: [],
@@ -125,24 +123,6 @@ function extractImage(html: string): string {
   return twMatch?.[1] ? decodeHtmlEntities(twMatch[1]) : "";
 }
 
-/** Extract meta description */
-function extractDescription(html: string): string {
-  const match =
-    html.match(
-      /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i
-    ) ??
-    html.match(
-      /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i
-    ) ??
-    html.match(
-      /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i
-    ) ??
-    html.match(
-      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i
-    );
-  return match?.[1] ? decodeHtmlEntities(match[1].trim()) : "";
-}
-
 /** Extract and clean page title */
 function extractTitle(html: string): string {
   const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -160,7 +140,6 @@ function extractTitle(html: string): string {
 function extractJsonLd(html: string): {
   name?: string;
   image?: string;
-  description?: string;
   dimensions?: { width: string; height: string; depth: string; weight: string };
   warrantyYears?: number;
 } {
@@ -176,7 +155,6 @@ function extractJsonLd(html: string): {
         const result: ReturnType<typeof extractJsonLd> = {};
 
         if (product.name) result.name = String(product.name);
-        if (product.description) result.description = String(product.description);
 
         if (product.image) {
           if (typeof product.image === "string") {
@@ -451,7 +429,6 @@ async function bingImageSearchFull(query: string): Promise<{
 async function scrapePage(url: string): Promise<{
   imageUrl: string;
   name: string;
-  description: string;
   dimensions: EnrichResult["dimensions"];
   warrantyYears: number | null;
   documents: { label: string; url: string }[];
@@ -463,14 +440,13 @@ async function scrapePage(url: string): Promise<{
   });
 
   if (!pageRes.ok) {
-    return { imageUrl: "", name: "", description: "", dimensions: null, warrantyYears: null, documents: [] };
+    return { imageUrl: "", name: "", dimensions: null, warrantyYears: null, documents: [] };
   }
 
   const html = await pageRes.text();
 
   let imageUrl = extractImage(html);
   let name = extractTitle(html);
-  let description = extractDescription(html);
   let dimensions: EnrichResult["dimensions"] = null;
   let warrantyYears: number | null = null;
 
@@ -478,7 +454,6 @@ async function scrapePage(url: string): Promise<{
   const jsonLd = extractJsonLd(html);
   if (jsonLd.name) name = jsonLd.name;
   if (jsonLd.image) imageUrl = jsonLd.image;
-  if (jsonLd.description) description = jsonLd.description;
   if (jsonLd.dimensions) dimensions = jsonLd.dimensions;
   if (jsonLd.warrantyYears) warrantyYears = jsonLd.warrantyYears;
 
@@ -489,7 +464,7 @@ async function scrapePage(url: string): Promise<{
   // Extract PDF document links
   const documents = extractPdfLinks(html, url);
 
-  return { imageUrl, name, description, dimensions, warrantyYears, documents };
+  return { imageUrl, name, dimensions, warrantyYears, documents };
 }
 
 // ─── Main handler ───────────────────────────────────────────────────
@@ -535,7 +510,6 @@ export async function POST(req: Request) {
       // Merge scraped data (first non-empty value wins)
       if (scraped.imageUrl && !result.imageUrl) result.imageUrl = scraped.imageUrl;
       if (scraped.name && !result.name) result.name = scraped.name;
-      if (scraped.description && !result.description) result.description = scraped.description;
       if (scraped.dimensions && !result.dimensions) result.dimensions = scraped.dimensions;
       if (scraped.warrantyYears && !result.warrantyYears) result.warrantyYears = scraped.warrantyYears;
 
