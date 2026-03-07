@@ -31,7 +31,7 @@ export default function ProjectCard({
   return (
     <Link href={`/projects/${project.id}`}>
       <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out h-full flex">
-        <div className={`w-[4px] shrink-0 ${STATUS_EDGE_COLOR[project.status]}`} />
+        <div className={`w-[8px] shrink-0 ${STATUS_EDGE_COLOR[project.status]}`} />
         <div className="p-5 flex-1 min-w-0">
           {/* Name + status */}
           <div className="flex items-start justify-between gap-2 mb-2">
