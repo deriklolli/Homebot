@@ -715,8 +715,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           <ul role="list">
             {projects.map((p) => {
               const statusBadge: Record<ProjectStatus, string> = {
-                "In Progress": "bg-accent-light text-accent",
-                Completed: "bg-green-light text-green",
+                "Not Started": "bg-purple-light text-purple",
+                "In Progress": "bg-teal-light text-teal",
+                Completed: "bg-accent-light text-accent",
               };
               return (
                 <li key={p.id} className="border-b border-border last:border-b-0">
