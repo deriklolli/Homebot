@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDateLong, formatDateTime, formatTime } from "@/lib/date-utils";
 import {
-  PROJECT_STATUSES,
   type Project,
   type ProjectStatus,
   type ProjectEvent,
@@ -87,7 +86,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [addEventModalOpen, setAddEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<ProjectEvent | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [statusPopoverOpen, setStatusPopoverOpen] = useState(false);
+
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [addNoteModalOpen, setAddNoteModalOpen] = useState(false);
   const [hireContractorOpen, setHireContractorOpen] = useState(false);
@@ -95,7 +94,6 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [newNote, setNewNote] = useState("");
   const [logoError, setLogoError] = useState(false);
   const noteRef = useRef<HTMLTextAreaElement>(null);
-  const statusRef = useRef<HTMLDivElement>(null);
   const addMenuRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<ProjectImageGalleryHandle>(null);
   const invoiceSectionRef = useRef<ProjectInvoiceSectionHandle>(null);
@@ -195,17 +193,6 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     ...notes.map((n) => ({ type: "note" as const, data: n, createdAt: n.createdAt })),
   ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  // Close status popover on outside click
-  useEffect(() => {
-    if (!statusPopoverOpen) return;
-    function handleClick(e: MouseEvent) {
-      if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
-        setStatusPopoverOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [statusPopoverOpen]);
 
   // Close add menu on outside click
   useEffect(() => {
@@ -303,30 +290,6 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     setEditModalOpen(false);
   }
 
-  async function handleStatusChange(status: ProjectStatus) {
-    setStatusPopoverOpen(false);
-    if (status === "Completed") {
-      setCompleteModalOpen(true);
-      return;
-    }
-    const { data: rows, error } = await supabase
-      .from("projects")
-      .update({
-        status,
-        total_cost: null,
-        contractor_rating: null,
-        completed_at: null,
-      } as Record<string, unknown>)
-      .eq("id", project!.id)
-      .select()
-      .returns<DbProject[]>();
-
-    if (error) {
-      console.error("Failed to update status:", error);
-      return;
-    }
-    setProject(dbToProject(rows[0]));
-  }
 
   async function handleComplete(data: {
     totalCost: number;
@@ -544,34 +507,12 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               {project.name}
             </h1>
 
-            {/* Clickable status badge */}
-            <div className="relative shrink-0" ref={statusRef}>
-              <button
-                onClick={() => setStatusPopoverOpen(!statusPopoverOpen)}
-                className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] cursor-pointer hover:brightness-90 transition-all duration-[120ms] ${STATUS_BADGE[project.status]}`}
-              >
-                {project.status}
-                <ChevronDownIcon width={10} height={10} />
-              </button>
-
-              {statusPopoverOpen && (
-                <div className="absolute top-full left-0 mt-1.5 bg-surface rounded-[var(--radius-sm)] border border-border shadow-[var(--shadow-hover)] py-1 min-w-[140px] z-20">
-                  {PROJECT_STATUSES.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => handleStatusChange(s)}
-                      className={`w-full text-left px-3 py-1.5 text-[14px] transition-colors duration-[120ms] ${
-                        s === project.status
-                          ? "font-semibold text-text-primary bg-border/50"
-                          : "text-text-2 hover:bg-border hover:text-text-primary"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Status badge */}
+            <span
+              className={`shrink-0 inline-flex items-center px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] ${STATUS_BADGE[project.status]}`}
+            >
+              {project.status}
+            </span>
           </div>
         </div>
 

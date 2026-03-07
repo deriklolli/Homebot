@@ -3,30 +3,38 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import type { ProjectStatus } from "@/lib/projects-data";
 import { WrenchIcon, ChevronRightIcon } from "@/components/icons";
 
-interface CurrentProject {
+const STATUS_BADGE: Record<ProjectStatus, string> = {
+  "Not Started": "bg-purple-light text-purple",
+  "In Progress": "bg-teal-light text-teal",
+  Completed: "bg-accent-light text-accent",
+};
+
+interface LatestProject {
   id: string;
   name: string;
+  status: ProjectStatus;
   contractorCompany: string | null;
 }
 
 export default function CurrentProjects() {
-  const [projects, setProjects] = useState<CurrentProject[]>([]);
+  const [projects, setProjects] = useState<LatestProject[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchProjects() {
       const { data, error } = await supabase
         .from("projects")
-        .select("id, name, contractors(company)")
-        .eq("status", "In Progress")
+        .select("id, name, status, contractors(company)")
         .order("created_at", { ascending: false })
         .limit(5)
         .returns<
           {
             id: string;
             name: string;
+            status: ProjectStatus;
             contractors: { company: string } | null;
           }[]
         >();
@@ -36,6 +44,7 @@ export default function CurrentProjects() {
           data.map((row) => ({
             id: row.id,
             name: row.name,
+            status: row.status,
             contractorCompany: row.contractors?.company ?? null,
           }))
         );
@@ -51,11 +60,11 @@ export default function CurrentProjects() {
         <div className="flex flex-col gap-[3px] min-w-0">
           <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
             <WrenchIcon width={15} height={15} className="text-accent" />
-            Current Projects
+            Latest Projects
           </h2>
           {!loading && projects.length > 0 && (
             <p className="text-xs text-text-3">
-              {projects.length} active
+              {projects.length} recent
             </p>
           )}
         </div>
@@ -71,19 +80,19 @@ export default function CurrentProjects() {
         <p className="text-[14px] text-text-3 py-4">Loading...</p>
       ) : projects.length === 0 ? (
         <p className="text-[14px] text-text-3 py-4">
-          No active projects.
+          No projects yet.
         </p>
       ) : (
         <ul
           className="flex flex-col -mx-5"
           role="list"
-          aria-label="Current projects"
+          aria-label="Latest projects"
         >
           {projects.map((p) => (
             <li key={p.id}>
               <Link
                 href={`/projects/${p.id}`}
-                className="grid grid-cols-[32px_1fr_auto] items-center gap-2 px-5 py-[9px] border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
+                className="grid grid-cols-[32px_1fr_auto_auto] items-center gap-2 px-5 py-[9px] border-t border-border hover:bg-surface-hover transition-[background] duration-[120ms]"
               >
                 <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
                   <WrenchIcon width={16} height={16} className="text-accent" />
@@ -98,6 +107,11 @@ export default function CurrentProjects() {
                     </span>
                   )}
                 </div>
+                <span
+                  className={`shrink-0 inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] ${STATUS_BADGE[p.status]}`}
+                >
+                  {p.status}
+                </span>
                 <ChevronRightIcon className="text-text-4 shrink-0" />
               </Link>
             </li>
