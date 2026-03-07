@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { type Project, type ProjectStatus } from "@/lib/projects-data";
+import { type Project, type ProjectStatus, PROJECT_STATUSES } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
 import { type HomeAsset } from "@/lib/home-assets-data";
 import { supabase, type DbProject, type DbContractor, type DbHomeAsset } from "@/lib/supabase";
@@ -19,7 +19,7 @@ export default function ProjectsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<
     ProjectStatus | "All"
-  >("In Progress");
+  >("All");
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -160,48 +160,83 @@ export default function ProjectsClient() {
       />
 
       <div className="mt-[25px]">
-        {/* Project cards grouped by year */}
         {filtered.length > 0 ? (
-          (() => {
-            const grouped = new Map<number, Project[]>();
-            for (const p of filtered) {
-              const year = new Date(p.createdAt).getFullYear();
-              if (!grouped.has(year)) grouped.set(year, []);
-              grouped.get(year)!.push(p);
-            }
-            const sortedYears = [...grouped.keys()].sort((a, b) => b - a);
-            return sortedYears.map((year) => {
-              const yearProjects = grouped.get(year)!;
-              return (
-                <div key={year} className="mb-6 last:mb-0">
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <h2 className="text-[16px] font-semibold text-text-primary">{year}</h2>
-                    <span className="text-xs text-text-3">
-                      {yearProjects.length} project{yearProjects.length !== 1 ? "s" : ""}
-                    </span>
+          selectedStatus === "All" ? (
+            /* Kanban columns for All Projects view */
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {PROJECT_STATUSES.map((status) => {
+                const columnProjects = filtered.filter((p) => p.status === status);
+                return (
+                  <div key={status}>
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <h2 className="text-[16px] font-semibold text-text-primary">{status}</h2>
+                      <span className="text-xs text-text-3">{columnProjects.length}</span>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      {columnProjects.map((p) => (
+                        <ProjectCard
+                          key={p.id}
+                          project={p}
+                          contractorCompany={
+                            p.contractorId
+                              ? contractorMap.get(p.contractorId)?.company ?? null
+                              : null
+                          }
+                          contractorLogoUrl={
+                            p.contractorId
+                              ? contractorMap.get(p.contractorId)?.logoUrl ?? null
+                              : null
+                          }
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {yearProjects.map((p) => (
-                      <ProjectCard
-                        key={p.id}
-                        project={p}
-                        contractorCompany={
-                          p.contractorId
-                            ? contractorMap.get(p.contractorId)?.company ?? null
-                            : null
-                        }
-                        contractorLogoUrl={
-                          p.contractorId
-                            ? contractorMap.get(p.contractorId)?.logoUrl ?? null
-                            : null
-                        }
-                      />
-                    ))}
+                );
+              })}
+            </div>
+          ) : (
+            /* Year-grouped view for individual status tabs */
+            (() => {
+              const grouped = new Map<number, Project[]>();
+              for (const p of filtered) {
+                const year = new Date(p.createdAt).getFullYear();
+                if (!grouped.has(year)) grouped.set(year, []);
+                grouped.get(year)!.push(p);
+              }
+              const sortedYears = [...grouped.keys()].sort((a, b) => b - a);
+              return sortedYears.map((year) => {
+                const yearProjects = grouped.get(year)!;
+                return (
+                  <div key={year} className="mb-6 last:mb-0">
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <h2 className="text-[16px] font-semibold text-text-primary">{year}</h2>
+                      <span className="text-xs text-text-3">
+                        {yearProjects.length} project{yearProjects.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {yearProjects.map((p) => (
+                        <ProjectCard
+                          key={p.id}
+                          project={p}
+                          contractorCompany={
+                            p.contractorId
+                              ? contractorMap.get(p.contractorId)?.company ?? null
+                              : null
+                          }
+                          contractorLogoUrl={
+                            p.contractorId
+                              ? contractorMap.get(p.contractorId)?.logoUrl ?? null
+                              : null
+                          }
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            });
-          })()
+                );
+              });
+            })()
+          )
         ) : (
           <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
             <p className="text-[15px] font-semibold text-text-primary mb-1">
