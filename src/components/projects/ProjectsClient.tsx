@@ -163,41 +163,60 @@ export default function ProjectsClient() {
         onStatusChange={setSelectedStatus}
       />
 
-      {/* Results count */}
-      <p className="text-xs text-text-3 mb-3">
-        {filtered.length} project{filtered.length !== 1 ? "s" : ""}
-      </p>
-
-      {/* Project cards */}
-      {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((p) => (
-            <ProjectCard
-              key={p.id}
-              project={p}
-              contractorCompany={
-                p.contractorId
-                  ? contractorMap.get(p.contractorId)?.company ?? null
-                  : null
-              }
-              contractorLogoUrl={
-                p.contractorId
-                  ? contractorMap.get(p.contractorId)?.logoUrl ?? null
-                  : null
-              }
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-[15px] font-semibold text-text-primary mb-1">
-            No projects found
-          </p>
-          <p className="text-[14px] text-text-3">
-            Try adjusting your search or filter, or add a new project.
-          </p>
-        </div>
-      )}
+      <div className="mt-[25px]">
+        {/* Project cards grouped by year */}
+        {filtered.length > 0 ? (
+          (() => {
+            const grouped = new Map<number, Project[]>();
+            for (const p of filtered) {
+              const year = new Date(p.createdAt).getFullYear();
+              if (!grouped.has(year)) grouped.set(year, []);
+              grouped.get(year)!.push(p);
+            }
+            const sortedYears = [...grouped.keys()].sort((a, b) => b - a);
+            return sortedYears.map((year) => {
+              const yearProjects = grouped.get(year)!;
+              return (
+                <div key={year} className="mb-6 last:mb-0">
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <h2 className="text-[16px] font-semibold text-text-primary">{year}</h2>
+                    <span className="text-xs text-text-3">
+                      {yearProjects.length} project{yearProjects.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {yearProjects.map((p) => (
+                      <ProjectCard
+                        key={p.id}
+                        project={p}
+                        contractorCompany={
+                          p.contractorId
+                            ? contractorMap.get(p.contractorId)?.company ?? null
+                            : null
+                        }
+                        contractorLogoUrl={
+                          p.contractorId
+                            ? contractorMap.get(p.contractorId)?.logoUrl ?? null
+                            : null
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            });
+          })()
+        ) : (
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
+            <p className="text-[15px] font-semibold text-text-primary mb-1">
+              No projects found
+            </p>
+            <p className="text-[14px] text-text-3">
+              Try adjusting your search or filter, or add a new project.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Add modal */}
       {modalOpen && (
