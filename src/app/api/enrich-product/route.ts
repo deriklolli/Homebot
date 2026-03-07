@@ -346,14 +346,12 @@ function extractPdfLinks(html: string, baseUrl: string): { label: string; url: s
       .trim();
 
     // Clean up labels that captured data attributes or are too long/noisy
-    // Take only the last meaningful segment if it contains quotes or data attrs
     if (label.includes('"') || label.includes("data-")) {
       const lastSegment = label.split(">").pop()?.trim() ?? "";
       label = lastSegment || label;
     }
 
     if (!label || label.length < 3 || label.toLowerCase() === "download") {
-      // Derive label from filename in URL
       const filename = url.split("/").pop()?.split("?")[0]?.replace(/\.pdf$/i, "").replace(/[-_]/g, " ") ?? "Document";
       label = filename.length > 3 ? filename : "Document";
     }
@@ -448,35 +446,6 @@ async function bingImageSearchFull(query: string): Promise<{
   };
 }
 
-// ─── Google CSE Search (optional, needs API key) ────────────────────
-
-async function googleCseSearch(
-  apiKey: string,
-  cseId: string,
-  query: string,
-  num = 5,
-  searchType?: "image"
-): Promise<{ link: string; title?: string; pagemap?: { cse_image?: { src: string }[] } }[]> {
-  const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
-  searchUrl.searchParams.set("key", apiKey);
-  searchUrl.searchParams.set("cx", cseId);
-  searchUrl.searchParams.set("q", query);
-  searchUrl.searchParams.set("num", String(num));
-  if (searchType) searchUrl.searchParams.set("searchType", searchType);
-
-  const res = await fetch(searchUrl.toString(), {
-    signal: AbortSignal.timeout(8000),
-  });
-  const data = await res.json();
-
-  if (data.error) {
-    console.warn("[enrich-product] Google CSE error:", data.error.message);
-    return [];
-  }
-
-  return data.items ?? [];
-}
-
 // ─── Scrape a product page for all enrichment data ──────────────────
 
 async function scrapePage(url: string): Promise<{
@@ -535,42 +504,17 @@ export async function POST(req: Request) {
   const query = `${make} ${model}`;
   const result: EnrichResult = { ...EMPTY_RESULT, documents: [] };
 
-  const apiKey = process.env.GOOGLE_CSE_API_KEY;
-  const cseId = process.env.GOOGLE_CSE_ID;
-  const hasGoogleCse = !!(apiKey && cseId);
-
-  // ─── Step 1: Get search results (Google CSE or Bing image search) ─
+  // ─── Step 1: Bing image search (returns page URLs + images) ─────
   let searchResults: BingSearchResult[] = [];
 
-  if (hasGoogleCse) {
-    try {
-      const items = await googleCseSearch(apiKey, cseId, query, 5);
-      searchResults = items
-        .filter((item) => !shouldSkipUrl(item.link))
-        .map((item) => ({ url: item.link, title: item.title ?? "" }));
-
-      // Also grab pagemap images from Google CSE
-      for (const item of items) {
-        if (item.pagemap?.cse_image?.[0]?.src && !result.imageUrl) {
-          result.imageUrl = item.pagemap.cse_image[0].src;
-        }
-      }
-    } catch {
-      console.warn("[enrich-product] Google CSE search failed, falling back to Bing");
+  try {
+    const bing = await bingImageSearchFull(query);
+    searchResults = bing.pages;
+    if (bing.bestImage) {
+      result.imageUrl = bing.bestImage;
     }
-  }
-
-  // Fall back to Bing image search (also returns source page URLs)
-  if (searchResults.length === 0) {
-    try {
-      const bing = await bingImageSearchFull(query);
-      searchResults = bing.pages;
-      if (bing.bestImage && !result.imageUrl) {
-        result.imageUrl = bing.bestImage;
-      }
-    } catch {
-      console.warn("[enrich-product] Bing image search failed");
-    }
+  } catch {
+    console.warn("[enrich-product] Bing image search failed");
   }
 
   // Sort results: prefer retailer/manufacturer domains
@@ -620,62 +564,24 @@ export async function POST(req: Request) {
 
   // ─── Step 3: Image fallback ──────────────────────────────────────
   if (!result.imageUrl) {
-    // Try Google CSE image search if available
-    if (hasGoogleCse) {
-      try {
-        const items = await googleCseSearch(apiKey, cseId, query, 1, "image");
-        result.imageUrl = items[0]?.link ?? "";
-      } catch { /* continue */ }
-    }
-
-    // Try Bing image search if still no image
-    if (!result.imageUrl) {
-      try {
-        const bing = await bingImageSearchFull(query);
-        result.imageUrl = bing.bestImage;
-      } catch { /* continue */ }
-    }
-  }
-
-  // Also use Bing image URL from search results if available
-  if (!result.imageUrl) {
     const withImage = searchResults.find((r) => r.imageUrl);
     if (withImage?.imageUrl) result.imageUrl = withImage.imageUrl;
   }
 
   // ─── Step 4: PDF document search fallback ───────────────────────
   if (result.documents.length === 0) {
-    const docQuery = `${make} ${model} manual OR brochure OR specifications`;
-
-    // Try Google CSE for PDF docs
-    if (hasGoogleCse) {
-      try {
-        const items = await googleCseSearch(apiKey, cseId, `${docQuery} filetype:pdf`, 5);
-        for (const item of items) {
-          if (item.link?.toLowerCase().endsWith(".pdf")) {
-            result.documents.push({
-              label: item.title ?? "Document",
-              url: item.link,
-            });
-          }
+    try {
+      const docQuery = `${make} ${model} manual OR brochure OR specifications pdf`;
+      const bing = await bingImageSearchFull(docQuery);
+      for (const item of bing.pages) {
+        if (item.url.toLowerCase().endsWith(".pdf")) {
+          result.documents.push({
+            label: item.title || "Document",
+            url: item.url,
+          });
         }
-      } catch { /* continue */ }
-    }
-
-    // Try Bing image search for document-related pages
-    if (result.documents.length === 0) {
-      try {
-        const bing = await bingImageSearchFull(`${docQuery} pdf`);
-        for (const item of bing.pages) {
-          if (item.url.toLowerCase().endsWith(".pdf")) {
-            result.documents.push({
-              label: item.title || "Document",
-              url: item.url,
-            });
-          }
-        }
-      } catch { /* continue */ }
-    }
+      }
+    } catch { /* continue */ }
   }
 
   // Cap documents
