@@ -374,8 +374,8 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           </h1>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Actions — hidden on mobile */}
+        <div className="hidden md:flex items-center gap-2 shrink-0">
           {/* +Add Files dropdown */}
           <div className="relative" ref={addFilesMenuRef}>
             <button
@@ -422,9 +422,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
       {/* Details card */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
-        <div className="flex gap-6">
-          {/* Product image — left side */}
-          <div className="shrink-0 self-start">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Product image — top on mobile, left on desktop */}
+          <div className="shrink-0 self-start mx-auto md:mx-0">
             {asset.imageUrl ? (
               <div className="relative group rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
                 <img
