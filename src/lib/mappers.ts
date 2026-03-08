@@ -1,10 +1,11 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbProjectEstimate, DbProjectContractor, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbHomeAssetDocument, DbProfile, DbOrganization } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbProjectEstimate, DbProjectContractor, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbHomeAssetDocument, DbProfile, DbOrganization, DbUtilityBill, DbUtilityProvider } from "./supabase";
 import type { Profile, Organization } from "./admin-data";
 import type { Contractor } from "./contractors-data";
 import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice, ProjectEstimate, ProjectContractor } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
 import type { Service, ServiceHistory } from "./services-data";
-import type { HomeAsset, HomeAssetDocument } from "./home-assets-data";
+import type { HomeAsset, HomeAssetDocument, EnrichmentData } from "./home-assets-data";
+import type { UtilityBill, UtilityProvider } from "./utility-bills-data";
 
 export function dbToContractor(row: DbContractor): Contractor {
   return {
@@ -261,12 +262,14 @@ export function dbToHomeAsset(row: DbHomeAsset): HomeAsset {
     notes: row.notes,
     productUrl: row.product_url,
     imageUrl: row.image_url,
+    enrichmentData: (row.enrichment_data as EnrichmentData) ?? null,
+    enrichedAt: row.enriched_at,
     createdAt: row.created_at,
   };
 }
 
 export function homeAssetToDb(
-  data: Omit<HomeAsset, "id" | "createdAt">
+  data: Omit<HomeAsset, "id" | "createdAt" | "enrichmentData" | "enrichedAt">
 ): {
   name: string;
   category: string;
@@ -339,5 +342,67 @@ export function dbToHomeSnapshot(row: DbHomeSnapshot): HomeSnapshot {
     valueTrend: row.value_trend,
     lastScrapedAt: row.last_scraped_at,
     createdAt: row.created_at,
+  };
+}
+
+/* ----- Utility Bills ----- */
+
+export function dbToUtilityBill(row: DbUtilityBill): UtilityBill {
+  return {
+    id: row.id,
+    providerId: row.provider_id,
+    providerName: row.provider_name,
+    category: row.category as UtilityBill["category"],
+    amount: row.amount,
+    dueDate: row.due_date,
+    billingPeriodStart: row.billing_period_start,
+    billingPeriodEnd: row.billing_period_end,
+    accountNumber: row.account_number,
+    gmailMessageId: row.gmail_message_id,
+    source: row.source as UtilityBill["source"],
+    notes: row.notes,
+    createdAt: row.created_at,
+  };
+}
+
+export function utilityBillToDb(
+  data: Omit<UtilityBill, "id" | "createdAt">
+): Omit<DbUtilityBill, "id" | "user_id" | "created_at"> {
+  return {
+    provider_id: data.providerId,
+    provider_name: data.providerName,
+    category: data.category,
+    amount: data.amount,
+    due_date: data.dueDate,
+    billing_period_start: data.billingPeriodStart,
+    billing_period_end: data.billingPeriodEnd,
+    account_number: data.accountNumber,
+    gmail_message_id: data.gmailMessageId,
+    source: data.source,
+    notes: data.notes,
+  };
+}
+
+export function dbToUtilityProvider(row: DbUtilityProvider): UtilityProvider {
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category as UtilityProvider["category"],
+    accountNumber: row.account_number,
+    senderEmail: row.sender_email,
+    logoUrl: row.logo_url,
+    createdAt: row.created_at,
+  };
+}
+
+export function utilityProviderToDb(
+  data: Omit<UtilityProvider, "id" | "createdAt">
+): Omit<DbUtilityProvider, "id" | "user_id" | "created_at"> {
+  return {
+    name: data.name,
+    category: data.category,
+    account_number: data.accountNumber,
+    sender_email: data.senderEmail,
+    logo_url: data.logoUrl,
   };
 }

@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import SpendingChart, { type SpendingDataPoint } from "./SpendingChart";
 import { ChevronDownIcon } from "@/components/icons";
 
-type SpendingCategory = "projects" | "inventory" | "services";
+type SpendingCategory = "projects" | "inventory" | "services" | "utilities";
 
 interface SpendingEntry {
   date: string;
@@ -21,12 +21,14 @@ const CATEGORY_CONFIG: {
   { key: "projects", label: "Projects", color: "bg-accent" },
   { key: "inventory", label: "Inventory", color: "bg-teal" },
   { key: "services", label: "Services", color: "bg-purple" },
+  { key: "utilities", label: "Utilities", color: "bg-yellow-500" },
 ];
 
 const CATEGORY_DOT: Record<SpendingCategory, string> = {
   projects: "bg-accent",
   inventory: "bg-teal",
   services: "bg-purple",
+  utilities: "bg-yellow-500",
 };
 
 function getDaysInMonth(year: number, month: number): number {
@@ -101,7 +103,7 @@ export default function SpendingCard() {
 
   useEffect(() => {
     async function fetchSpending() {
-      const [projectsRes, servicesRes, inventoryRes, invoicesRes] = await Promise.all([
+      const [projectsRes, servicesRes, inventoryRes, invoicesRes, utilitiesRes] = await Promise.all([
         supabase
           .from("projects")
           .select("total_cost, completed_at")
@@ -122,6 +124,11 @@ export default function SpendingCard() {
           .from("project_invoices")
           .select("amount, created_at")
           .not("amount", "is", null),
+        supabase
+          .from("utility_bills")
+          .select("amount, due_date")
+          .not("amount", "is", null)
+          .not("due_date", "is", null),
       ]);
 
       const result: SpendingEntry[] = [];
@@ -166,6 +173,16 @@ export default function SpendingCard() {
         }
       }
 
+      if (!utilitiesRes.error && utilitiesRes.data) {
+        for (const row of utilitiesRes.data) {
+          result.push({
+            date: row.due_date.split("T")[0],
+            amount: row.amount,
+            category: "utilities",
+          });
+        }
+      }
+
       setEntries(result);
       setLoading(false);
     }
@@ -192,6 +209,7 @@ export default function SpendingCard() {
     projects: 0,
     inventory: 0,
     services: 0,
+    utilities: 0,
   };
 
   for (const e of entries) {
@@ -200,7 +218,7 @@ export default function SpendingCard() {
     }
   }
 
-  const total = categoryTotals.projects + categoryTotals.inventory + categoryTotals.services;
+  const total = categoryTotals.projects + categoryTotals.inventory + categoryTotals.services + categoryTotals.utilities;
 
   return (
     <div className="p-5">

@@ -28,6 +28,13 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [loadingPrefs, setLoadingPrefs] = useState(true);
 
+  // Gmail integration state
+  const [gmailConnected, setGmailConnected] = useState(false);
+  const [gmailEmail, setGmailEmail] = useState<string | null>(null);
+  const [gmailLastScan, setGmailLastScan] = useState<string | null>(null);
+  const [gmailLoading, setGmailLoading] = useState(true);
+  const [disconnecting, setDisconnecting] = useState(false);
+
   useEffect(() => {
     async function load() {
       const {
@@ -51,6 +58,33 @@ export default function SettingsPage() {
       setLoadingPrefs(false);
     }
     load();
+
+    // Check Gmail connection status
+    async function loadGmail() {
+      try {
+        const res = await fetch("/api/gmail/status");
+        const data = await res.json();
+        setGmailConnected(data.connected ?? false);
+        setGmailEmail(data.email ?? null);
+        setGmailLastScan(data.lastScanAt ?? null);
+      } catch {
+        // Gmail status check failure is non-fatal
+      } finally {
+        setGmailLoading(false);
+      }
+    }
+    loadGmail();
+
+    // Handle ?gmail= query param feedback
+    const params = new URLSearchParams(window.location.search);
+    const gmailParam = params.get("gmail");
+    if (gmailParam) {
+      window.history.replaceState({}, "", "/settings");
+      if (gmailParam === "connected") {
+        setGmailConnected(true);
+        setGmailLoading(false);
+      }
+    }
   }, []);
 
   async function handleSaveProperty() {
@@ -62,6 +96,27 @@ export default function SettingsPage() {
     setSavingProperty(false);
     setSavedProperty(true);
     setTimeout(() => setSavedProperty(false), 2000);
+  }
+
+  async function handleConnectGmail() {
+    const res = await fetch("/api/gmail/auth-url");
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  }
+
+  async function handleDisconnectGmail() {
+    if (!confirm("Disconnect your Gmail account? This will stop automatic bill scanning.")) return;
+    setDisconnecting(true);
+    try {
+      await fetch("/api/gmail/disconnect", { method: "POST" });
+      setGmailConnected(false);
+      setGmailEmail(null);
+      setGmailLastScan(null);
+    } finally {
+      setDisconnecting(false);
+    }
   }
 
   async function handleSave() {
@@ -232,6 +287,46 @@ export default function SettingsPage() {
               </button>
             </div>
           </div>
+        )}
+      </div>
+      {/* Gmail Integration */}
+      <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mt-4">
+        <h2 className="text-[15px] font-semibold text-text-primary mb-1">Gmail Integration</h2>
+        <p className="text-[14px] text-text-3 mb-4">
+          Connect your Gmail account to automatically scan for utility bills.
+        </p>
+
+        {gmailLoading ? (
+          <p className="text-[14px] text-text-3">Checking connection...</p>
+        ) : gmailConnected ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green shrink-0" />
+              <span className="text-[14px] text-text-primary">
+                Connected as <strong>{gmailEmail}</strong>
+              </span>
+            </div>
+            {gmailLastScan && (
+              <p className="text-[12px] text-text-3">
+                Last scanned: {new Date(gmailLastScan).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
+              </p>
+            )}
+            <button
+              onClick={handleDisconnectGmail}
+              disabled={disconnecting}
+              className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-red text-red text-[14px] font-medium hover:bg-red/5 transition-all duration-[120ms] disabled:opacity-50"
+            >
+              {disconnecting ? "Disconnecting..." : "Disconnect Gmail"}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleConnectGmail}
+            className="inline-flex items-center gap-2 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          >
+            <MailIcon width={15} height={15} />
+            Connect Gmail
+          </button>
         )}
       </div>
     </div>

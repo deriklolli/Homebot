@@ -20,6 +20,7 @@ import {
   LogOutIcon,
   SunIcon,
   MoonIcon,
+  ZapIcon,
 } from "./icons";
 import { useTheme } from "./ThemeProvider";
 
@@ -29,6 +30,7 @@ const homeownerNavItems = [
   { href: "/home-assets", label: "Home Assets", icon: HomeIcon },
   { href: "/inventory", label: "Home Inventory", icon: PackageIcon },
   { href: "/services", label: "Home Services", icon: ClipboardCheckIcon },
+  { href: "/utility-bills", label: "Utility Bills", icon: ZapIcon },
   { href: "/contractors", label: "Contractors", icon: UsersIcon },
   { href: "/calendar", label: "Calendar", icon: CalendarIcon },
 ];

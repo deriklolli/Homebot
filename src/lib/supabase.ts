@@ -168,6 +168,8 @@ export interface DbHomeAsset {
   notes: string;
   product_url: string;
   image_url: string;
+  enrichment_data: Record<string, unknown> | null;
+  enriched_at: string | null;
   created_at: string;
 }
 
@@ -215,6 +217,46 @@ export interface DbProfile {
   organization_id: string | null;
   managed_by: string | null;
   activated_at: string | null;
+  created_at: string;
+}
+
+export interface DbGmailConnection {
+  id: string;
+  user_id: string;
+  google_email: string;
+  access_token_encrypted: string;
+  refresh_token_encrypted: string;
+  token_expires_at: string;
+  last_scan_at: string | null;
+  last_scan_message_id: string | null;
+  created_at: string;
+}
+
+export interface DbUtilityProvider {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string;
+  account_number: string | null;
+  sender_email: string | null;
+  logo_url: string | null;
+  created_at: string;
+}
+
+export interface DbUtilityBill {
+  id: string;
+  user_id: string;
+  provider_id: string | null;
+  provider_name: string;
+  category: string;
+  amount: number;
+  due_date: string | null;
+  billing_period_start: string | null;
+  billing_period_end: string | null;
+  account_number: string | null;
+  gmail_message_id: string | null;
+  source: string;
+  notes: string;
   created_at: string;
 }
 

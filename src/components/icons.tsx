@@ -46,6 +46,7 @@ import {
   HardHat,
   NotebookPen,
   History,
+  Zap,
 } from "lucide-react";
 import { SVGProps } from "react";
 
@@ -103,6 +104,7 @@ export const SparklesIcon = (props: LucideProps) => <Sparkles size={18} {...prop
 export const HardHatIcon = (props: LucideProps) => <HardHat size={18} {...props} />;
 export const NotebookPenIcon = (props: LucideProps) => <NotebookPen size={18} {...props} />;
 export const HistoryIcon = (props: LucideProps) => <History size={18} {...props} />;
+export const ZapIcon = (props: LucideProps) => <Zap size={18} {...props} />;
 
 // ---------------------------------------------------------------------------
 // Custom icons — no lucide equivalent
