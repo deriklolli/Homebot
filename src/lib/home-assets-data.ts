@@ -84,6 +84,13 @@ export const DEFAULT_ASSETS: Record<AssetCategory, string[]> = {
   ],
 };
 
+export interface EnrichmentData {
+  dimensions?: { width: string | null; height: string | null; depth: string | null; weight: string | null };
+  warrantyMonths?: number;
+  manualUrl?: string;
+  productDocuments?: Array<{ role: string; url: string }>;
+}
+
 export interface HomeAsset {
   id: string;
   name: string;
@@ -97,6 +104,8 @@ export interface HomeAsset {
   notes: string;
   productUrl: string;
   imageUrl: string;
+  enrichmentData: EnrichmentData | null;
+  enrichedAt: string | null;
   createdAt: string;
 }
 

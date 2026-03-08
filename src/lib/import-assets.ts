@@ -11,7 +11,7 @@ export interface ImportRowError {
 
 export interface ValidatedRow {
   rowIndex: number;
-  data: Omit<HomeAsset, "id" | "createdAt">;
+  data: Omit<HomeAsset, "id" | "createdAt" | "enrichmentData" | "enrichedAt">;
   errors: ImportRowError[];
   selected: boolean;
 }
@@ -22,7 +22,7 @@ type RawRow = Record<string, string>;
 /*  Header mapping                                                     */
 /* ------------------------------------------------------------------ */
 
-type AssetField = keyof Omit<HomeAsset, "id" | "createdAt">;
+type AssetField = keyof Omit<HomeAsset, "id" | "createdAt" | "enrichmentData" | "enrichedAt">;
 
 const HEADER_MAP: Record<string, AssetField> = {
   name: "name",
@@ -231,7 +231,7 @@ export function validateRows(rawRows: RawRow[]): ValidatedRow[] {
       }
     }
 
-    const data: Omit<HomeAsset, "id" | "createdAt"> = {
+    const data: Omit<HomeAsset, "id" | "createdAt" | "enrichmentData" | "enrichedAt"> = {
       name,
       category: category ?? ("Kitchen" as AssetCategory),
       make: mapped.make.trim(),

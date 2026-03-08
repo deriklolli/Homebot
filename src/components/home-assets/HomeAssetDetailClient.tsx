@@ -15,6 +15,7 @@ import {
   PackageIcon,
   CameraIcon,
   PlusIcon,
+  XIcon,
 } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
 import HomeAssetDocuments, { type HomeAssetDocumentsHandle } from "./HomeAssetDocuments";
@@ -56,13 +57,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   const [skulyticsWarrantyMonths, setSkulyticsWarrantyMonths] = useState<number | null>(null);
   const [manualUrl, setManualUrl] = useState<string | null>(null);
   const [productDocuments, setProductDocuments] = useState<Array<{ role: string; url: string }>>([]);
+  const [docUploading, setDocUploading] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       const [assetRes, projectsRes, inventoryRes, documentsRes] = await Promise.all([
         supabase
           .from("home_assets")
-          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, enrichment_data, enriched_at, created_at")
           .eq("id", id)
           .returns<DbHomeAsset[]>()
           .single(),
@@ -109,12 +111,27 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
     fetchData();
   }, [id]);
 
-  // Fetch product details from Skulytics when asset has a model, with Google fallback
+  // Fetch product details — use cached enrichment data if available, otherwise call APIs and persist
   useEffect(() => {
     if (!asset?.model) return;
     let cancelled = false;
 
-    async function fetchProductDetails() {
+    // If we already have cached enrichment data, load from it
+    if (asset.enrichmentData) {
+      const e = asset.enrichmentData;
+      if (e.dimensions) {
+        const d = e.dimensions;
+        if (d.width || d.height || d.depth || d.weight) setDimensions(d);
+      }
+      if (typeof e.warrantyMonths === "number") setSkulyticsWarrantyMonths(e.warrantyMonths);
+      if (e.manualUrl) setManualUrl(e.manualUrl);
+      if (e.productDocuments?.length) setProductDocuments(e.productDocuments);
+      return;
+    }
+
+    async function fetchAndCache() {
+      const enrichment: Record<string, unknown> = {};
+
       // Try Skulytics first
       try {
         const res = await fetch(`/api/skulytics/product-detail?sku=${encodeURIComponent(asset!.model)}`);
@@ -127,22 +144,34 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             const d = p.dimensions;
             if (d.width || d.height || d.depth || d.weight) {
               setDimensions(d);
+              enrichment.dimensions = d;
             }
           }
           if (typeof p.warrantyMonths === "number") {
             setSkulyticsWarrantyMonths(p.warrantyMonths);
+            enrichment.warrantyMonths = p.warrantyMonths;
           }
           if (p.manualUrl) {
             setManualUrl(p.manualUrl);
+            enrichment.manualUrl = p.manualUrl;
           }
           if (p.productDocuments?.length) {
             setProductDocuments(p.productDocuments);
+            enrichment.productDocuments = p.productDocuments;
           }
-          return; // Skulytics had it — done
+
+          // Save to DB
+          if (Object.keys(enrichment).length > 0) {
+            supabase.from("home_assets").update({
+              enrichment_data: enrichment,
+              enriched_at: new Date().toISOString(),
+            }).eq("id", asset!.id).then(() => {});
+          }
+          return;
         }
       } catch { /* continue to fallback */ }
 
-      // Google fallback for dimensions and documents
+      // Google fallback
       if (!asset!.make) return;
       try {
         const res = await fetch("/api/enrich-product", {
@@ -157,18 +186,21 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           const d = data.dimensions;
           if (d.width || d.height || d.depth || d.weight) {
             setDimensions(d);
+            enrichment.dimensions = d;
           }
         }
         if (data.warrantyYears) {
-          setSkulyticsWarrantyMonths(data.warrantyYears * 12);
+          const months = data.warrantyYears * 12;
+          setSkulyticsWarrantyMonths(months);
+          enrichment.warrantyMonths = months;
         }
         if (data.documents?.length) {
-          setProductDocuments(
-            data.documents.map((doc: { label: string; url: string }) => ({
-              role: doc.label,
-              url: doc.url,
-            }))
-          );
+          const docs = data.documents.map((doc: { label: string; url: string }) => ({
+            role: doc.label,
+            url: doc.url,
+          }));
+          setProductDocuments(docs);
+          enrichment.productDocuments = docs;
         }
         // Apply image and product URL if the asset doesn't have them
         if (data.imageUrl && !asset!.imageUrl) {
@@ -181,12 +213,20 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             setAsset((prev) => prev ? { ...prev, productUrl: data.productUrl } : prev);
           });
         }
+
+        // Save to DB
+        if (Object.keys(enrichment).length > 0) {
+          supabase.from("home_assets").update({
+            enrichment_data: enrichment,
+            enriched_at: new Date().toISOString(),
+          }).eq("id", asset!.id).then(() => {});
+        }
       } catch { /* best-effort */ }
     }
 
-    fetchProductDetails();
+    fetchAndCache();
     return () => { cancelled = true; };
-  }, [asset?.model, asset?.make]);
+  }, [asset?.model, asset?.make, asset?.enrichmentData]);
 
   // Close add files menu on outside click
   useEffect(() => {
@@ -200,7 +240,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [addFilesMenuOpen]);
 
-  async function handleEdit(data: Omit<HomeAsset, "id" | "createdAt">) {
+  async function handleEdit(data: Omit<HomeAsset, "id" | "createdAt" | "enrichmentData" | "enrichedAt">) {
     if (!asset) return;
 
     const { data: rows, error } = await supabase
@@ -485,7 +525,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             </div>
 
             {/* Row 3: Purchase Date & Warranty */}
-            <div className={`flex gap-5 pt-4${dimensions || asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+            <div className={`flex gap-5 pt-4${dimensions || asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 || documents.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
               <div className="flex-1">
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Purchase / Install Date
@@ -513,7 +553,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
             {/* Row 4: Dimensions */}
             {dimensions && (
-              <div className={`flex gap-5 pt-4${asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+              <div className={`flex gap-5 pt-4${asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 || documents.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
                 {dimensions.width && (
                   <div className="flex-1">
                     <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
@@ -551,7 +591,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
             {/* Row 5: Product Link (if set) */}
             {asset.productUrl && (
-              <div className={`pt-4${skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+              <div className={`pt-4${skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 || documents.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Product Link
                 </span>
@@ -567,7 +607,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             )}
             {/* Row 6: Warranty Period (from Skulytics) */}
             {skulyticsWarrantyMonths && (
-              <div className={`flex gap-5 pt-4${manualUrl || productDocuments.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+              <div className={`flex gap-5 pt-4${manualUrl || productDocuments.length > 0 || documents.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
                 <div className="flex-1">
                   <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                     Manufacturer Warranty
@@ -581,8 +621,8 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
               </div>
             )}
 
-            {/* Row 7: Product Documents (from Skulytics) */}
-            {productDocuments.length > 0 && (
+            {/* Row 7: Product Documents (API + user-uploaded) */}
+            {(productDocuments.length > 0 || documents.length > 0 || docUploading) && (
               <div className="pt-4">
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-2">
                   Product Documents
@@ -590,7 +630,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 <div className="flex flex-wrap gap-2">
                   {productDocuments.map((doc, i) => (
                     <a
-                      key={i}
+                      key={`api-${i}`}
                       href={doc.url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -605,6 +645,37 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                       {doc.role.replace(/\s*\(PDF\)\s*$/i, "").replace(/[{.<].*$/, "").trim() || "Document"}
                     </a>
                   ))}
+                  {documents.map((doc) => (
+                    <div key={doc.id} className="group relative inline-flex">
+                      <a
+                        href={documentsRef.current?.getFileUrl(doc) ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-[var(--radius-sm)] border border-border-strong bg-bg text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        {doc.documentType}
+                      </a>
+                      <button
+                        onClick={() => documentsRef.current?.deleteDocument(doc)}
+                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms] cursor-pointer"
+                        aria-label={`Delete ${doc.documentType}`}
+                      >
+                        <XIcon width={10} height={10} />
+                      </button>
+                    </div>
+                  ))}
+                  {docUploading && (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-[var(--radius-sm)] border border-border-strong bg-bg text-[13px] text-text-3">
+                      <span className="inline-block w-3.5 h-3.5 border-2 border-text-4 border-t-transparent rounded-full animate-spin" />
+                      Uploading...
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -677,12 +748,13 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      {/* Important Docs */}
+      {/* Hidden file input for document uploads */}
       <HomeAssetDocuments
         ref={documentsRef}
         assetId={asset.id}
         documents={documents}
         onDocumentsChange={setDocuments}
+        onUploadingChange={setDocUploading}
       />
 
       {/* Notes */}

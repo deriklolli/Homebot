@@ -260,7 +260,7 @@ export default function HomeAssetsClient() {
     } catch { /* all sources exhausted */ }
   }
 
-  async function handleAdd(data: Omit<HomeAsset, "id" | "createdAt">) {
+  async function handleAdd(data: Omit<HomeAsset, "id" | "createdAt" | "enrichmentData" | "enrichedAt">) {
     const { data: rows, error } = await supabase
       .from("home_assets")
       .insert(homeAssetToDb(data) as Record<string, unknown>)

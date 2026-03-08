@@ -13,7 +13,7 @@ interface AddHomeAssetModalProps {
   asset?: HomeAsset;
   prefill?: { name: string; category: AssetCategory };
   scanResult?: ScanResult;
-  onSave: (data: Omit<HomeAsset, "id" | "createdAt">) => void;
+  onSave: (data: Omit<HomeAsset, "id" | "createdAt" | "enrichmentData" | "enrichedAt">) => void;
   onClose: () => void;
 }
 

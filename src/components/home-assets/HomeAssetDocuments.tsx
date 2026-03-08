@@ -4,12 +4,14 @@ import { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import { type HomeAssetDocument } from "@/lib/home-assets-data";
 import { supabase, type DbHomeAssetDocument } from "@/lib/supabase";
 import { dbToHomeAssetDocument } from "@/lib/mappers";
-import { XIcon } from "@/components/icons";
 
 const BUCKET = "home-asset-documents";
 
 export interface HomeAssetDocumentsHandle {
   triggerUpload: (documentType: string) => void;
+  deleteDocument: (doc: HomeAssetDocument) => void;
+  getFileUrl: (doc: HomeAssetDocument) => string;
+  uploading: boolean;
 }
 
 interface HomeAssetDocumentsProps {
@@ -18,19 +20,52 @@ interface HomeAssetDocumentsProps {
   onDocumentsChange: (
     docs: HomeAssetDocument[] | ((prev: HomeAssetDocument[]) => HomeAssetDocument[])
   ) => void;
+  onUploadingChange?: (uploading: boolean) => void;
 }
 
 const HomeAssetDocuments = forwardRef<HomeAssetDocumentsHandle, HomeAssetDocumentsProps>(
-  function HomeAssetDocuments({ assetId, documents, onDocumentsChange }, ref) {
+  function HomeAssetDocuments({ assetId, documents, onDocumentsChange, onUploadingChange }, ref) {
     const [uploading, setUploading] = useState(false);
     const [pendingDocType, setPendingDocType] = useState("Other");
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    function getFileUrl(doc: HomeAssetDocument): string {
+      const { data } = supabase.storage
+        .from(BUCKET)
+        .getPublicUrl(doc.storagePath);
+      return data.publicUrl;
+    }
+
+    async function handleDelete(doc: HomeAssetDocument) {
+      const { error: storageError } = await supabase.storage
+        .from(BUCKET)
+        .remove([doc.storagePath]);
+
+      if (storageError) {
+        console.error("Document storage delete failed:", storageError);
+      }
+
+      const { error: dbError } = await supabase
+        .from("home_asset_documents")
+        .delete()
+        .eq("id", doc.id);
+
+      if (dbError) {
+        console.error("Document DB delete failed:", dbError);
+        return;
+      }
+
+      onDocumentsChange(documents.filter((d) => d.id !== doc.id));
+    }
 
     useImperativeHandle(ref, () => ({
       triggerUpload: (documentType: string) => {
         setPendingDocType(documentType);
         fileInputRef.current?.click();
       },
+      deleteDocument: handleDelete,
+      getFileUrl,
+      uploading,
     }));
 
     async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -38,6 +73,7 @@ const HomeAssetDocuments = forwardRef<HomeAssetDocumentsHandle, HomeAssetDocumen
       if (!files || files.length === 0) return;
 
       setUploading(true);
+      onUploadingChange?.(true);
       const newDocs: HomeAssetDocument[] = [];
 
       for (const file of Array.from(files)) {
@@ -103,39 +139,11 @@ const HomeAssetDocuments = forwardRef<HomeAssetDocumentsHandle, HomeAssetDocumen
       }
 
       setUploading(false);
+      onUploadingChange?.(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
 
-    async function handleDelete(doc: HomeAssetDocument) {
-      const { error: storageError } = await supabase.storage
-        .from(BUCKET)
-        .remove([doc.storagePath]);
-
-      if (storageError) {
-        console.error("Document storage delete failed:", storageError);
-      }
-
-      const { error: dbError } = await supabase
-        .from("home_asset_documents")
-        .delete()
-        .eq("id", doc.id);
-
-      if (dbError) {
-        console.error("Document DB delete failed:", dbError);
-        return;
-      }
-
-      onDocumentsChange(documents.filter((d) => d.id !== doc.id));
-    }
-
-    function getFileUrl(doc: HomeAssetDocument): string {
-      const { data } = supabase.storage
-        .from(BUCKET)
-        .getPublicUrl(doc.storagePath);
-      return data.publicUrl;
-    }
-
-    if (documents.length === 0 && !uploading) return (
+    return (
       <input
         ref={fileInputRef}
         type="file"
@@ -145,59 +153,6 @@ const HomeAssetDocuments = forwardRef<HomeAssetDocumentsHandle, HomeAssetDocumen
         className="hidden"
         aria-label="Upload asset documents"
       />
-    );
-
-    return (
-      <>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,.heic,.heif,.pdf,application/pdf"
-          multiple
-          onChange={handleUpload}
-          className="hidden"
-          aria-label="Upload asset documents"
-        />
-
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mb-5">
-          <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-3">
-            Important Docs
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {documents.map((doc) => (
-              <div key={doc.id} className="group relative inline-flex">
-                <a
-                  href={getFileUrl(doc)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-[var(--radius-sm)] border border-border-strong bg-bg text-[13px] text-text-2 hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
-                  {doc.documentType}
-                </a>
-                <button
-                  onClick={() => handleDelete(doc)}
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms] cursor-pointer"
-                  aria-label={`Delete ${doc.documentType}`}
-                >
-                  <XIcon width={10} height={10} />
-                </button>
-              </div>
-            ))}
-            {uploading && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-[var(--radius-sm)] border border-border-strong bg-bg text-[13px] text-text-3">
-                <span className="inline-block w-3.5 h-3.5 border-2 border-text-4 border-t-transparent rounded-full animate-spin" />
-                Uploading...
-              </div>
-            )}
-          </div>
-        </div>
-      </>
     );
   }
 );
