@@ -26,12 +26,9 @@ export default function UtilityBillsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [modalOpen, setModalOpen] = useState(false);
-  const [scanning, setScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<{
-    imported?: number;
-    scanned?: number;
-    needsConnect?: boolean;
-  } | null>(null);
+  const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
+  const [gmailEmail, setGmailEmail] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
 
   async function fetchData() {
     const [billResult, provResult] = await Promise.all([
@@ -62,28 +59,31 @@ export default function UtilityBillsClient() {
 
   useEffect(() => {
     fetchData();
+
+    // Check Gmail connection status
+    async function checkGmail() {
+      try {
+        const res = await fetch("/api/gmail/status");
+        const data = await res.json();
+        setGmailConnected(data.connected ?? false);
+        setGmailEmail(data.email ?? null);
+      } catch {
+        setGmailConnected(false);
+      }
+    }
+    checkGmail();
   }, []);
 
-  async function handleScan() {
-    setScanning(true);
-    setScanResult(null);
+  async function handleConnectGmail() {
+    setConnecting(true);
     try {
-      const res = await fetch("/api/gmail/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lookbackDays: 90 }),
-      });
+      const res = await fetch("/api/gmail/auth-url");
       const data = await res.json();
-      if (res.ok) {
-        setScanResult({ imported: data.imported, scanned: data.scanned });
-        await fetchData();
-      } else if (res.status === 404) {
-        setScanResult({ needsConnect: true });
+      if (data.url) {
+        window.location.href = data.url;
       }
-    } catch {
-      setScanResult({ needsConnect: true });
     } finally {
-      setScanning(false);
+      setConnecting(false);
     }
   }
 
@@ -154,52 +154,50 @@ export default function UtilityBillsClient() {
         <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
           Utility Bills
         </h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleScan}
-            disabled={scanning}
-            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] disabled:opacity-50"
-          >
-            <MailIcon width={15} height={15} />
-            {scanning ? "Scanning..." : "Scan Gmail"}
-          </button>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-          >
-            <PlusIcon width={15} height={15} />
-            Add Bill
-          </button>
-        </div>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+        >
+          <PlusIcon width={15} height={15} />
+          Add Bill
+        </button>
       </header>
 
-      {/* Scan result message */}
-      {scanResult && (
-        <div
-          className={`mb-4 px-4 py-3 rounded-[var(--radius-md)] text-[14px] ${
-            scanResult.needsConnect
-              ? "bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-500/20"
-              : "bg-green-light text-green border border-green/20"
-          }`}
-        >
-          {scanResult.needsConnect ? (
-            <>
-              Gmail is not connected.{" "}
-              <Link
-                href="/settings"
-                className="underline font-medium hover:no-underline"
-              >
-                Connect in Settings
-              </Link>{" "}
-              to scan for bills.
-            </>
-          ) : (
-            <>
-              Scan complete! Found {scanResult.scanned} emails, imported{" "}
-              {scanResult.imported} new bill
-              {scanResult.imported !== 1 ? "s" : ""}.
-            </>
-          )}
+      {/* Gmail onboarding card — shown until connected */}
+      {gmailConnected === false && (
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-4">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="w-10 h-10 rounded-[var(--radius-md)] bg-accent-light flex items-center justify-center shrink-0">
+              <ZapIcon width={20} height={20} className="text-accent" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-[15px] font-semibold text-text-primary mb-1">
+                Track your utility spending automatically
+              </h2>
+              <p className="text-[14px] text-text-3 mb-4 max-w-[520px]">
+                Connect your Gmail and Homebot will scan for utility bills from
+                your email — electric, gas, water, internet, and more. Amounts,
+                due dates, and providers are extracted automatically so you can
+                see exactly where your money goes.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleConnectGmail}
+                  disabled={connecting}
+                  className="inline-flex items-center gap-2 px-4 py-[8px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+                >
+                  <MailIcon width={15} height={15} />
+                  {connecting ? "Connecting..." : "Connect Gmail"}
+                </button>
+                <span className="text-[12px] text-text-4">
+                  or{" "}
+                  <Link href="/settings" className="text-text-3 underline hover:text-text-primary hover:no-underline">
+                    set up in Settings
+                  </Link>
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
