@@ -292,7 +292,7 @@ export default function CalendarClient() {
         </h1>
         <button
           onClick={() => setSubscribeModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-surface border border-border-strong text-text-primary text-[14px] font-medium hover:bg-border transition-all duration-[120ms]"
         >
           <CalendarIcon width={14} height={14} />
           Subscribe

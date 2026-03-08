@@ -289,7 +289,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/home-assets"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Home Assets
@@ -313,7 +313,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/home-assets"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Home Assets
@@ -612,31 +612,23 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         </div>{/* end flex row */}
       </div>
 
-      {/* Important Docs */}
-      <HomeAssetDocuments
-        ref={documentsRef}
-        assetId={asset.id}
-        documents={documents}
-        onDocumentsChange={setDocuments}
-      />
-
-      {/* Linked Inventory Items */}
+      {/* Recommended Inventory Upkeep */}
       {linkedInventory.length > 0 && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
-          <div className="flex items-center border-b border-border bg-[#e8f4f8]">
-            <div className="flex items-center gap-2 px-5 py-3 flex-1 min-w-0">
+          <div className="flex items-center rounded-[var(--radius-md)] bg-bg/50 mx-3 mt-3">
+            <div className="flex items-center gap-2 px-3 py-3 flex-1 min-w-0">
               <PackageIcon width={14} height={14} className="text-teal" />
               <span className="text-[14px] font-semibold text-text-primary">
-                Tracked Inventory
+                Recommended Inventory Upkeep
               </span>
             </div>
-            <div className="shrink-0 w-[72px] flex items-center justify-center py-3">
-              <span className="text-[11px] font-medium text-text-3 uppercase tracking-wide">
-                Reminder
+            <div className="shrink-0 w-[100px] flex items-center justify-center py-3 pr-2">
+              <span className="text-[13px] font-medium text-text-3">
+                Remind Me
               </span>
             </div>
           </div>
-          <ul role="list">
+          <ul role="list" className="mt-2">
             {linkedInventory.map((inv) => (
               <li key={inv.id} className="border-b border-border last:border-b-0">
                 <div className="flex items-center">
@@ -644,16 +636,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                     href={`/inventory/${inv.id}`}
                     className="flex items-center gap-3 flex-1 min-w-0 px-5 py-3.5 hover:opacity-70 transition-opacity duration-[120ms]"
                   >
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[14px] font-semibold text-text-primary truncate block">
-                        {inv.name}
-                      </span>
-                      {inv.description && (
-                        <p className="text-[12px] text-text-3 truncate">
-                          {inv.description}
-                        </p>
-                      )}
-                    </div>
+                    <span className="text-[14px] font-semibold text-text-primary truncate">
+                      {inv.name}
+                    </span>
                     <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
                       {frequencyLabel(inv.frequencyMonths)}
                     </span>
@@ -692,6 +677,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         </div>
       )}
 
+      {/* Important Docs */}
+      <HomeAssetDocuments
+        ref={documentsRef}
+        assetId={asset.id}
+        documents={documents}
+        onDocumentsChange={setDocuments}
+      />
+
       {/* Notes */}
       {asset.notes && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
@@ -706,48 +699,44 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
       {/* Related Projects */}
       {projects.length > 0 && (
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
-          <div className="px-5 py-3 border-b border-border bg-bg/50">
-            <span className="text-[14px] font-semibold text-text-primary">
-              {asset.name} Projects
-            </span>
-          </div>
-          <ul role="list">
+        <div className="mb-5">
+          <h2 className="text-[18px] font-bold text-text-primary mt-10 mb-3">Project History</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((p) => {
               const statusBadge: Record<ProjectStatus, string> = {
                 "Not Started": "bg-purple-light text-purple",
                 "In Progress": "bg-teal-light text-teal",
                 Completed: "bg-accent-light text-accent",
               };
+              const statusEdge: Record<ProjectStatus, string> = {
+                "Not Started": "bg-purple",
+                "In Progress": "bg-teal",
+                Completed: "bg-accent",
+              };
               return (
-                <li key={p.id} className="border-b border-border last:border-b-0">
-                  <Link
-                    href={`/projects/${p.id}`}
-                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[14px] font-semibold text-text-primary truncate">
+                <Link key={p.id} href={`/projects/${p.id}`}>
+                  <article className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out h-full flex">
+                    <div className={`w-[8px] shrink-0 ${statusEdge[p.status]}`} />
+                    <div className="p-5 flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <p className="text-[14px] font-semibold text-text-primary truncate">
                           {p.name}
-                        </span>
-                        <span className={`shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${statusBadge[p.status]}`}>
+                        </p>
+                        <span className={`shrink-0 inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] ${statusBadge[p.status]}`}>
                           {p.status}
                         </span>
                       </div>
                       {p.description && (
-                        <p className="text-[12px] text-text-3 truncate">
+                        <p className="text-[14px] text-text-3 line-clamp-2 leading-relaxed">
                           {p.description}
                         </p>
                       )}
                     </div>
-                    <span className="shrink-0 text-[12px] text-text-3">
-                      {formatDate(p.createdAt.split("T")[0])}
-                    </span>
-                  </Link>
-                </li>
+                  </article>
+                </Link>
               );
             })}
-          </ul>
+          </div>
         </div>
       )}
 

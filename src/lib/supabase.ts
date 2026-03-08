@@ -123,6 +123,17 @@ export interface DbProjectInvoice {
   created_at: string;
 }
 
+export interface DbProjectEstimate {
+  id: string;
+  user_id: string;
+  project_id: string;
+  storage_path: string;
+  file_name: string;
+  file_type: string;
+  amount: number | null;
+  created_at: string;
+}
+
 export interface DbProjectContractor {
   id: string;
   user_id: string;

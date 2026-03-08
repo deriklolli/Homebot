@@ -1,7 +1,7 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbProjectContractor, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbHomeAssetDocument, DbProfile, DbOrganization } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbProjectEstimate, DbProjectContractor, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbHomeAssetDocument, DbProfile, DbOrganization } from "./supabase";
 import type { Profile, Organization } from "./admin-data";
 import type { Contractor } from "./contractors-data";
-import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice, ProjectContractor } from "./projects-data";
+import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice, ProjectEstimate, ProjectContractor } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
 import type { Service, ServiceHistory } from "./services-data";
 import type { HomeAsset, HomeAssetDocument } from "./home-assets-data";
@@ -110,6 +110,18 @@ export function dbToProjectImage(row: DbProjectImage): ProjectImage {
 }
 
 export function dbToProjectInvoice(row: DbProjectInvoice): ProjectInvoice {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    storagePath: row.storage_path,
+    fileName: row.file_name,
+    fileType: row.file_type,
+    amount: row.amount,
+    createdAt: row.created_at,
+  };
+}
+
+export function dbToProjectEstimate(row: DbProjectEstimate): ProjectEstimate {
   return {
     id: row.id,
     projectId: row.project_id,

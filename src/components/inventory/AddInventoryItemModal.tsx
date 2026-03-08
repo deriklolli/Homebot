@@ -81,7 +81,7 @@ export default function AddInventoryItemModal({
       notes: effectiveNotes,
       cost: effectiveCost,
       homeAssetId: homeAssetId || null,
-      tracked: true,
+      tracked: false,
     });
   }
 

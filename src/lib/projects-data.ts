@@ -42,6 +42,16 @@ export interface ProjectInvoice {
   createdAt: string;
 }
 
+export interface ProjectEstimate {
+  id: string;
+  projectId: string;
+  storagePath: string;
+  fileName: string;
+  fileType: string;
+  amount: number | null;
+  createdAt: string;
+}
+
 export interface ProjectContractor {
   id: string;
   projectId: string;

@@ -149,7 +149,7 @@ export const helpTopics: HelpTopic[] = [
       },
       {
         heading: "Linking to Home Assets",
-        body: "Inventory items can be linked to specific home assets. For example, a furnace filter links to your HVAC system, or a water filter links to your refrigerator. When items are auto-generated from consumable suggestions, this link is created automatically. For manually-added items, edit the item and select a home asset from the dropdown. Linked items appear under \"Tracked Inventory\" on the asset's detail page.",
+        body: "Inventory items can be linked to specific home assets. For example, a furnace filter links to your HVAC system, or a water filter links to your refrigerator. When items are auto-generated from consumable suggestions, this link is created automatically. For manually-added items, edit the item and select a home asset from the dropdown. Linked items appear under \"Recommended Inventory Upkeep\" on the asset's detail page.",
         screenshot: "Inventory item edit form showing home asset dropdown selection",
       },
     ],

@@ -11,6 +11,7 @@ import {
   type ProjectNote,
   type ProjectImage,
   type ProjectInvoice,
+  type ProjectEstimate,
   type ProjectContractor,
 } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
@@ -23,6 +24,7 @@ import {
   type DbProjectNote,
   type DbProjectImage,
   type DbProjectInvoice,
+  type DbProjectEstimate,
   type DbProjectContractor,
   type DbHomeAsset,
 } from "@/lib/supabase";
@@ -36,6 +38,7 @@ import {
   dbToProjectNote,
   dbToProjectImage,
   dbToProjectInvoice,
+  dbToProjectEstimate,
   dbToProjectContractor,
 } from "@/lib/mappers";
 
@@ -65,6 +68,7 @@ import CompleteProjectModal from "./CompleteProjectModal";
 import AddEventModal from "./AddEventModal";
 import ProjectImageGallery, { type ProjectImageGalleryHandle } from "./ProjectImageGallery";
 import ProjectInvoiceSection, { type ProjectInvoiceSectionHandle } from "./ProjectInvoiceSection";
+import ProjectEstimateSection, { type ProjectEstimateSectionHandle } from "./ProjectEstimateSection";
 import RateContractorModal from "./RateContractorModal";
 
 const STATUS_BADGE: Record<ProjectStatus, string> = {
@@ -92,6 +96,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [images, setImages] = useState<ProjectImage[]>([]);
   const [invoices, setInvoices] = useState<ProjectInvoice[]>([]);
+  const [estimates, setEstimates] = useState<ProjectEstimate[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -117,10 +122,11 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const addMenuRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<ProjectImageGalleryHandle>(null);
   const invoiceSectionRef = useRef<ProjectInvoiceSectionHandle>(null);
+  const estimateSectionRef = useRef<ProjectEstimateSectionHandle>(null);
 
   useEffect(() => {
     async function fetchData() {
-      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes, invoicesRes, contractorHistoryRes] = await Promise.all([
+      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes, invoicesRes, estimatesRes, contractorHistoryRes] = await Promise.all([
         supabase
           .from("projects")
           .select("id, user_id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
@@ -162,6 +168,12 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .order("created_at", { ascending: true })
           .returns<DbProjectInvoice[]>(),
         supabase
+          .from("project_estimates")
+          .select("id, user_id, project_id, storage_path, file_name, file_type, amount, created_at")
+          .eq("project_id", id)
+          .order("created_at", { ascending: true })
+          .returns<DbProjectEstimate[]>(),
+        supabase
           .from("project_contractors")
           .select("id, user_id, project_id, contractor_id, rating, note, assigned_at, removed_at, created_at")
           .eq("project_id", id)
@@ -197,6 +209,10 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
       if (invoicesRes.data) {
         setInvoices(invoicesRes.data.map(dbToProjectInvoice));
+      }
+
+      if (estimatesRes.data) {
+        setEstimates(estimatesRes.data.map(dbToProjectEstimate));
       }
 
       if (contractorHistoryRes.data) {
@@ -252,7 +268,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/projects"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Projects
@@ -647,7 +663,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Projects
@@ -707,6 +723,15 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                       className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
                     >
                       Add Photos
+                    </button>
+                    <button
+                      onClick={() => {
+                        estimateSectionRef.current?.triggerUpload();
+                        setAddMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                    >
+                      Add Estimate
                     </button>
                     <button
                       onClick={() => {
@@ -985,6 +1010,15 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         projectId={project.id}
         images={images}
         onImagesChange={setImages}
+        iconColorClass="text-text-4"
+      />
+
+      {/* Estimates */}
+      <ProjectEstimateSection
+        ref={estimateSectionRef}
+        projectId={project.id}
+        estimates={estimates}
+        onEstimatesChange={setEstimates}
         iconColorClass="text-text-4"
       />
 

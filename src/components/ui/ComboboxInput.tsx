@@ -142,8 +142,21 @@ export default function ComboboxInput({
           activeIndex >= 0 ? `combobox-option-${activeIndex}` : undefined
         }
         autoComplete="off"
-        className="w-full px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] disabled:opacity-50"
+        className="w-full pl-3 pr-9 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] disabled:opacity-50"
       />
+      <svg
+        width={14}
+        height={14}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-3"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
 
       {showDropdown && (
         <ul

@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  PROJECT_STATUSES,
   type ProjectStatus,
   type Project,
 } from "@/lib/projects-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
-import { XIcon, ChevronDownIcon, HomeIcon } from "@/components/icons";
+import { XIcon, HomeIcon } from "@/components/icons";
 import ComboboxInput, { type ComboboxOption } from "@/components/ui/ComboboxInput";
 
 interface AddProjectModalProps {
@@ -162,32 +161,6 @@ export default function AddProjectModal({
               />
             </div>
           )}
-
-          {/* Status */}
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
-              Status
-            </span>
-            <div className="relative">
-              <select
-                value={form.status}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    status: e.target.value as ProjectStatus,
-                  })
-                }
-                className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-              >
-                {PROJECT_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
-            </div>
-          </label>
 
           {/* Notes */}
           <label className="flex flex-col gap-1.5">

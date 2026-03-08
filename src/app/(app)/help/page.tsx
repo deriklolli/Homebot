@@ -55,7 +55,7 @@ const faqs = [
   {
     question: "How do I connect an inventory item to a home asset?",
     answer:
-      "When you add a home asset with a make and model, inventory items are automatically created and linked. For existing inventory items, edit the item and select a home asset from the dropdown. Linked items appear on the asset's detail page under \"Tracked Inventory\" and can show model-specific product recommendations.",
+      "When you add a home asset with a make and model, inventory items are automatically created and linked. For existing inventory items, edit the item and select a home asset from the dropdown. Linked items appear on the asset's detail page under \"Recommended Inventory Upkeep\" and can show model-specific product recommendations.",
   },
   {
     question: "How do I add a service and track due dates?",
