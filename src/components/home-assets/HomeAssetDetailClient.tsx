@@ -160,6 +160,13 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             enrichment.productDocuments = p.productDocuments;
           }
 
+          // Use Skulytics image (matched by exact SKU) over Bing search
+          if (p.image) {
+            supabase.from("home_assets").update({ image_url: p.image }).eq("id", asset!.id).then(() => {
+              setAsset((prev) => prev ? { ...prev, imageUrl: p.image } : prev);
+            });
+          }
+
           // Save to DB
           if (Object.keys(enrichment).length > 0) {
             supabase.from("home_assets").update({
@@ -202,13 +209,13 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           setProductDocuments(docs);
           enrichment.productDocuments = docs;
         }
-        // Apply image and product URL if the asset doesn't have them
-        if (data.imageUrl && !asset!.imageUrl) {
+        // Apply image from enrichment (product page image is more accurate than Bing search)
+        if (data.imageUrl) {
           supabase.from("home_assets").update({ image_url: data.imageUrl }).eq("id", asset!.id).then(() => {
             setAsset((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : prev);
           });
         }
-        if (data.productUrl && !asset!.productUrl) {
+        if (data.productUrl) {
           supabase.from("home_assets").update({ product_url: data.productUrl }).eq("id", asset!.id).then(() => {
             setAsset((prev) => prev ? { ...prev, productUrl: data.productUrl } : prev);
           });
@@ -264,7 +271,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       fetch("/api/search-product-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ make: data.make, model: data.model }),
+        body: JSON.stringify({ make: data.make, model: data.model, category: data.category }),
       })
         .then((res) => res.json())
         .then((result) => {

@@ -291,17 +291,45 @@ function extractWarrantyFromText(html: string): number | null {
 function extractDimensionsFromText(html: string): {
   width: string; height: string; depth: string; weight: string;
 } | null {
-  const dimMatch = html.match(
+  // Decode HTML entities for dimension matching
+  const decoded = decodeHtmlEntities(html.replace(/&quot;/g, '"'));
+
+  // Try W x H x D pattern (e.g., "23 7/8"W x 34"H x 24"D")
+  const dimMatch = decoded.match(
     /(\d+[\d./\s]*(?:"|in\.?|inches?))\s*[Ww]?\s*[x×]\s*(\d+[\d./\s]*(?:"|in\.?|inches?))\s*[Hh]?\s*[x×]\s*(\d+[\d./\s]*(?:"|in\.?|inches?))/
   );
   if (dimMatch) {
+    // Try free-text weight, then table-row weight
+    const weightMatch = decoded.match(/(?:weight|wt\.?)\s*[:>]?\s*(\d+[\d./\s]*(?:lbs?|kg|pounds?))/i)
+      ?? decoded.match(/Weight<\/td>\s*<td[^>]*>\s*([\d\s/.]+\s*(?:lbs?|kg|pounds?))/i);
     return {
       width: dimMatch[1].trim(),
       height: dimMatch[2].trim(),
       depth: dimMatch[3].trim(),
-      weight: "",
+      weight: weightMatch?.[1]?.trim() ?? "",
     };
   }
+
+  // Try labeled table rows (e.g., <td>Dimensions</td><td>23 7/8"W x 34"H x 24"D</td>)
+  const tableMatch = decoded.match(
+    /Dimensions<\/td>\s*<td[^>]*>\s*([\d\s/'"Ww×xHhDd.]+)/i
+  );
+  if (tableMatch) {
+    const val = tableMatch[1].trim();
+    const parts = val.match(
+      /([\d\s/'"]+)\s*[Ww]\s*[x×]\s*([\d\s/'"]+)\s*[Hh]\s*[x×]\s*([\d\s/'"]+)\s*[Dd]?/
+    );
+    if (parts) {
+      const weightRow = decoded.match(/Weight<\/td>\s*<td[^>]*>\s*([\d\s/.]+\s*(?:lbs?|kg|pounds?))/i);
+      return {
+        width: parts[1].trim(),
+        height: parts[2].trim(),
+        depth: parts[3].trim(),
+        weight: weightRow?.[1]?.trim() ?? "",
+      };
+    }
+  }
+
   return null;
 }
 
@@ -426,7 +454,7 @@ async function bingImageSearchFull(query: string): Promise<{
 
 // ─── Scrape a product page for all enrichment data ──────────────────
 
-async function scrapePage(url: string): Promise<{
+async function scrapePage(url: string, model?: string): Promise<{
   imageUrl: string;
   name: string;
   dimensions: EnrichResult["dimensions"];
@@ -456,6 +484,24 @@ async function scrapePage(url: string): Promise<{
   if (jsonLd.image) imageUrl = jsonLd.image;
   if (jsonLd.dimensions) dimensions = jsonLd.dimensions;
   if (jsonLd.warrantyYears) warrantyYears = jsonLd.warrantyYears;
+
+  // Fallback: find <img> tag whose src or alt contains the model number
+  if (!imageUrl && model) {
+    const modelLower = model.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const imgRegex = /<img[^>]+>/gi;
+    let imgMatch;
+    while ((imgMatch = imgRegex.exec(html)) !== null) {
+      const tag = imgMatch[0];
+      const src = tag.match(/src=["']([^"']+)["']/i)?.[1] ?? "";
+      const alt = tag.match(/alt=["']([^"']+)["']/i)?.[1] ?? "";
+      const srcNorm = src.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const altNorm = alt.toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (srcNorm.includes(modelLower) || altNorm.includes(modelLower)) {
+        imageUrl = resolveUrl(decodeHtmlEntities(src), url);
+        break;
+      }
+    }
+  }
 
   // Fallback: extract dimensions and warranty from page text
   if (!dimensions) dimensions = extractDimensionsFromText(html);
@@ -502,13 +548,15 @@ export async function POST(req: Request) {
   // ─── Step 2: Scrape top result pages (try up to 3) ──────────────
   for (const searchResult of searchResults.slice(0, 3)) {
     try {
-      const scraped = await scrapePage(searchResult.url);
+      const scraped = await scrapePage(searchResult.url, model);
 
       // Use first URL as product URL
       if (!result.productUrl) result.productUrl = searchResult.url;
 
-      // Merge scraped data (first non-empty value wins)
-      if (scraped.imageUrl && !result.imageUrl) result.imageUrl = scraped.imageUrl;
+      // Prefer scraped product page image (og:image) over generic Bing image search
+      if (scraped.imageUrl && (!result.imageUrl || isPreferredDomain(searchResult.url))) {
+        result.imageUrl = scraped.imageUrl;
+      }
       if (scraped.name && !result.name) result.name = scraped.name;
       if (scraped.dimensions && !result.dimensions) result.dimensions = scraped.dimensions;
       if (scraped.warrantyYears && !result.warrantyYears) result.warrantyYears = scraped.warrantyYears;
@@ -542,18 +590,49 @@ export async function POST(req: Request) {
     if (withImage?.imageUrl) result.imageUrl = withImage.imageUrl;
   }
 
-  // ─── Step 4: PDF document search fallback ───────────────────────
+  // ─── Step 4: Search for manufacturer specs/manual pages ─────────
   if (result.documents.length === 0) {
     try {
-      const docQuery = `${make} ${model} manual OR brochure OR specifications pdf`;
-      const bing = await bingImageSearchFull(docQuery);
-      for (const item of bing.pages) {
-        if (item.url.toLowerCase().endsWith(".pdf")) {
-          result.documents.push({
-            label: item.title || "Document",
-            url: item.url,
-          });
-        }
+      const specsQuery = `${make} ${model} specifications`;
+      const bing = await bingImageSearchFull(specsQuery);
+      const modelLower = model.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+      // Find pages with the model in the URL, prefer manufacturer domains
+      const candidatePages = bing.pages
+        .filter((p) => {
+          const urlNorm = p.url.toLowerCase().replace(/[^a-z0-9]/g, "");
+          return urlNorm.includes(modelLower);
+        })
+        .sort((a, b) => {
+          const aP = isPreferredDomain(a.url) ? 0 : 1;
+          const bP = isPreferredDomain(b.url) ? 0 : 1;
+          return aP - bP;
+        })
+        .slice(0, 3);
+
+      for (const page of candidatePages) {
+        try {
+          const scraped = await scrapePage(page.url, model);
+          for (const doc of scraped.documents) {
+            if (!result.documents.some((d) => d.url.toLowerCase() === doc.url.toLowerCase())) {
+              result.documents.push(doc);
+            }
+          }
+          if (scraped.imageUrl && isPreferredDomain(page.url)) {
+            result.imageUrl = scraped.imageUrl;
+          }
+          if (scraped.dimensions && !result.dimensions) {
+            result.dimensions = scraped.dimensions;
+          }
+          if (scraped.warrantyYears && !result.warrantyYears) {
+            result.warrantyYears = scraped.warrantyYears;
+          }
+          if (isPreferredDomain(page.url)) {
+            result.productUrl = page.url;
+          }
+        } catch { /* continue */ }
+
+        if (result.documents.length > 0) break;
       }
     } catch { /* continue */ }
   }
