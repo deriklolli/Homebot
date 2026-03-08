@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
   const { accessToken, connectionId } = tokenResult;
 
   // Parse optional body
-  let lookbackDays = 90;
+  let lookbackDays = 365;
   try {
     const body = await req.json();
     if (body.lookbackDays && typeof body.lookbackDays === "number") {
@@ -98,11 +98,11 @@ export async function POST(req: NextRequest) {
   const afterDate = new Date(Date.now() - lookbackDays * 86_400_000);
   const afterStr = `${afterDate.getFullYear()}/${String(afterDate.getMonth() + 1).padStart(2, "0")}/${String(afterDate.getDate()).padStart(2, "0")}`;
 
-  // Search Gmail for utility bill emails
-  const query = `subject:(bill OR statement OR invoice OR "payment due" OR "amount due" OR utility OR electric OR gas OR water OR internet) after:${afterStr}`;
+  // Search Gmail for utility bill emails — broad query to catch all providers
+  const query = `(subject:(bill OR statement OR invoice OR "payment due" OR "amount due" OR "balance due" OR "your bill" OR "monthly statement") OR from:(energy OR power OR electric OR gas OR water OR sewer OR trash OR waste OR internet OR broadband OR fiber OR telecom OR phone OR mobile OR wireless OR utility OR utilities)) after:${afterStr}`;
   const searchRes = await gmailFetch(
     accessToken,
-    `messages?q=${encodeURIComponent(query)}&maxResults=50`
+    `messages?q=${encodeURIComponent(query)}&maxResults=200&includeSpamTrash=true`
   );
 
   if (!searchRes.ok) {
@@ -304,6 +304,8 @@ IMPORTANT:
 - Do NOT classify marketing emails, promotional offers, or general newsletters as utility bills
 - The amount should be the total due, not a partial or estimated amount
 - If you see multiple amounts, use the "total due" or "amount due" or "balance due"
+- DATES ARE CRITICAL: Look carefully for due date, billing period, service period, or statement date. The billing period is the month the charges cover (e.g., "Service from Jan 15 to Feb 14" means billingPeriodStart is "2026-01-15"). If no explicit billing period is given, infer the billing month from the statement date, due date, or email date — the billing period is typically one month before the due date.
+- dueDate, billingPeriodStart, and billingPeriodEnd should almost NEVER be null. Try hard to extract or infer them.
 - Return ONLY the JSON object, no other text.`;
 
   try {

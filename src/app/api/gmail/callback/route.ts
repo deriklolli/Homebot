@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       { onConflict: "user_id" }
     );
 
-    return NextResponse.redirect(`${origin}/settings?gmail=connected`);
+    return NextResponse.redirect(`${origin}/utility-bills?gmail=just_connected`);
   } catch (err) {
     console.error("Gmail OAuth callback error:", err);
     return NextResponse.redirect(

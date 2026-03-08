@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { supabase, type DbUtilityBill, type DbUtilityProvider } from "@/lib/supabase";
 import { dbToUtilityBill, dbToUtilityProvider, utilityBillToDb } from "@/lib/mappers";
 import {
@@ -12,7 +13,6 @@ import {
   getCategoryLabel,
   getCategoryColor,
 } from "@/lib/utility-bills-data";
-import { formatDateShort } from "@/lib/date-utils";
 import { PlusIcon, SearchIcon, MailIcon, ZapIcon } from "@/components/icons";
 import AddBillModal from "./AddBillModal";
 import UtilitySpendingChart from "./UtilitySpendingChart";
@@ -29,6 +29,10 @@ export default function UtilityBillsClient() {
   const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
   const [gmailEmail, setGmailEmail] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<{ imported: number; scanned: number } | null>(null);
+  const searchParams = useSearchParams();
+  const didAutoScan = useRef(false);
 
   async function fetchData() {
     const [billResult, provResult] = await Promise.all([
@@ -37,7 +41,7 @@ export default function UtilityBillsClient() {
         .select(
           "id, user_id, provider_id, provider_name, category, amount, due_date, billing_period_start, billing_period_end, account_number, gmail_message_id, source, notes, created_at"
         )
-        .order("due_date", { ascending: false })
+        .order("billing_period_start", { ascending: false, nullsFirst: false })
         .returns<DbUtilityBill[]>(),
       supabase
         .from("utility_providers")
@@ -73,6 +77,38 @@ export default function UtilityBillsClient() {
     }
     checkGmail();
   }, []);
+
+  // Auto-scan after first Gmail connection
+  useEffect(() => {
+    if (searchParams.get("gmail") !== "just_connected") return;
+    if (didAutoScan.current) return;
+    didAutoScan.current = true;
+
+    // Clean up the URL
+    window.history.replaceState({}, "", "/utility-bills");
+
+    async function runInitialScan() {
+      setScanning(true);
+      setGmailConnected(true);
+      try {
+        const res = await fetch("/api/gmail/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lookbackDays: 365 }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setScanResult({ imported: data.imported, scanned: data.scanned });
+          await fetchData();
+        }
+      } catch {
+        // Scan failed silently — user can retry later
+      } finally {
+        setScanning(false);
+      }
+    }
+    runInitialScan();
+  }, [searchParams]);
 
   async function handleConnectGmail() {
     setConnecting(true);
@@ -162,6 +198,22 @@ export default function UtilityBillsClient() {
           Add Bill
         </button>
       </header>
+
+      {/* Scanning indicator */}
+      {scanning && (
+        <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-accent-light border border-accent/20 text-[14px] text-accent">
+          <span className="inline-block w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0" />
+          Scanning your Gmail for utility bills — this may take a moment...
+        </div>
+      )}
+
+      {/* Scan result */}
+      {scanResult && !scanning && (
+        <div className="mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-green-light text-green border border-green/20 text-[14px]">
+          Scan complete! Found {scanResult.scanned} emails, imported{" "}
+          {scanResult.imported} new bill{scanResult.imported !== 1 ? "s" : ""}.
+        </div>
+      )}
 
       {/* Gmail onboarding card — shown until connected */}
       {gmailConnected === false && (
@@ -280,7 +332,7 @@ export default function UtilityBillsClient() {
         )}
       </div>
 
-      {/* Bills List */}
+      {/* Bills Table */}
       {filtered.length === 0 ? (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
           <ZapIcon
@@ -298,43 +350,53 @@ export default function UtilityBillsClient() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((bill) => (
-            <Link
-              key={bill.id}
-              href={`/utility-bills/${bill.id}`}
-              className="flex items-center gap-4 bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-4 hover:border-accent/30 transition-all duration-[120ms] group"
-            >
-              {/* Category dot */}
-              <span
-                className={`w-3 h-3 rounded-full shrink-0 ${getCategoryColor(bill.category)}`}
-              />
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left text-[12px] font-medium text-text-3 uppercase tracking-wide px-4 py-3">Month</th>
+                <th className="text-left text-[12px] font-medium text-text-3 uppercase tracking-wide px-4 py-3">Provider</th>
+                <th className="text-left text-[12px] font-medium text-text-3 uppercase tracking-wide px-4 py-3">Utility</th>
+                <th className="text-right text-[12px] font-medium text-text-3 uppercase tracking-wide px-4 py-3">Bill Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((bill) => {
+                const periodStr = bill.billingPeriodStart ?? bill.dueDate ?? bill.createdAt;
+                const monthLabel = periodStr
+                  ? new Date(periodStr + (periodStr.includes("T") ? "" : "T00:00:00")).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+                  : "—";
 
-              {/* Provider + details */}
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-medium text-text-primary truncate group-hover:text-accent transition-colors">
-                  {bill.providerName}
-                </p>
-                <p className="text-[12px] text-text-3">
-                  {getCategoryLabel(bill.category)}
-                  {bill.dueDate && <> &middot; Due {formatDateShort(bill.dueDate)}</>}
-                </p>
-              </div>
-
-              {/* Amount */}
-              <div className="text-right shrink-0">
-                <p className="text-[15px] font-semibold text-text-primary">
-                  ${bill.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-                {bill.source === "gmail_scan" && (
-                  <span className="text-[11px] text-text-4 flex items-center gap-1 justify-end">
-                    <MailIcon width={10} height={10} />
-                    Gmail
-                  </span>
-                )}
-              </div>
-            </Link>
-          ))}
+                return (
+                  <tr
+                    key={bill.id}
+                    className="border-b border-border last:border-b-0 hover:bg-surface-hover transition-colors cursor-pointer group"
+                    onClick={() => window.location.href = `/utility-bills/${bill.id}`}
+                  >
+                    <td className="px-4 py-3">
+                      <span className="text-[14px] text-text-2">{monthLabel}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-[14px] font-medium text-text-primary group-hover:text-accent transition-colors">
+                        {bill.providerName}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${getCategoryColor(bill.category)}`} />
+                        <span className="text-[14px] text-text-primary">{getCategoryLabel(bill.category)}</span>
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="text-[14px] font-semibold text-text-primary">
+                        ${bill.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 

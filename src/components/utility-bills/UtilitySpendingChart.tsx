@@ -3,16 +3,18 @@
 import { useEffect, useRef } from "react";
 import {
   Chart,
-  BarController,
-  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
   LinearScale,
   CategoryScale,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
 import { UTILITY_CATEGORIES, type UtilityBill } from "@/lib/utility-bills-data";
 
-Chart.register(BarController, BarElement, LinearScale, CategoryScale, Tooltip, Legend);
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
 interface UtilitySpendingChartProps {
   bills: UtilityBill[];
@@ -62,7 +64,7 @@ export default function UtilitySpendingChart({
     }
 
     for (const bill of bills) {
-      const dateStr = bill.dueDate ?? bill.createdAt;
+      const dateStr = bill.billingPeriodStart ?? bill.dueDate ?? bill.createdAt;
       if (!dateStr) continue;
       const d = new Date(dateStr);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -75,12 +77,23 @@ export default function UtilitySpendingChart({
     // Only include categories that have data
     const datasets = UTILITY_CATEGORIES
       .filter((cat) => categoryData[cat.value].some((v) => v > 0))
-      .map((cat) => ({
-        label: cat.label,
-        data: categoryData[cat.value],
-        backgroundColor: CATEGORY_COLORS[cat.value] ?? "#6b7280",
-        borderRadius: 3,
-      }));
+      .map((cat) => {
+        const color = CATEGORY_COLORS[cat.value] ?? "#6b7280";
+        return {
+          label: cat.label,
+          data: categoryData[cat.value],
+          borderColor: color,
+          backgroundColor: color + "18",
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: color,
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 2,
+          tension: 0.4,
+          fill: true,
+        };
+      });
 
     if (chartRef.current) {
       chartRef.current.destroy();
@@ -91,11 +104,15 @@ export default function UtilitySpendingChart({
     const textColor = styles.getPropertyValue("--color-text-3").trim() || "#84827f";
 
     chartRef.current = new Chart(canvasRef.current, {
-      type: "bar",
+      type: "line",
       data: { labels, datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: "index",
+          intersect: false,
+        },
         plugins: {
           tooltip: {
             callbacks: {
@@ -119,7 +136,6 @@ export default function UtilitySpendingChart({
         },
         scales: {
           x: {
-            stacked: true,
             grid: { display: false },
             border: { display: false },
             ticks: {
@@ -128,7 +144,6 @@ export default function UtilitySpendingChart({
             },
           },
           y: {
-            stacked: true,
             grid: { color: borderColor },
             border: { display: false },
             ticks: {
