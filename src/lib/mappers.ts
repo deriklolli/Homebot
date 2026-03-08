@@ -62,6 +62,7 @@ export function dbToProjectEvent(row: DbProjectEvent): ProjectEvent {
     eventDate: row.event_date,
     eventTime: row.event_time,
     eventEndTime: row.event_end_time,
+    notes: row.notes,
     createdAt: row.created_at,
   };
 }

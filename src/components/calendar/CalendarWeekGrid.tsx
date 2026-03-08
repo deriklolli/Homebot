@@ -1,20 +1,18 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { type ProjectStatus } from "@/lib/projects-data";
-import { type CalendarEvent, formatShortTime } from "./CalendarGrid";
+import { type CalendarEvent, type ProjectCalendarEvent, formatShortTime } from "./CalendarGrid";
 
-const STATUS_PILL: Record<ProjectStatus, string> = {
-  "Not Started": "bg-purple-light text-purple",
-  "In Progress": "bg-teal-light text-teal",
-  Completed: "bg-accent-light text-accent",
-};
+const PROJECT_BG = "bg-accent";
 
-const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const HOURS = Array.from({ length: 24 }, (_, i) => i); // 12am–11pm
+const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 interface CalendarWeekGridProps {
   currentDate: Date;
   events: CalendarEvent[];
+  onEventClick?: (event: ProjectCalendarEvent) => void;
+  onEventDrop?: (eventId: string, newDate: string, newTime?: string | null) => void;
 }
 
 function getWeekDays(date: Date): Date[] {
@@ -48,13 +46,37 @@ function timeToMinutes(time: string): number {
   return h * 60 + m;
 }
 
-function EventPill({ event, fill }: { event: CalendarEvent; fill?: boolean }) {
+function minutesToTime(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function formatDuration(startTime: string, endTime: string | null | undefined): string {
+  if (!endTime) return "";
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  const totalMin = (eh * 60 + em) - (sh * 60 + sm);
+  if (totalMin <= 0) return "";
+  if (totalMin >= 120) return `${totalMin / 60}h`;
+  return `${totalMin}m`;
+}
+
+function EventPill({
+  event,
+  fill,
+  onEventClick,
+}: {
+  event: CalendarEvent;
+  fill?: boolean;
+  onEventClick?: (event: ProjectCalendarEvent) => void;
+}) {
   if (event.type === "inventory") {
     return (
       <Link
         href="/inventory"
-        className={`block px-1.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${
-          event.isOverdue ? "bg-red/10 text-red" : "bg-teal/10 text-teal"
+        className={`block px-2 py-[3px] text-[11px] font-medium rounded-full truncate text-white hover:brightness-110 transition-all duration-[120ms] ${
+          event.isOverdue ? "bg-red" : "bg-teal"
         }`}
         title={`Reorder: ${event.itemName}`}
       >
@@ -66,8 +88,8 @@ function EventPill({ event, fill }: { event: CalendarEvent; fill?: boolean }) {
     return (
       <Link
         href="/services"
-        className={`block px-1.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${
-          event.isOverdue ? "bg-red/10 text-red" : "bg-purple-light text-purple"
+        className={`block px-2 py-[3px] text-[11px] font-medium rounded-full truncate text-white hover:brightness-110 transition-all duration-[120ms] ${
+          event.isOverdue ? "bg-red" : "bg-purple"
         }`}
         title={`Service: ${event.serviceName}`}
       >
@@ -78,25 +100,51 @@ function EventPill({ event, fill }: { event: CalendarEvent; fill?: boolean }) {
   const timeLabel = event.eventTime
     ? `${formatLongTime(event.eventTime)}${event.eventEndTime ? ` – ${formatLongTime(event.eventEndTime)}` : ""}`
     : "";
+  const duration = event.eventTime ? formatDuration(event.eventTime, event.eventEndTime) : "";
   return (
-    <Link
-      href={`/projects/${event.projectId}`}
-      className={`block px-1.5 py-1 text-[11px] font-medium rounded-[var(--radius-sm)] hover:brightness-90 transition-all duration-[120ms] ${fill ? "h-full" : "truncate"} ${STATUS_PILL[event.projectStatus]}`}
+    <button
+      type="button"
+      draggable
+      onClick={(e) => {
+        e.stopPropagation();
+        onEventClick?.(event);
+      }}
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/event-id", event.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className={`block w-full text-left px-2 py-1 text-[11px] font-medium rounded-[var(--radius-sm)] hover:brightness-110 transition-all duration-[120ms] cursor-pointer text-white ${fill ? "h-full overflow-hidden" : "truncate rounded-full"} ${PROJECT_BG}`}
       title={`${event.projectName}: ${event.title}${timeLabel ? ` at ${timeLabel}` : ""}`}
     >
-      {event.eventTime && (
-        <span className="opacity-70">{formatShortTime(event.eventTime)} </span>
+      {fill ? (
+        <div className="flex flex-col gap-0.5">
+          <span className="opacity-80 text-[10px]">
+            {event.eventTime && formatShortTime(event.eventTime)}
+            {duration && ` (${duration})`}
+          </span>
+          <span className="truncate">{event.title}</span>
+        </div>
+      ) : (
+        <>
+          {event.eventTime && (
+            <span className="opacity-80">{formatShortTime(event.eventTime)} </span>
+          )}
+          <span className="truncate">{event.title}</span>
+        </>
       )}
-      {event.title}
-    </Link>
+    </button>
   );
 }
 
 export default function CalendarWeekGrid({
   currentDate,
   events,
+  onEventClick,
+  onEventDrop,
 }: CalendarWeekGridProps) {
   const weekDays = getWeekDays(currentDate);
+  const [dragIndicator, setDragIndicator] = useState<{ col: number; minutes: number } | null>(null);
+  const [allDayDragOver, setAllDayDragOver] = useState<number | null>(null);
 
   // Build event map
   const eventMap = new Map<string, CalendarEvent[]>();
@@ -109,7 +157,6 @@ export default function CalendarWeekGrid({
   const today = new Date();
   const todayString = dateStr(today);
 
-  // Separate timed vs all-day events per day
   function splitEvents(dayEvents: CalendarEvent[]) {
     const timed: CalendarEvent[] = [];
     const allDay: CalendarEvent[] = [];
@@ -120,7 +167,6 @@ export default function CalendarWeekGrid({
         allDay.push(e);
       }
     }
-    // Sort timed events by time
     timed.sort((a, b) => {
       const aTime = a.type === "project" ? a.eventTime ?? "" : "";
       const bTime = b.type === "project" ? b.eventTime ?? "" : "";
@@ -135,32 +181,38 @@ export default function CalendarWeekGrid({
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to ~7 AM on mount so the grid starts in a useful position
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = 7 * 60; // 7 AM
+      scrollRef.current.scrollTop = 7 * 60;
     }
   }, []);
 
+  const getMinutesFromDrop = useCallback((e: React.DragEvent, colEl: HTMLElement): number => {
+    const rect = colEl.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const rawMinutes = Math.round((y / rect.height) * TOTAL_MINUTES);
+    return Math.max(0, Math.min(TOTAL_MINUTES - 15, Math.round(rawMinutes / 15) * 15));
+  }, [TOTAL_MINUTES]);
+
   return (
     <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden flex flex-col" style={{ height: "calc(100vh - 200px)", minHeight: 400 }}>
-      {/* Day headers */}
+      {/* Day headers — large date + "Mon, Mar 8" format */}
       <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border shrink-0">
-        <div /> {/* Spacer for time column */}
+        <div />
         {weekDays.map((d, i) => {
           const ds = dateStr(d);
           const isToday = ds === todayString;
           return (
-            <div key={i} className="py-2 text-center border-l border-border">
-              <span className="text-[11px] font-medium text-text-3 uppercase tracking-wide">
-                {DAY_HEADERS[i]}
-              </span>
+            <div key={i} className={`py-3 pl-3 border-l border-border ${isToday ? "bg-accent/[0.04]" : ""}`}>
               <span
-                className={`block text-[14px] font-semibold mt-0.5 ${
+                className={`text-[22px] font-bold leading-none ${
                   isToday ? "text-accent" : "text-text-primary"
                 }`}
               >
                 {d.getDate()}
+              </span>
+              <span className="block text-[11px] font-medium text-text-3 mt-0.5">
+                {SHORT_MONTHS[d.getMonth()]}, {DAY_NAMES[i]}
               </span>
             </div>
           );
@@ -176,13 +228,30 @@ export default function CalendarWeekGrid({
           const ds = dateStr(d);
           const dayEvents = eventMap.get(ds) ?? [];
           const { allDay } = splitEvents(dayEvents);
+          const isDragOver = allDayDragOver === i;
           return (
             <div
               key={i}
-              className="py-1 px-1 border-l border-border flex flex-col gap-0.5 min-h-[32px]"
+              className={`py-1 px-1 border-l border-border flex flex-col gap-0.5 min-h-[32px] transition-colors duration-100 ${isDragOver ? "bg-accent/8" : ""}`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setAllDayDragOver(i);
+                setDragIndicator(null);
+              }}
+              onDragLeave={() => {
+                setAllDayDragOver((prev) => (prev === i ? null : prev));
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setAllDayDragOver(null);
+                const eventId = e.dataTransfer.getData("text/event-id");
+                if (eventId && onEventDrop) {
+                  onEventDrop(eventId, ds, null);
+                }
+              }}
             >
               {allDay.map((e) => (
-                <EventPill key={`${e.type}-${e.id}`} event={e} />
+                <EventPill key={`${e.type}-${e.id}`} event={e} onEventClick={onEventClick} />
               ))}
             </div>
           );
@@ -192,13 +261,13 @@ export default function CalendarWeekGrid({
       {/* Scrollable time grid */}
       <div ref={scrollRef} className="overflow-y-auto flex-1">
         <div className="grid grid-cols-[60px_repeat(7,1fr)] relative" style={{ height: `${TOTAL_MINUTES}px` }}>
-          {/* Time labels + horizontal lines (skip first hour to avoid double border) */}
+          {/* Time labels + horizontal lines */}
           {HOURS.map((hour) => {
             const top = (hour - START_HOUR) * 60;
             return (
               <div key={hour} className="contents">
                 <div
-                  className="absolute left-0 w-[60px] text-[10px] text-text-4 text-right pr-2 -translate-y-1/2"
+                  className="absolute left-0 w-[60px] text-[11px] text-text-4 text-right pr-3 -translate-y-1/2 font-medium"
                   style={{ top: `${top}px` }}
                 >
                   {hour === 0 ? "12 AM" : hour < 12 ? `${hour} AM` : hour === 12 ? "12 PM" : `${hour - 12} PM`}
@@ -225,14 +294,41 @@ export default function CalendarWeekGrid({
                 key={i}
                 className={`relative border-l border-border ${isToday ? "bg-accent/[0.03]" : ""}`}
                 style={{ gridColumn: i + 2 }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  const minutes = getMinutesFromDrop(e, e.currentTarget as HTMLElement);
+                  setDragIndicator({ col: i, minutes });
+                  setAllDayDragOver(null);
+                }}
+                onDragLeave={() => {
+                  setDragIndicator((prev) => (prev?.col === i ? null : prev));
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragIndicator(null);
+                  const eventId = e.dataTransfer.getData("text/event-id");
+                  if (eventId && onEventDrop) {
+                    const minutes = getMinutesFromDrop(e, e.currentTarget as HTMLElement);
+                    onEventDrop(eventId, ds, minutesToTime(minutes));
+                  }
+                }}
               >
+                {/* Drag indicator line */}
+                {dragIndicator?.col === i && (
+                  <div
+                    className="absolute left-0 right-0 h-[2px] bg-accent z-10 pointer-events-none"
+                    style={{ top: `${dragIndicator.minutes}px` }}
+                  >
+                    <div className="absolute -left-1 -top-[3px] w-2 h-2 rounded-full bg-accent" />
+                  </div>
+                )}
+
                 {timed.map((e) => {
                   if (e.type !== "project" || !e.eventTime) return null;
                   const startMinutes = timeToMinutes(e.eventTime);
                   const top = startMinutes - START_HOUR * 60;
                   if (top < 0 || top >= TOTAL_MINUTES) return null;
 
-                  // Calculate height from duration (end time - start time), min 24px
                   let height: number | undefined;
                   if (e.eventEndTime) {
                     const endMinutes = timeToMinutes(e.eventEndTime);
@@ -242,10 +338,10 @@ export default function CalendarWeekGrid({
                   return (
                     <div
                       key={e.id}
-                      className="absolute left-0.5 right-0.5 overflow-hidden"
+                      className="absolute left-1 right-1 overflow-hidden"
                       style={{ top: `${top}px`, ...(height ? { height: `${height}px` } : {}) }}
                     >
-                      <EventPill event={e} fill={!!height} />
+                      <EventPill event={e} fill={!!height} onEventClick={onEventClick} />
                     </div>
                   );
                 })}

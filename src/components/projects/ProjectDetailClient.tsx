@@ -56,7 +56,7 @@ import {
   NotebookPenIcon,
   BuildingIcon,
   UserIcon,
-  CheckCircleSolidIcon,
+  CheckCircleIcon,
   CameraIcon,
   HistoryIcon,
 } from "@/components/icons";
@@ -134,7 +134,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .returns<DbContractor[]>(),
         supabase
           .from("project_events")
-          .select("id, user_id, project_id, title, event_date, event_time, event_end_time, created_at")
+          .select("id, user_id, project_id, title, event_date, event_time, event_end_time, notes, created_at")
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectEvent[]>(),
@@ -491,6 +491,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     eventDate: string;
     eventTime: string | null;
     eventEndTime: string | null;
+    notes: string;
     contractorId: string | null;
   }) {
     const { data: rows, error } = await supabase
@@ -501,6 +502,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         event_date: data.eventDate,
         event_time: data.eventTime,
         event_end_time: data.eventEndTime,
+        notes: data.notes,
       } as Record<string, unknown>)
       .select()
       .returns<DbProjectEvent[]>();
@@ -545,6 +547,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     eventDate: string;
     eventTime: string | null;
     eventEndTime: string | null;
+    notes: string;
     contractorId: string | null;
   }) {
     if (!editingEvent) return;
@@ -556,6 +559,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         event_date: data.eventDate,
         event_time: data.eventTime,
         event_end_time: data.eventEndTime,
+        notes: data.notes,
       } as Record<string, unknown>)
       .eq("id", editingEvent.id)
       .select()
@@ -742,23 +746,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               </button>
             </div>
           </div>
-        <div className="flex gap-6">
-          {/* Linked asset image — left side */}
-          {linkedAsset?.imageUrl && (
-            <div className="shrink-0 self-start">
-              <Link href={`/home-assets/${linkedAsset.id}`}>
-                <div className="rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
-                  <img
-                    src={linkedAsset.imageUrl}
-                    alt={`${linkedAsset.make} ${linkedAsset.model}`.trim() || linkedAsset.name}
-                    className="h-[140px] w-[140px] object-contain"
-                  />
-                </div>
-              </Link>
-            </div>
-          )}
-
-          {/* Details — right side */}
+        <div>
           <div className="flex-1 min-w-0">
             <div className="mb-4">
               <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
@@ -770,7 +758,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
             </div>
 
             {project.description && (
-              <div className={linkedAsset ? "mb-4" : ""}>
+              <div className="mb-4">
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Project Description
                 </span>
@@ -803,7 +791,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Contractor row */}
       {contractor && (
         <div className="flex items-center gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0">
             <HardHatIcon size={30} />
             Hired
           </span>
@@ -834,6 +822,11 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     {contractor.name}
                   </span>
                 )}
+                {contractor.phone && (
+                  <span className="block text-[12px] text-text-3">
+                    {contractor.phone}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -855,7 +848,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Past contractors */}
       {pastContractors.length > 0 && (
         <div className="flex items-start gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
             <HistoryIcon size={30} />
             Past
           </span>
@@ -881,8 +874,8 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         {pastC.company || pastC.name}
                       </span>
                       <span className="block text-[11px] text-text-3">
-                        {formatDate(pc.assignedAt)}
-                        {pc.removedAt ? ` — ${formatDate(pc.removedAt)}` : ""}
+                        {formatDateTime(pc.assignedAt)}
+                        {pc.removedAt ? ` — ${formatDateTime(pc.removedAt)}` : ""}
                       </span>
                     </div>
                   </div>
@@ -909,7 +902,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {timeline.map((item) =>
         item.type === "event" ? (
           <div key={`event-${item.data.id}`} className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
               <CalendarIcon size={30} />
               Scheduled
             </span>
@@ -961,7 +954,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           </div>
         ) : (
           <div key={`note-${item.data.id}`} className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
               <NotebookPenIcon size={30} />
               Note
             </span>
@@ -992,7 +985,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         projectId={project.id}
         images={images}
         onImagesChange={setImages}
-        iconColorClass="text-text-3"
+        iconColorClass="text-text-4"
       />
 
       {/* Invoices */}
@@ -1001,14 +994,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         projectId={project.id}
         invoices={invoices}
         onInvoicesChange={setInvoices}
-        iconColorClass="text-text-3"
+        iconColorClass="text-text-4"
       />
 
       {/* Project Completed card */}
       {project.status === "Completed" && (
         <div className="flex items-start gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
-            <CheckCircleSolidIcon width={30} height={30} />
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <CheckCircleIcon size={30} className="text-green" />
             Completed
           </span>
           <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1">

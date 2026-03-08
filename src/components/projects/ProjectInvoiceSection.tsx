@@ -7,7 +7,7 @@ import { dbToProjectInvoice } from "@/lib/mappers";
 import { compressImage } from "@/lib/compress-image";
 import { extractInvoiceTotal } from "@/lib/extract-invoice-total";
 import { renderPdfThumbnail } from "@/lib/pdf-thumbnail";
-import { InvoiceSolidIcon, InvoiceIcon, XIcon } from "@/components/icons";
+import { InvoiceIcon, XIcon } from "@/components/icons";
 import { formatDateShort } from "@/lib/date-utils";
 
 export interface ProjectInvoiceSectionHandle {
@@ -251,7 +251,7 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
         {(invoices.length > 0 || uploading) && (
           <div className="flex items-start gap-4 mb-3">
             <span className={`flex flex-col items-end gap-0.5 text-[11px] font-medium uppercase tracking-wide w-[80px] shrink-0 mt-4 ${iconColorClass}`}>
-              <InvoiceSolidIcon width={30} height={30} />
+              <InvoiceIcon size={30} />
               Invoices
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">

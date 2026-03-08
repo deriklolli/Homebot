@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Link from "next/link";
 import { type ProjectStatus } from "@/lib/projects-data";
 
@@ -8,6 +9,7 @@ export interface ProjectCalendarEvent {
   eventDate: string;
   eventTime?: string | null;
   eventEndTime?: string | null;
+  notes?: string;
   projectId: string;
   projectName: string;
   projectStatus: ProjectStatus;
@@ -33,11 +35,7 @@ export interface ServiceCalendarEvent {
 
 export type CalendarEvent = ProjectCalendarEvent | InventoryCalendarEvent | ServiceCalendarEvent;
 
-const STATUS_PILL: Record<ProjectStatus, string> = {
-  "Not Started": "bg-purple-light text-purple",
-  "In Progress": "bg-teal-light text-teal",
-  Completed: "bg-accent-light text-accent",
-};
+const PROJECT_BG = "bg-accent";
 
 export function formatShortTime(time: string): string {
   const [hStr, mStr] = time.split(":");
@@ -49,17 +47,33 @@ export function formatShortTime(time: string): string {
   return m > 0 ? `${h}:${mStr}${suffix}` : `${h}${suffix}`;
 }
 
-const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function formatDuration(startTime: string, endTime: string | null | undefined): string {
+  if (!endTime) return "";
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  const totalMin = (eh * 60 + em) - (sh * 60 + sm);
+  if (totalMin <= 0) return "";
+  if (totalMin >= 120) return `${totalMin / 60}h`;
+  return `${totalMin}m`;
+}
+
+const DAY_HEADERS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 interface CalendarGridProps {
   currentDate: Date;
   events: CalendarEvent[];
+  onEventClick?: (event: ProjectCalendarEvent) => void;
+  onEventDrop?: (eventId: string, newDate: string) => void;
 }
 
 export default function CalendarGrid({
   currentDate,
   events,
+  onEventClick,
+  onEventDrop,
 }: CalendarGridProps) {
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null);
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -72,18 +86,16 @@ export default function CalendarGrid({
   }
 
   // Calendar math
-  const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
 
-  // Build array of day cells
   const cells: Array<{
     day: number;
     dateObj: Date;
     isCurrentMonth: boolean;
   }> = [];
 
-  // Previous month padding
   for (let i = firstDayOfMonth - 1; i >= 0; i--) {
     cells.push({
       day: daysInPrevMonth - i,
@@ -92,7 +104,6 @@ export default function CalendarGrid({
     });
   }
 
-  // Current month days
   for (let d = 1; d <= daysInMonth; d++) {
     cells.push({
       day: d,
@@ -101,7 +112,6 @@ export default function CalendarGrid({
     });
   }
 
-  // Next month padding (fill to 35 or 42 cells)
   const totalRows = cells.length > 35 ? 42 : 35;
   let nextDay = 1;
   while (cells.length < totalRows) {
@@ -123,7 +133,7 @@ export default function CalendarGrid({
         {DAY_HEADERS.map((d) => (
           <div
             key={d}
-            className="py-2 text-center text-[11px] font-medium text-text-3 uppercase tracking-wide"
+            className="py-2.5 pl-3 text-[11px] font-semibold text-text-3 uppercase tracking-wider"
           >
             {d}
           </div>
@@ -136,19 +146,35 @@ export default function CalendarGrid({
           const dateStr = `${cell.dateObj.getFullYear()}-${String(cell.dateObj.getMonth() + 1).padStart(2, "0")}-${String(cell.dateObj.getDate()).padStart(2, "0")}`;
           const dayEvents = eventMap.get(dateStr) ?? [];
           const isToday = dateStr === todayStr;
+          const isDragOver = dateStr === dragOverDate;
 
           return (
             <div
               key={idx}
-              className={`min-h-[100px] border-b border-r border-border p-1.5 ${
-                !cell.isCurrentMonth ? "bg-bg/50" : ""
-              }`}
+              className={`min-h-[120px] border-b border-r border-border p-2 transition-colors duration-100 ${
+                !cell.isCurrentMonth ? "bg-bg/40" : ""
+              } ${isDragOver ? "bg-accent/8" : ""} ${isToday ? "bg-accent/[0.04] ring-2 ring-inset ring-accent/30" : ""}`}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverDate(dateStr);
+              }}
+              onDragLeave={() => {
+                setDragOverDate((prev) => (prev === dateStr ? null : prev));
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverDate(null);
+                const eventId = e.dataTransfer.getData("text/event-id");
+                if (eventId && onEventDrop) {
+                  onEventDrop(eventId, dateStr);
+                }
+              }}
             >
               {/* Day number */}
               <span
-                className={`inline-flex items-center justify-center w-6 h-6 text-[12px] font-medium rounded-full ${
+                className={`text-[18px] font-semibold leading-none ${
                   isToday
-                    ? "bg-accent text-white"
+                    ? "text-accent"
                     : cell.isCurrentMonth
                       ? "text-text-primary"
                       : "text-text-4"
@@ -158,17 +184,15 @@ export default function CalendarGrid({
               </span>
 
               {/* Event pills */}
-              <div className="flex flex-col gap-0.5 mt-1">
+              <div className="flex flex-col gap-1 mt-2">
                 {dayEvents.slice(0, 3).map((e) => {
                   if (e.type === "inventory") {
                     return (
                       <Link
                         key={`inv-${e.id}`}
                         href="/inventory"
-                        className={`block px-1.5 py-0.5 text-[10px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${
-                          e.isOverdue
-                            ? "bg-red/10 text-red"
-                            : "bg-teal/10 text-teal"
+                        className={`flex items-center gap-1 px-2 py-[3px] text-[11px] font-medium rounded-full truncate text-white hover:brightness-110 transition-all duration-[120ms] ${
+                          e.isOverdue ? "bg-red" : "bg-teal"
                         }`}
                         title={`Reorder: ${e.itemName}`}
                       >
@@ -181,10 +205,8 @@ export default function CalendarGrid({
                       <Link
                         key={`svc-${e.id}`}
                         href="/services"
-                        className={`block px-1.5 py-0.5 text-[10px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${
-                          e.isOverdue
-                            ? "bg-red/10 text-red"
-                            : "bg-purple-light text-purple"
+                        className={`flex items-center gap-1 px-2 py-[3px] text-[11px] font-medium rounded-full truncate text-white hover:brightness-110 transition-all duration-[120ms] ${
+                          e.isOverdue ? "bg-red" : "bg-purple"
                         }`}
                         title={`Service: ${e.serviceName}`}
                       >
@@ -192,22 +214,32 @@ export default function CalendarGrid({
                       </Link>
                     );
                   }
+                  const duration = e.eventTime ? formatDuration(e.eventTime, e.eventEndTime) : "";
                   return (
-                    <Link
+                    <button
                       key={e.id}
-                      href={`/projects/${e.projectId}`}
-                      className={`block px-1.5 py-0.5 text-[10px] font-medium rounded-[var(--radius-sm)] truncate hover:brightness-90 transition-all duration-[120ms] ${STATUS_PILL[e.projectStatus]}`}
+                      type="button"
+                      draggable
+                      onClick={() => onEventClick?.(e)}
+                      onDragStart={(ev) => {
+                        ev.dataTransfer.setData("text/event-id", e.id);
+                        ev.dataTransfer.effectAllowed = "move";
+                      }}
+                      className={`flex items-center gap-1 w-full text-left px-2 py-[3px] text-[11px] font-medium rounded-full truncate text-white hover:brightness-110 transition-all duration-[120ms] cursor-pointer ${PROJECT_BG}`}
                       title={`${e.projectName}: ${e.title}${e.eventTime ? ` at ${formatShortTime(e.eventTime)}${e.eventEndTime ? `–${formatShortTime(e.eventEndTime)}` : ""}` : ""}`}
                     >
                       {e.eventTime && (
-                        <span className="opacity-70">{formatShortTime(e.eventTime)} </span>
+                        <span className="opacity-80">{formatShortTime(e.eventTime)}</span>
                       )}
-                      {e.projectName}
-                    </Link>
+                      <span className="truncate">
+                        {e.title}
+                        {duration && <span className="opacity-70"> ({duration})</span>}
+                      </span>
+                    </button>
                   );
                 })}
                 {dayEvents.length > 3 && (
-                  <span className="text-[10px] text-text-3 px-1.5">
+                  <span className="text-[11px] text-text-3 pl-2 font-medium">
                     +{dayEvents.length - 3} more
                   </span>
                 )}

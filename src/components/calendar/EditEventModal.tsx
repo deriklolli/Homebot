@@ -1,52 +1,38 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { type Contractor } from "@/lib/contractors-data";
+import Link from "next/link";
 import { XIcon } from "@/components/icons";
 import DatePicker from "@/components/ui/DatePicker";
 import TimePicker from "@/components/ui/TimePicker";
-import AddContractorModal from "@/components/contractors/AddContractorModal";
+import { type ProjectCalendarEvent } from "./CalendarGrid";
 
-interface EventData {
+interface EditEventData {
   title: string;
   eventDate: string;
   eventTime: string | null;
   eventEndTime: string | null;
   notes: string;
-  contractorId: string | null;
 }
 
-interface AddEventModalProps {
-  contractors: Contractor[];
-  defaultContractorId: string | null;
-  event?: { id: string; title: string; eventDate: string; eventTime: string | null; eventEndTime: string | null; notes?: string };
-  onSave: (data: EventData) => void;
-  onContractorAdded: (data: Omit<Contractor, "id" | "createdAt">) => Promise<Contractor>;
+interface EditEventModalProps {
+  event: ProjectCalendarEvent;
+  onSave: (eventId: string, data: EditEventData) => void;
+  onDelete: (eventId: string) => void;
   onClose: () => void;
 }
 
-function todayString(): string {
-  return new Date().toISOString().split("T")[0];
-}
-
-export default function AddEventModal({
-  contractors,
-  defaultContractorId,
+export default function EditEventModal({
   event,
   onSave,
-  onContractorAdded,
+  onDelete,
   onClose,
-}: AddEventModalProps) {
-  const isEditing = !!event;
-  const [title, setTitle] = useState(event?.title ?? "");
-  const [eventDate, setEventDate] = useState(event?.eventDate ?? todayString());
-  const [eventTime, setEventTime] = useState(event?.eventTime ?? "");
-  const [eventEndTime, setEventEndTime] = useState(event?.eventEndTime ?? "");
-  const [contractorId, setContractorId] = useState<string | null>(
-    defaultContractorId
-  );
-  const [notes, setNotes] = useState(event?.notes ?? "");
-  const [showContractorModal, setShowContractorModal] = useState(false);
+}: EditEventModalProps) {
+  const [title, setTitle] = useState(event.title);
+  const [eventDate, setEventDate] = useState(event.eventDate);
+  const [eventTime, setEventTime] = useState(event.eventTime ?? "");
+  const [eventEndTime, setEventEndTime] = useState(event.eventEndTime ?? "");
+  const [notes, setNotes] = useState(event.notes ?? "");
   const titleRef = useRef<HTMLInputElement>(null);
   const isValid = title.trim() !== "";
 
@@ -65,18 +51,16 @@ export default function AddEventModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid) return;
-    onSave({
+    onSave(event.id, {
       title: title.trim(),
       eventDate,
       eventTime: eventTime || null,
       eventEndTime: eventEndTime || null,
       notes: notes.trim(),
-      contractorId: contractorId || null,
     });
   }
 
   return (
-    <>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
       onMouseDown={(e) => {
@@ -87,7 +71,7 @@ export default function AddEventModal({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-[15px] font-semibold text-text-primary">
-            {isEditing ? "Edit Appointment" : "Schedule Appointment"}
+            Edit Event
           </h2>
           <button
             onClick={onClose}
@@ -103,7 +87,7 @@ export default function AddEventModal({
           {/* Title */}
           <label className="flex flex-col gap-1.5">
             <span className="text-[14px] font-medium text-text-primary">
-              Appointment Title <span className="text-red">*</span>
+              Title <span className="text-red">*</span>
             </span>
             <input
               ref={titleRef}
@@ -112,38 +96,8 @@ export default function AddEventModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-              placeholder="e.g. Initial consultation"
+              placeholder="Event title"
             />
-          </label>
-
-          {/* Contractor */}
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
-              Contractor
-            </span>
-            <select
-              value={contractorId ?? ""}
-              onChange={(e) => {
-                if (e.target.value === "__add__") {
-                  setShowContractorModal(true);
-                  e.target.value = contractorId ?? "";
-                  return;
-                }
-                setContractorId(e.target.value || null);
-              }}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
-            >
-              <option value="">No contractor</option>
-              {[...contractors]
-                .sort((a, b) => (a.company || a.name).localeCompare(b.company || b.name))
-                .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.company || c.name}
-                </option>
-              ))}
-              <option disabled>──────────</option>
-              <option value="__add__">+ Add Contractor</option>
-            </select>
           </label>
 
           {/* Date */}
@@ -168,11 +122,12 @@ export default function AddEventModal({
                 value={eventTime}
                 onChange={(val) => {
                   setEventTime(val);
-                  // Auto-set end time to 1 hour after start if end time is empty or before start
                   if (val && (!eventEndTime || eventEndTime <= val)) {
                     const [h, m] = val.split(":").map(Number);
                     const endH = Math.min(h + 1, 23);
-                    setEventEndTime(`${String(endH).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+                    setEventEndTime(
+                      `${String(endH).padStart(2, "0")}:${String(m).padStart(2, "0")}`
+                    );
                   }
                 }}
               />
@@ -196,43 +151,51 @@ export default function AddEventModal({
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={2}
+              rows={3}
               className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] resize-none"
               placeholder="Add notes..."
             />
           </label>
 
+          {/* Project link */}
+          <div className="flex items-center gap-2 text-[13px] text-text-3">
+            <span>Project:</span>
+            <Link
+              href={`/projects/${event.projectId}`}
+              className="text-accent hover:underline font-medium"
+            >
+              {event.projectName}
+            </Link>
+          </div>
+
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-border">
+          <div className="flex items-center justify-between pt-2 border-t border-border">
             <button
               type="button"
-              onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              onClick={() => onDelete(event.id)}
+              className="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-[var(--radius-sm)] text-red text-[13px] font-medium hover:bg-red/10 transition-all duration-[120ms]"
             >
-              Cancel
+              Delete
             </button>
-            <button
-              type="submit"
-              disabled={!isValid}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isEditing ? "Save Changes" : "Schedule"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!isValid}
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Save Changes
+              </button>
+            </div>
           </div>
         </form>
       </div>
     </div>
-
-    {showContractorModal && (
-      <AddContractorModal
-        onSave={async (data) => {
-          const newContractor = await onContractorAdded(data);
-          setContractorId(newContractor.id);
-          setShowContractorModal(false);
-        }}
-        onClose={() => setShowContractorModal(false)}
-      />
-    )}
-    </>
   );
 }
