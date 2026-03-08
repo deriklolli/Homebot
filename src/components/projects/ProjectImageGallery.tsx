@@ -21,6 +21,7 @@ interface ProjectImageGalleryProps {
   projectId: string;
   images: ProjectImage[];
   onImagesChange: (images: ProjectImage[]) => void;
+  iconColorClass?: string;
 }
 
 const BUCKET = "project-images";
@@ -34,6 +35,7 @@ const ProjectImageGallery = forwardRef<ProjectImageGalleryHandle, ProjectImageGa
   projectId,
   images,
   onImagesChange,
+  iconColorClass = "text-accent",
 }, ref) {
   const [uploading, setUploading] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -161,8 +163,8 @@ const ProjectImageGallery = forwardRef<ProjectImageGalleryHandle, ProjectImageGa
 
       {images.length > 0 && (
         <div className="flex items-start gap-4 mb-3">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide w-[80px] shrink-0 mt-4">
-            <CameraIcon width={30} height={30} className="text-accent" />
+          <span className={`flex flex-col items-end gap-0.5 text-[11px] font-medium uppercase tracking-wide w-[80px] shrink-0 mt-4 ${iconColorClass}`}>
+            <CameraIcon size={30} />
             Photos
           </span>
           <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1 group/photos">

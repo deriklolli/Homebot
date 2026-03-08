@@ -18,6 +18,7 @@ interface ProjectInvoiceSectionProps {
   projectId: string;
   invoices: ProjectInvoice[];
   onInvoicesChange: (invoices: ProjectInvoice[] | ((prev: ProjectInvoice[]) => ProjectInvoice[])) => void;
+  iconColorClass?: string;
 }
 
 const BUCKET = "project-invoices";
@@ -27,7 +28,7 @@ function formatAmount(amount: number): string {
 }
 
 const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInvoiceSectionProps>(
-  function ProjectInvoiceSection({ projectId, invoices, onInvoicesChange }, ref) {
+  function ProjectInvoiceSection({ projectId, invoices, onInvoicesChange, iconColorClass = "text-accent" }, ref) {
     const [uploading, setUploading] = useState(false);
     const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
     const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
@@ -249,8 +250,8 @@ const ProjectInvoiceSection = forwardRef<ProjectInvoiceSectionHandle, ProjectInv
 
         {(invoices.length > 0 || uploading) && (
           <div className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide w-[80px] shrink-0 mt-4">
-              <InvoiceSolidIcon width={30} height={30} className="text-accent" />
+            <span className={`flex flex-col items-end gap-0.5 text-[11px] font-medium uppercase tracking-wide w-[80px] shrink-0 mt-4 ${iconColorClass}`}>
+              <InvoiceSolidIcon width={30} height={30} />
               Invoices
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 flex-1">

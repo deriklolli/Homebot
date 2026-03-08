@@ -367,7 +367,7 @@ export default function HomeAssetsClient() {
     return rows;
   }
 
-  const categoriesToShow = [...CATEGORY_OPTIONS];
+  const categoriesToShow = [...CATEGORY_OPTIONS].sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">

@@ -41,6 +41,17 @@ export interface ProjectInvoice {
   createdAt: string;
 }
 
+export interface ProjectContractor {
+  id: string;
+  projectId: string;
+  contractorId: string;
+  rating: number | null;
+  note: string;
+  assignedAt: string;
+  removedAt: string | null;
+  createdAt: string;
+}
+
 export interface Project {
   id: string;
   name: string;

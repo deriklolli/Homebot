@@ -11,6 +11,7 @@ import {
   type ProjectNote,
   type ProjectImage,
   type ProjectInvoice,
+  type ProjectContractor,
 } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
 import { type HomeAsset } from "@/lib/home-assets-data";
@@ -22,6 +23,7 @@ import {
   type DbProjectNote,
   type DbProjectImage,
   type DbProjectInvoice,
+  type DbProjectContractor,
   type DbHomeAsset,
 } from "@/lib/supabase";
 import {
@@ -34,6 +36,7 @@ import {
   dbToProjectNote,
   dbToProjectImage,
   dbToProjectInvoice,
+  dbToProjectContractor,
 } from "@/lib/mappers";
 
 type TimelineItem =
@@ -48,24 +51,34 @@ import {
   PlusIcon,
   ChevronDownIcon,
   XIcon,
-  ThumbsUpSolidIcon,
-  CalendarSolidIcon,
-  NoteSolidIcon,
+  HardHatIcon,
+  CalendarIcon,
+  NotebookPenIcon,
   BuildingIcon,
   UserIcon,
   CheckCircleSolidIcon,
+  CameraIcon,
+  HistoryIcon,
 } from "@/components/icons";
 import AddProjectModal from "./AddProjectModal";
 import CompleteProjectModal from "./CompleteProjectModal";
 import AddEventModal from "./AddEventModal";
 import ProjectImageGallery, { type ProjectImageGalleryHandle } from "./ProjectImageGallery";
 import ProjectInvoiceSection, { type ProjectInvoiceSectionHandle } from "./ProjectInvoiceSection";
+import RateContractorModal from "./RateContractorModal";
 
 const STATUS_BADGE: Record<ProjectStatus, string> = {
   "Not Started": "bg-purple-light text-purple",
   "In Progress": "bg-teal-light text-teal",
   Completed: "bg-accent-light text-accent",
 };
+
+const STATUS_EDGE_COLOR: Record<ProjectStatus, string> = {
+  "Not Started": "bg-purple",
+  "In Progress": "bg-teal",
+  Completed: "bg-accent",
+};
+
 
 const formatDate = formatDateLong;
 
@@ -92,6 +105,13 @@ export default function ProjectDetailClient({ id }: { id: string }) {
   const [hireContractorOpen, setHireContractorOpen] = useState(false);
   const [selectedContractorId, setSelectedContractorId] = useState("");
   const [newNote, setNewNote] = useState("");
+  const [contractorHistory, setContractorHistory] = useState<ProjectContractor[]>([]);
+  const [rateModalOpen, setRateModalOpen] = useState(false);
+  const [pendingRemoval, setPendingRemoval] = useState<{
+    contractorId: string;
+    contractorName: string;
+    replacementId?: string;
+  } | null>(null);
   const [logoError, setLogoError] = useState(false);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const addMenuRef = useRef<HTMLDivElement>(null);
@@ -100,7 +120,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
 
   useEffect(() => {
     async function fetchData() {
-      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes, invoicesRes] = await Promise.all([
+      const [projectRes, contractorsRes, eventsRes, notesRes, imagesRes, assetsRes, invoicesRes, contractorHistoryRes] = await Promise.all([
         supabase
           .from("projects")
           .select("id, user_id, name, description, contractor_id, home_asset_id, notes, status, total_cost, contractor_rating, completed_at, created_at")
@@ -141,6 +161,12 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           .eq("project_id", id)
           .order("created_at", { ascending: true })
           .returns<DbProjectInvoice[]>(),
+        supabase
+          .from("project_contractors")
+          .select("id, user_id, project_id, contractor_id, rating, note, assigned_at, removed_at, created_at")
+          .eq("project_id", id)
+          .order("assigned_at", { ascending: true })
+          .returns<DbProjectContractor[]>(),
       ]);
 
       if (projectRes.error || !projectRes.data) {
@@ -173,6 +199,10 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         setInvoices(invoicesRes.data.map(dbToProjectInvoice));
       }
 
+      if (contractorHistoryRes.data) {
+        setContractorHistory(contractorHistoryRes.data.map(dbToProjectContractor));
+      }
+
       setLoading(false);
     }
     fetchData();
@@ -193,6 +223,9 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     ...notes.map((n) => ({ type: "note" as const, data: n, createdAt: n.createdAt })),
   ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
+  const pastContractors = contractorHistory
+    .filter((h) => h.removedAt !== null)
+    .sort((a, b) => (b.removedAt ?? "").localeCompare(a.removedAt ?? ""));
 
   // Close add menu on outside click
   useEffect(() => {
@@ -236,8 +269,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
     );
   }
 
-  async function handleHireContractor() {
-    const contractorId = selectedContractorId || null;
+  async function assignContractor(contractorId: string) {
     const { data: rows, error } = await supabase
       .from("projects")
       .update({ contractor_id: contractorId })
@@ -250,23 +282,127 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       return;
     }
     setProject(dbToProject(rows[0]));
+
+    // Insert history record
+    const { data: histRows, error: histError } = await supabase
+      .from("project_contractors")
+      .insert({
+        project_id: project!.id,
+        contractor_id: contractorId,
+        assigned_at: new Date().toISOString(),
+      } as Record<string, unknown>)
+      .select()
+      .returns<DbProjectContractor[]>();
+
+    if (!histError && histRows?.[0]) {
+      setContractorHistory((prev) => [...prev, dbToProjectContractor(histRows[0])]);
+    }
+  }
+
+  async function closeActiveHistoryRecord(contractorId: string) {
+    const activeRecord = contractorHistory.find(
+      (h) => h.contractorId === contractorId && !h.removedAt
+    );
+    if (!activeRecord) return;
+
+    const { data: updated, error } = await supabase
+      .from("project_contractors")
+      .update({
+        removed_at: new Date().toISOString(),
+      } as Record<string, unknown>)
+      .eq("id", activeRecord.id)
+      .select()
+      .returns<DbProjectContractor[]>();
+
+    if (!error && updated?.[0]) {
+      setContractorHistory((prev) =>
+        prev.map((h) => (h.id === activeRecord.id ? dbToProjectContractor(updated[0]) : h))
+      );
+    }
+  }
+
+  async function handleHireContractor() {
+    const newContractorId = selectedContractorId || null;
+    if (!newContractorId) return;
+
+    // If there's already a contractor assigned, prompt for rating before replacing
+    if (project!.contractorId) {
+      const outgoing = contractorMap.get(project!.contractorId);
+      setPendingRemoval({
+        contractorId: project!.contractorId,
+        contractorName: outgoing?.company || outgoing?.name || "Contractor",
+        replacementId: newContractorId,
+      });
+      setHireContractorOpen(false);
+      setSelectedContractorId("");
+      setRateModalOpen(true);
+      return;
+    }
+
+    await assignContractor(newContractorId);
     setHireContractorOpen(false);
     setSelectedContractorId("");
   }
 
-  async function handleRemoveContractor() {
-    const { data: rows, error } = await supabase
-      .from("projects")
-      .update({ contractor_id: null })
-      .eq("id", project!.id)
-      .select()
-      .returns<DbProject[]>();
+  function handleRemoveContractor() {
+    if (!project?.contractorId) return;
+    const outgoing = contractorMap.get(project.contractorId);
+    setPendingRemoval({
+      contractorId: project.contractorId,
+      contractorName: outgoing?.company || outgoing?.name || "Contractor",
+    });
+    setRateModalOpen(true);
+  }
 
-    if (error) {
-      console.error("Failed to remove contractor:", error);
-      return;
+  async function handleRateAndFinalize(data: { rating: number | null; note: string }) {
+    if (!pendingRemoval) return;
+
+    // Find the active history record for the outgoing contractor
+    const activeRecord = contractorHistory.find(
+      (h) => h.contractorId === pendingRemoval.contractorId && !h.removedAt
+    );
+
+    if (activeRecord) {
+      const { data: updated, error } = await supabase
+        .from("project_contractors")
+        .update({
+          rating: data.rating,
+          note: data.note,
+          removed_at: new Date().toISOString(),
+        } as Record<string, unknown>)
+        .eq("id", activeRecord.id)
+        .select()
+        .returns<DbProjectContractor[]>();
+
+      if (!error && updated?.[0]) {
+        setContractorHistory((prev) =>
+          prev.map((h) => (h.id === activeRecord.id ? dbToProjectContractor(updated[0]) : h))
+        );
+      }
     }
-    setProject(dbToProject(rows[0]));
+
+    if (pendingRemoval.replacementId) {
+      await assignContractor(pendingRemoval.replacementId);
+    } else {
+      const { data: rows, error } = await supabase
+        .from("projects")
+        .update({ contractor_id: null })
+        .eq("id", project!.id)
+        .select()
+        .returns<DbProject[]>();
+
+      if (!error && rows?.[0]) {
+        setProject(dbToProject(rows[0]));
+      }
+    }
+
+    setRateModalOpen(false);
+    setPendingRemoval(null);
+  }
+
+  function handleRateModalClose() {
+    setRateModalOpen(false);
+    setPendingRemoval(null);
   }
 
   async function handleEdit(
@@ -374,17 +510,24 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       return;
     }
 
-    // Update contractor on the project if changed
+    // Update contractor on the project if changed (silent — no rating modal)
     if (data.contractorId !== project!.contractorId) {
-      const { data: projRows, error: projError } = await supabase
-        .from("projects")
-        .update({ contractor_id: data.contractorId } as Record<string, unknown>)
-        .eq("id", project!.id)
-        .select()
-        .returns<DbProject[]>();
+      if (project!.contractorId) {
+        await closeActiveHistoryRecord(project!.contractorId);
+      }
+      if (data.contractorId) {
+        await assignContractor(data.contractorId);
+      } else {
+        const { data: projRows, error: projError } = await supabase
+          .from("projects")
+          .update({ contractor_id: null } as Record<string, unknown>)
+          .eq("id", project!.id)
+          .select()
+          .returns<DbProject[]>();
 
-      if (!projError && projRows?.[0]) {
-        setProject(dbToProject(projRows[0]));
+        if (!projError && projRows?.[0]) {
+          setProject(dbToProject(projRows[0]));
+        }
       }
     }
 
@@ -423,17 +566,24 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       return;
     }
 
-    // Update contractor on the project if changed
+    // Update contractor on the project if changed (silent — no rating modal)
     if (data.contractorId !== project!.contractorId) {
-      const { data: projRows, error: projError } = await supabase
-        .from("projects")
-        .update({ contractor_id: data.contractorId } as Record<string, unknown>)
-        .eq("id", project!.id)
-        .select()
-        .returns<DbProject[]>();
+      if (project!.contractorId) {
+        await closeActiveHistoryRecord(project!.contractorId);
+      }
+      if (data.contractorId) {
+        await assignContractor(data.contractorId);
+      } else {
+        const { data: projRows, error: projError } = await supabase
+          .from("projects")
+          .update({ contractor_id: null } as Record<string, unknown>)
+          .eq("id", project!.id)
+          .select()
+          .returns<DbProject[]>();
 
-      if (!projError && projRows?.[0]) {
-        setProject(dbToProject(projRows[0]));
+        if (!projError && projRows?.[0]) {
+          setProject(dbToProject(projRows[0]));
+        }
       }
     }
 
@@ -499,104 +649,99 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         Back to Projects
       </Link>
 
-      {/* Header */}
-      <header className="flex items-start justify-between gap-4 mb-6">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
-              {project.name}
-            </h1>
+      {/* Description card with colored left edge */}
+      <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[0_1px_2px_rgba(34,32,29,0.04)] mb-5 flex">
+        <div className={`w-[8px] shrink-0 rounded-l-[var(--radius-lg)] ${STATUS_EDGE_COLOR[project.status]}`} />
+        <div className="p-6 flex-1 min-w-0">
+          {/* Title + status + actions */}
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div className="flex items-center gap-3 min-w-0">
+              <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
+                {project.name}
+              </h1>
+              <span
+                className={`shrink-0 inline-flex items-center px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] ${STATUS_BADGE[project.status]}`}
+              >
+                {project.status}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="relative" ref={addMenuRef}>
+                <button
+                  onClick={() => setAddMenuOpen(!addMenuOpen)}
+                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+                >
+                  <PlusIcon width={13} height={13} />
+                  Add Event
+                </button>
 
-            {/* Status badge */}
-            <span
-              className={`shrink-0 inline-flex items-center px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] ${STATUS_BADGE[project.status]}`}
-            >
-              {project.status}
-            </span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="relative" ref={addMenuRef}>
-            <button
-              onClick={() => setAddMenuOpen(!addMenuOpen)}
-              className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
-            >
-              <PlusIcon width={13} height={13} />
-              Add Event
-            </button>
-
-            {addMenuOpen && (
-              <div className="absolute top-full right-0 mt-1.5 bg-surface rounded-[var(--radius-sm)] border border-border shadow-[var(--shadow-hover)] py-1 min-w-[170px] z-20">
-                <button
-                  onClick={() => {
-                    setAddMenuOpen(false);
-                    setAddEventModalOpen(true);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
-                >
-                  Schedule Appointment
-                </button>
-                <button
-                  onClick={() => {
-                    setAddMenuOpen(false);
-                    setAddNoteModalOpen(true);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
-                >
-                  Add Note
-                </button>
-                <button
-                  onClick={() => {
-                    galleryRef.current?.triggerUpload();
-                    setAddMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
-                >
-                  Add Photos
-                </button>
-                <button
-                  onClick={() => {
-                    invoiceSectionRef.current?.triggerUpload();
-                    setAddMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
-                >
-                  Add Invoice
-                </button>
-                <button
-                  onClick={() => {
-                    setAddMenuOpen(false);
-                    setSelectedContractorId(project.contractorId ?? "");
-                    setHireContractorOpen(true);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
-                >
-                  Hire Contractor
-                </button>
+                {addMenuOpen && (
+                  <div className="absolute top-full right-0 mt-1.5 bg-surface rounded-[var(--radius-sm)] border border-border shadow-[var(--shadow-hover)] py-1 min-w-[170px] z-20">
+                    <button
+                      onClick={() => {
+                        setAddMenuOpen(false);
+                        setAddEventModalOpen(true);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                    >
+                      Schedule Appointment
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAddMenuOpen(false);
+                        setAddNoteModalOpen(true);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                    >
+                      Add Note
+                    </button>
+                    <button
+                      onClick={() => {
+                        galleryRef.current?.triggerUpload();
+                        setAddMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                    >
+                      Add Photos
+                    </button>
+                    <button
+                      onClick={() => {
+                        invoiceSectionRef.current?.triggerUpload();
+                        setAddMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                    >
+                      Add Invoice
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAddMenuOpen(false);
+                        setSelectedContractorId(project.contractorId ?? "");
+                        setHireContractorOpen(true);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                    >
+                      Hire Contractor
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+              <button
+                onClick={() => setEditModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              >
+                <PencilIcon width={13} height={13} />
+                Edit
+              </button>
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              >
+                <TrashIcon width={13} height={13} />
+                Delete
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-          >
-            <PencilIcon width={13} height={13} />
-            Edit
-          </button>
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
-          >
-            <TrashIcon width={13} height={13} />
-            Delete
-          </button>
-        </div>
-      </header>
-
-      {/* Description card */}
-      <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 mb-5">
         <div className="flex gap-6">
           {/* Linked asset image — left side */}
           {linkedAsset?.imageUrl && (
@@ -652,16 +797,17 @@ export default function ProjectDetailClient({ id }: { id: string }) {
             )}
           </div>
         </div>
+        </div>
       </div>
 
       {/* Contractor row */}
       {contractor && (
         <div className="flex items-center gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide w-[80px] shrink-0">
-            <ThumbsUpSolidIcon width={30} height={30} className="text-accent" />
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0">
+            <HardHatIcon size={30} />
             Hired
           </span>
-          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group hover:translate-x-2 transition-transform duration-200 ease-out">
             <div className="flex items-center gap-3">
               {contractor.logoUrl?.trim() && !logoError ? (
                 <img
@@ -690,13 +836,71 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 )}
               </div>
             </div>
-            <button
-              onClick={() => handleRemoveContractor()}
-              className="shrink-0 p-1.5 rounded-[var(--radius-sm)] text-text-4 opacity-0 group-hover:opacity-100 hover:bg-border hover:text-red transition-all duration-[120ms]"
-              aria-label="Remove contractor"
-            >
-              <XIcon width={14} height={14} />
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] text-text-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+                Added {formatDateTime(project.createdAt)}
+              </span>
+              <button
+                onClick={() => handleRemoveContractor()}
+                className="p-1.5 rounded-[var(--radius-sm)] text-text-4 opacity-0 group-hover:opacity-100 hover:bg-border hover:text-red transition-all duration-[120ms]"
+                aria-label="Remove contractor"
+              >
+                <XIcon width={14} height={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Past contractors */}
+      {pastContractors.length > 0 && (
+        <div className="flex items-start gap-4 mb-5">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <HistoryIcon size={30} />
+            Past
+          </span>
+          <div className="flex flex-col gap-2 flex-1">
+            {pastContractors.map((pc) => {
+              const pastC = contractorMap.get(pc.contractorId);
+              if (!pastC) return null;
+              return (
+                <div
+                  key={pc.id}
+                  className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-3 flex items-center justify-between opacity-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-border text-text-3 flex items-center justify-center shrink-0">
+                      {pastC.company?.trim() ? (
+                        <BuildingIcon width={14} height={14} />
+                      ) : (
+                        <UserIcon width={14} height={14} />
+                      )}
+                    </div>
+                    <div>
+                      <span className="block text-[13px] font-medium text-text-primary">
+                        {pastC.company || pastC.name}
+                      </span>
+                      <span className="block text-[11px] text-text-3">
+                        {formatDate(pc.assignedAt)}
+                        {pc.removedAt ? ` — ${formatDate(pc.removedAt)}` : ""}
+                      </span>
+                    </div>
+                  </div>
+                  {pc.rating !== null && pc.rating > 0 && (
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <StarFilledIcon
+                          key={i}
+                          width={12}
+                          height={12}
+                          className={i < pc.rating! ? "text-accent" : "text-border-strong"}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -705,12 +909,12 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {timeline.map((item) =>
         item.type === "event" ? (
           <div key={`event-${item.data.id}`} className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide w-[80px] shrink-0 mt-4">
-              <CalendarSolidIcon width={30} height={30} className="text-accent" />
+            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+              <CalendarIcon size={30} />
               Scheduled
             </span>
             <div
-              className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:scale-[1.02] hover:border-border/80 transition-all duration-200 ease-out"
+              className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group cursor-pointer hover:translate-x-2 transition-transform duration-200 ease-out"
               onClick={() => setEditingEvent(item.data)}
               role="button"
               tabIndex={0}
@@ -757,8 +961,8 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           </div>
         ) : (
           <div key={`note-${item.data.id}`} className="flex items-start gap-4 mb-3">
-            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide w-[80px] shrink-0 mt-4">
-              <NoteSolidIcon width={30} height={30} className="text-accent" />
+            <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+              <NotebookPenIcon size={30} />
               Note
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
@@ -788,6 +992,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         projectId={project.id}
         images={images}
         onImagesChange={setImages}
+        iconColorClass="text-text-3"
       />
 
       {/* Invoices */}
@@ -796,13 +1001,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         projectId={project.id}
         invoices={invoices}
         onInvoicesChange={setInvoices}
+        iconColorClass="text-text-3"
       />
 
       {/* Project Completed card */}
       {project.status === "Completed" && (
         <div className="flex items-start gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide w-[80px] shrink-0 mt-4">
-            <CheckCircleSolidIcon width={30} height={30} className="text-green" />
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-3 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <CheckCircleSolidIcon width={30} height={30} />
             Completed
           </span>
           <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1">
@@ -1032,6 +1238,15 @@ export default function ProjectDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Rate contractor modal */}
+      {rateModalOpen && pendingRemoval && (
+        <RateContractorModal
+          contractorName={pendingRemoval.contractorName}
+          onSubmit={handleRateAndFinalize}
+          onClose={handleRateModalClose}
+        />
       )}
     </div>
   );

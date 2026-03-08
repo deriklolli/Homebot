@@ -1,7 +1,7 @@
-import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbHomeAssetDocument, DbProfile, DbOrganization } from "./supabase";
+import type { DbContractor, DbProject, DbProjectEvent, DbProjectNote, DbProjectImage, DbProjectInvoice, DbProjectContractor, DbInventoryItem, DbService, DbServiceHistory, DbHomeSnapshot, DbHomeAsset, DbHomeAssetDocument, DbProfile, DbOrganization } from "./supabase";
 import type { Profile, Organization } from "./admin-data";
 import type { Contractor } from "./contractors-data";
-import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice } from "./projects-data";
+import type { Project, ProjectEvent, ProjectNote, ProjectImage, ProjectInvoice, ProjectContractor } from "./projects-data";
 import type { InventoryItem } from "./inventory-data";
 import type { Service, ServiceHistory } from "./services-data";
 import type { HomeAsset, HomeAssetDocument } from "./home-assets-data";
@@ -116,6 +116,19 @@ export function dbToProjectInvoice(row: DbProjectInvoice): ProjectInvoice {
     fileName: row.file_name,
     fileType: row.file_type,
     amount: row.amount,
+    createdAt: row.created_at,
+  };
+}
+
+export function dbToProjectContractor(row: DbProjectContractor): ProjectContractor {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    contractorId: row.contractor_id,
+    rating: row.rating,
+    note: row.note,
+    assignedAt: row.assigned_at,
+    removedAt: row.removed_at,
     createdAt: row.created_at,
   };
 }

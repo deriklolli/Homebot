@@ -122,6 +122,18 @@ export interface DbProjectInvoice {
   created_at: string;
 }
 
+export interface DbProjectContractor {
+  id: string;
+  user_id: string;
+  project_id: string;
+  contractor_id: string;
+  rating: number | null;
+  note: string;
+  assigned_at: string;
+  removed_at: string | null;
+  created_at: string;
+}
+
 export interface DbTask {
   id: string;
   user_id: string;
