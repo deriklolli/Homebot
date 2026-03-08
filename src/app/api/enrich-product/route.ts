@@ -24,13 +24,44 @@ const PREFERRED_DOMAINS = [
   "lg.com",
   "whirlpool.com",
   "ge.com",
+  "geappliances.com",
   "bosch-home.com",
   "thermador.com",
   "kitchenaid.com",
   "maytag.com",
   "frigidaire.com",
   "electrolux.com",
+  "mieleusa.com",
+  "fisherpaykel.com",
+  "dacor.com",
 ];
+
+/** Map brand names (lowercased) to their manufacturer domain for targeted site: search */
+const MANUFACTURER_DOMAINS: Record<string, string> = {
+  "ge": "geappliances.com",
+  "ge profile": "geappliances.com",
+  "ge cafe": "geappliances.com",
+  "cafe": "geappliances.com",
+  "ge monogram": "geappliances.com",
+  "monogram": "geappliances.com",
+  "sub-zero": "subzero-wolf.com",
+  "subzero": "subzero-wolf.com",
+  "wolf": "subzero-wolf.com",
+  "cove": "subzero-wolf.com",
+  "samsung": "samsung.com",
+  "lg": "lg.com",
+  "whirlpool": "whirlpool.com",
+  "kitchenaid": "kitchenaid.com",
+  "maytag": "maytag.com",
+  "bosch": "bosch-home.com",
+  "thermador": "thermador.com",
+  "frigidaire": "frigidaire.com",
+  "electrolux": "electrolux.com",
+  "miele": "mieleusa.com",
+  "fisher & paykel": "fisherpaykel.com",
+  "fisher paykel": "fisherpaykel.com",
+  "dacor": "dacor.com",
+};
 
 const FETCH_HEADERS = {
   "User-Agent":
@@ -584,13 +615,47 @@ export async function POST(req: Request) {
     if (!result.productUrl) result.productUrl = searchResults[0].url;
   }
 
-  // ─── Step 3: Image fallback ──────────────────────────────────────
+  // ─── Step 3: Targeted manufacturer site search ─────────────────
+  // Bing image search often misses manufacturer pages, so search their
+  // site directly using the site: operator
+  const manufacturerDomain = MANUFACTURER_DOMAINS[make.toLowerCase()];
+  if (manufacturerDomain && !result.productUrl?.includes(manufacturerDomain)) {
+    try {
+      const siteQuery = `${make} ${model} site:${manufacturerDomain}`;
+      const bing = await bingImageSearchFull(siteQuery);
+      const modelLower = model.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+      // Find the page with the model number in the URL
+      const mfgPage = bing.pages.find((p) => {
+        const urlNorm = p.url.toLowerCase().replace(/[^a-z0-9]/g, "");
+        return urlNorm.includes(modelLower) && p.url.includes(manufacturerDomain);
+      }) ?? bing.pages.find((p) => p.url.includes(manufacturerDomain));
+
+      if (mfgPage) {
+        try {
+          const scraped = await scrapePage(mfgPage.url, model);
+          result.productUrl = mfgPage.url;
+          if (scraped.imageUrl) result.imageUrl = scraped.imageUrl;
+          if (scraped.name) result.name = scraped.name;
+          if (scraped.dimensions) result.dimensions = scraped.dimensions;
+          if (scraped.warrantyYears) result.warrantyYears = scraped.warrantyYears;
+          for (const doc of scraped.documents) {
+            if (!result.documents.some((d) => d.url.toLowerCase() === doc.url.toLowerCase())) {
+              result.documents.push(doc);
+            }
+          }
+        } catch { /* scrape failed */ }
+      }
+    } catch { /* site search failed */ }
+  }
+
+  // ─── Step 4: Image fallback ──────────────────────────────────────
   if (!result.imageUrl) {
     const withImage = searchResults.find((r) => r.imageUrl);
     if (withImage?.imageUrl) result.imageUrl = withImage.imageUrl;
   }
 
-  // ─── Step 4: Search for manufacturer specs/manual pages ─────────
+  // ─── Step 5: Search for manufacturer specs/manual pages ─────────
   if (result.documents.length === 0) {
     try {
       const specsQuery = `${make} ${model} specifications`;
