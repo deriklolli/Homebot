@@ -240,7 +240,8 @@ export default function InventoryClient() {
   const groupedByRoom = (() => {
     const groups = new Map<string, InventoryItem[]>();
     for (const item of filtered) {
-      const room = (item.homeAssetId && assetLocations.get(item.homeAssetId)) || "Other";
+      const room = item.homeAssetId && assetLocations.get(item.homeAssetId);
+      if (!room) continue; // Skip items not linked to an asset with a location
       if (!groups.has(room)) groups.set(room, []);
       groups.get(room)!.push(item);
     }
@@ -248,12 +249,7 @@ export default function InventoryClient() {
     for (const roomItems of groups.values()) {
       roomItems.sort((a, b) => a.name.localeCompare(b.name));
     }
-    // Sort room names alphabetically, "Other" last
-    const sortedRooms = [...groups.keys()].sort((a, b) => {
-      if (a === "Other") return 1;
-      if (b === "Other") return -1;
-      return a.localeCompare(b);
-    });
+    const sortedRooms = [...groups.keys()].sort((a, b) => a.localeCompare(b));
     return sortedRooms.map((room) => ({ room, items: groups.get(room)! }));
   })();
 

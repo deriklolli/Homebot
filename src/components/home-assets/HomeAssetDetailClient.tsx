@@ -116,7 +116,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
     if (!asset?.model) return;
     let cancelled = false;
 
-    // If we already have cached enrichment data, load from it
+    // If enrichment has already run, load from cache and skip API calls
     if (asset.enrichmentData) {
       const e = asset.enrichmentData;
       if (e.dimensions) {
@@ -128,6 +128,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       if (e.productDocuments?.length) setProductDocuments(e.productDocuments);
       return;
     }
+
+    // Already enriched once (even if no data was found) — don't re-run
+    if (asset.enrichedAt) return;
 
     async function fetchAndCache() {
       const enrichment: Record<string, unknown> = {};
@@ -160,8 +163,8 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
             enrichment.productDocuments = p.productDocuments;
           }
 
-          // Use Skulytics image (matched by exact SKU) over Bing search
-          if (p.image) {
+          // Use Skulytics image only if no image is set yet
+          if (p.image && !asset!.imageUrl) {
             supabase.from("home_assets").update({ image_url: p.image }).eq("id", asset!.id).then(() => {
               setAsset((prev) => prev ? { ...prev, imageUrl: p.image } : prev);
             });
@@ -209,8 +212,8 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           setProductDocuments(docs);
           enrichment.productDocuments = docs;
         }
-        // Apply image from enrichment (product page image is more accurate than Bing search)
-        if (data.imageUrl) {
+        // Apply image from enrichment only if no image is set yet
+        if (data.imageUrl && !asset!.imageUrl) {
           supabase.from("home_assets").update({ image_url: data.imageUrl }).eq("id", asset!.id).then(() => {
             setAsset((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : prev);
           });
