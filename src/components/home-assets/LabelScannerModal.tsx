@@ -81,7 +81,8 @@ export default function LabelScannerModal({
   useEffect(() => {
     const lockOrientation = async () => {
       try {
-        await screen.orientation.lock("portrait");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (screen.orientation as any).lock("portrait");
       } catch { /* not supported or not allowed */ }
     };
     lockOrientation();
