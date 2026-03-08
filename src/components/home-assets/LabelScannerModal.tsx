@@ -77,6 +77,19 @@ export default function LabelScannerModal({
     };
   }, []);
 
+  // Lock orientation to portrait while camera is open
+  useEffect(() => {
+    const lockOrientation = async () => {
+      try {
+        await screen.orientation.lock("portrait");
+      } catch { /* not supported or not allowed */ }
+    };
+    lockOrientation();
+    return () => {
+      try { screen.orientation.unlock(); } catch { /* ignore */ }
+    };
+  }, []);
+
   // Close on Escape
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

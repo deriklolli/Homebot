@@ -311,6 +311,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       await supabase.storage.from("home-asset-documents").remove(paths);
     }
 
+    // Delete linked inventory items
+    if (linkedInventory.length > 0) {
+      await supabase
+        .from("inventory_items")
+        .delete()
+        .eq("home_asset_id", asset!.id);
+    }
+
     const { error } = await supabase
       .from("home_assets")
       .delete()
@@ -431,10 +439,9 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                   src={asset.imageUrl}
                   alt={`${asset.make} ${asset.model}`}
                   className="h-[195px] w-[195px] object-contain"
-                  onError={() => {
-                    // Clear broken image URL so placeholder shows
-                    setAsset((prev) => prev ? { ...prev, imageUrl: "" } : prev);
-                    supabase.from("home_assets").update({ image_url: "" }).eq("id", asset.id).then(() => {});
+                  onError={(e) => {
+                    // Hide broken image but keep the URL in DB
+                    (e.target as HTMLImageElement).style.display = "none";
                   }}
                 />
                 <button
