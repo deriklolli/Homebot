@@ -8,7 +8,7 @@ import type { HomeAsset } from "@/lib/home-assets-data";
 import { supabase, type DbService, type DbContractor, type DbHomeAsset } from "@/lib/supabase";
 import { dbToService, serviceToDb, dbToContractor, contractorToDb, dbToHomeAsset } from "@/lib/mappers";
 import { formatDateShort as formatDate } from "@/lib/date-utils";
-import { PlusIcon, SearchIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, BuildingIcon } from "@/components/icons";
 import AddServiceModal from "./AddServiceModal";
 import HomeServiceAlerts from "@/components/HomeServiceAlerts";
 
@@ -49,7 +49,7 @@ export default function ServicesClient() {
           .returns<DbContractor[]>(),
         supabase
           .from("home_assets")
-          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, enrichment_data, enriched_at, created_at")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
       ]);
@@ -122,6 +122,23 @@ export default function ServicesClient() {
       )
     );
     setModalOpen(false);
+  }
+
+  async function handleToggleReminder(serviceId: string, enabled: boolean) {
+    // Optimistic update
+    setServices((prev) =>
+      prev.map((s) => (s.id === serviceId ? { ...s, remindersEnabled: enabled } : s))
+    );
+    const { error } = await supabase
+      .from("services")
+      .update({ reminders_enabled: enabled })
+      .eq("id", serviceId);
+    if (error) {
+      // Revert on failure
+      setServices((prev) =>
+        prev.map((s) => (s.id === serviceId ? { ...s, remindersEnabled: !enabled } : s))
+      );
+    }
   }
 
   return (
@@ -217,52 +234,85 @@ export default function ServicesClient() {
 
               return (
                 <li key={s.id} className="border-b border-border last:border-b-0">
-                  <Link
-                    href={`/services/${s.id}`}
-                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
-                  >
-                    {/* Service info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[14px] font-semibold text-text-primary truncate">
-                          {s.name}
+                  <div className="flex items-center gap-5 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]">
+                    <Link
+                      href={`/services/${s.id}`}
+                      className="flex items-center gap-3 flex-1 min-w-0"
+                    >
+                      {/* Contractor thumbnail */}
+                      {(() => {
+                        const c = s.contractorId ? contractors.find((c) => c.id === s.contractorId) : null;
+                        return c?.logoUrl ? (
+                          <img src={c.logoUrl} alt="" className="w-9 h-9 rounded-full object-contain bg-white border border-border shrink-0" />
+                        ) : (
+                          <span className="w-9 h-9 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                            <BuildingIcon width={16} height={16} className="text-white" />
+                          </span>
+                        );
+                      })()}
+
+                      {/* Service info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[14px] font-semibold text-text-primary truncate">
+                            {s.name}
+                          </span>
+                          <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
+                            {frequencyLabel(s.frequencyMonths)}
+                          </span>
+                        </div>
+                        {(s.provider || (s.contractorId && contractors.find((c) => c.id === s.contractorId)?.company)) && (
+                          <p className="text-[12px] text-text-3 truncate">
+                            {s.provider || contractors.find((c) => c.id === s.contractorId)?.company}
+                            {s.cost !== null && ` — $${s.cost.toLocaleString()}`}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Due date */}
+                      <div className="flex flex-col items-end gap-0.5 shrink-0">
+                        <span
+                          className={`text-[14px] font-medium whitespace-nowrap ${
+                            isOverdue
+                              ? "text-red"
+                              : isSoon
+                                ? "text-accent"
+                                : "text-text-primary"
+                          }`}
+                        >
+                          {formatDate(s.nextServiceDate)}
                         </span>
-                        <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
-                          {frequencyLabel(s.frequencyMonths)}
+                        <span
+                          className={`text-[11px] ${
+                            isOverdue
+                              ? "text-red font-medium"
+                              : "text-text-3"
+                          }`}
+                        >
+                          {dueLabel}
                         </span>
                       </div>
-                      {s.provider && (
-                        <p className="text-[12px] text-text-3 truncate">
-                          {s.provider}
-                          {s.cost !== null && ` — $${s.cost.toLocaleString()}`}
-                        </p>
-                      )}
-                    </div>
+                    </Link>
 
-                    {/* Due date */}
-                    <div className="flex flex-col items-end gap-0.5 shrink-0">
-                      <span
-                        className={`text-[14px] font-medium whitespace-nowrap ${
-                          isOverdue
-                            ? "text-red"
-                            : isSoon
-                              ? "text-accent"
-                              : "text-text-primary"
-                        }`}
-                      >
-                        {formatDate(s.nextServiceDate)}
-                      </span>
-                      <span
-                        className={`text-[11px] ${
-                          isOverdue
-                            ? "text-red font-medium"
-                            : "text-text-3"
-                        }`}
-                      >
-                        {dueLabel}
-                      </span>
-                    </div>
-                  </Link>
+                    {/* Remind me toggle */}
+                    <button
+                      type="button"
+                      title="Remind Me"
+                      onClick={() => handleToggleReminder(s.id, !s.remindersEnabled)}
+                      className={`shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-[120ms] ${
+                        s.remindersEnabled
+                          ? "bg-accent border-accent"
+                          : "bg-transparent border-text-4 hover:border-text-3"
+                      }`}
+                      aria-label={s.remindersEnabled ? "Disable reminder" : "Enable reminder"}
+                    >
+                      {s.remindersEnabled && (
+                        <svg width={12} height={12} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                          <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </li>
               );
             })}

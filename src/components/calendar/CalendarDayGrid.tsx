@@ -253,7 +253,7 @@ export default function CalendarDayGrid({
                       ev.dataTransfer.effectAllowed = "move";
                     }}
                     className={`w-full h-full text-left px-3 py-1.5 text-[12px] font-medium rounded-[var(--radius-sm)] text-white hover:brightness-110 transition-all duration-[120ms] cursor-pointer ${PROJECT_BG}`}
-                    title={`${e.projectName}: ${e.title} at ${timeLabel}`}
+                    title={`${e.projectName}: ${e.title} at ${timeLabel}${e.contractorName ? `\n${e.contractorName}${e.contractorPhone ? ` — ${e.contractorPhone}` : ""}` : ""}`}
                   >
                     <div className="flex flex-col gap-0.5">
                       <span className="opacity-80 text-[11px]">
@@ -262,6 +262,11 @@ export default function CalendarDayGrid({
                       </span>
                       <span className="font-semibold">{e.title}</span>
                       <span className="opacity-70 text-[11px]">{e.projectName}</span>
+                      {e.contractorName && (
+                        <span className="opacity-70 text-[11px]">
+                          {e.contractorName}{e.contractorPhone ? ` — ${e.contractorPhone}` : ""}
+                        </span>
+                      )}
                     </div>
                   </button>
                 </div>

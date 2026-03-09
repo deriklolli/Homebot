@@ -37,7 +37,15 @@ interface DbCalendarEvent {
     id: string;
     name: string;
     status: string;
+    contractor_id: string | null;
   };
+}
+
+interface DbContractorLookup {
+  id: string;
+  company: string;
+  name: string;
+  phone: string;
 }
 
 interface DbInventoryReminder {
@@ -61,10 +69,10 @@ export default function CalendarClient() {
   const [editingEvent, setEditingEvent] = useState<ProjectCalendarEvent | null>(null);
 
   const fetchEvents = useCallback(async () => {
-    const [projectRes, inventoryRes, serviceRes] = await Promise.all([
+    const [projectRes, inventoryRes, serviceRes, contractorRes] = await Promise.all([
       supabase
         .from("project_events")
-        .select("id, title, event_date, event_time, event_end_time, notes, project_id, projects(id, name, status)")
+        .select("id, title, event_date, event_time, event_end_time, notes, project_id, projects(id, name, status, contractor_id)")
         .order("event_date", { ascending: true })
         .returns<DbCalendarEvent[]>(),
       supabase
@@ -76,14 +84,28 @@ export default function CalendarClient() {
       supabase
         .from("services")
         .select("id, name, next_service_date")
+        .eq("reminders_enabled", true)
         .order("next_service_date", { ascending: true })
         .returns<DbServiceReminder[]>(),
+      supabase
+        .from("contractors")
+        .select("id, company, name, phone")
+        .returns<DbContractorLookup[]>(),
     ]);
+
+    // Build contractor lookup map
+    const contractorMap = new Map<string, DbContractorLookup>();
+    if (!contractorRes.error && contractorRes.data) {
+      for (const c of contractorRes.data) {
+        contractorMap.set(c.id, c);
+      }
+    }
 
     const allEvents: CalendarEvent[] = [];
 
     if (!projectRes.error && projectRes.data) {
       for (const e of projectRes.data) {
+        const c = e.projects.contractor_id ? contractorMap.get(e.projects.contractor_id) : null;
         allEvents.push({
           type: "project",
           id: e.id,
@@ -95,6 +117,8 @@ export default function CalendarClient() {
           projectId: e.projects.id,
           projectName: e.projects.name,
           projectStatus: e.projects.status as ProjectStatus,
+          contractorName: c ? (c.company || c.name) : null,
+          contractorPhone: c?.phone || null,
         });
       }
     }

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { FREQUENCY_OPTIONS, type Service } from "@/lib/services-data";
 import type { Contractor } from "@/lib/contractors-data";
 import type { HomeAsset } from "@/lib/home-assets-data";
-import { XIcon, ChevronDownIcon, TrashIcon } from "@/components/icons";
+import { XIcon, ChevronDownIcon, TrashIcon, HomeIcon, BuildingIcon } from "@/components/icons";
 import DatePicker from "@/components/ui/DatePicker";
 import CurrencyInput from "@/components/ui/CurrencyInput";
 import AddContractorModal from "@/components/contractors/AddContractorModal";
@@ -67,6 +67,13 @@ export default function AddServiceModal({
   const [remindersEnabled, setRemindersEnabled] = useState(service?.remindersEnabled ?? false);
   const [showContractorModal, setShowContractorModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [contractorDropdownOpen, setContractorDropdownOpen] = useState(false);
+  const [contractorSearch, setContractorSearch] = useState("");
+  const contractorDropdownRef = useRef<HTMLDivElement>(null);
+  const [assetDropdownOpen, setAssetDropdownOpen] = useState(false);
+  const [assetSearch, setAssetSearch] = useState("");
+  const assetDropdownRef = useRef<HTMLDivElement>(null);
+  const assetSearchRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const isValid = name.trim() !== "";
 
@@ -81,6 +88,32 @@ export default function AddServiceModal({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose, showContractorModal]);
+
+  // Close contractor dropdown on outside click
+  useEffect(() => {
+    if (!contractorDropdownOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (contractorDropdownRef.current && !contractorDropdownRef.current.contains(e.target as Node)) {
+        setContractorDropdownOpen(false);
+        setContractorSearch("");
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [contractorDropdownOpen]);
+
+  // Close asset dropdown on outside click
+  useEffect(() => {
+    if (!assetDropdownOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (assetDropdownRef.current && !assetDropdownRef.current.contains(e.target as Node)) {
+        setAssetDropdownOpen(false);
+        setAssetSearch("");
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [assetDropdownOpen]);
 
   function handleContractorChange(value: string) {
     if (value === "__new__") {
@@ -164,52 +197,189 @@ export default function AddServiceModal({
             </label>
 
             {/* Contractor */}
-            <label className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5">
               <span className="text-[14px] font-medium text-text-primary">
                 Contractor
               </span>
-              <div className="relative">
-                <select
-                  value={contractorId}
-                  onChange={(e) => handleContractorChange(e.target.value)}
-                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              <div className="relative" ref={contractorDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setContractorDropdownOpen(!contractorDropdownOpen)}
+                  className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[14px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 >
-                  <option value="">None</option>
-                  {contractors.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name ? `${c.name} — ${c.company}` : c.company}
-                    </option>
-                  ))}
-                  <option value="__new__">+ Add New Contractor</option>
-                </select>
-                <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+                  {contractorId ? (() => {
+                    const selected = contractors.find((c) => c.id === contractorId);
+                    if (!selected) return <span className="text-text-3">None</span>;
+                    return (
+                      <>
+                        {selected.logoUrl ? (
+                          <img src={selected.logoUrl} alt="" className="w-6 h-6 rounded-full object-contain bg-white border border-border shrink-0" />
+                        ) : (
+                          <span className="w-6 h-6 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                            <BuildingIcon width={12} height={12} className="text-white" />
+                          </span>
+                        )}
+                        <span className="truncate">{selected.name ? `${selected.name} — ${selected.company}` : selected.company}</span>
+                      </>
+                    );
+                  })() : (
+                    <span className="text-text-3">None</span>
+                  )}
+                  <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+                </button>
+
+                {contractorDropdownOpen && (() => {
+                  const q = contractorSearch.toLowerCase();
+                  const filteredContractors = [...contractors]
+                    .sort((a, b) => a.company.localeCompare(b.company))
+                    .filter((c) => !q || c.company.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+                  return (
+                    <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-border rounded-[var(--radius-md)] shadow-[var(--shadow-hover)] overflow-hidden">
+                      <div className="px-3 py-2 border-b border-border">
+                        <input
+                          type="text"
+                          value={contractorSearch}
+                          onChange={(e) => setContractorSearch(e.target.value)}
+                          placeholder="Search contractors..."
+                          className="w-full text-[13px] bg-transparent text-text-primary placeholder:text-text-4 focus:outline-none"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-[200px] overflow-y-auto">
+                        {!q && (
+                          <button
+                            type="button"
+                            onClick={() => { handleContractorChange(""); setContractorDropdownOpen(false); setContractorSearch(""); }}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!contractorId ? "bg-surface-hover" : ""}`}
+                          >
+                            <span className="w-6 h-6 rounded-full bg-border shrink-0" />
+                            <span className="text-text-3">None</span>
+                          </button>
+                        )}
+                        {filteredContractors.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => { handleContractorChange(c.id); setContractorDropdownOpen(false); setContractorSearch(""); }}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${contractorId === c.id ? "bg-surface-hover" : ""}`}
+                          >
+                            {c.logoUrl ? (
+                              <img src={c.logoUrl} alt="" className="w-6 h-6 rounded-full object-contain bg-white border border-border shrink-0" />
+                            ) : (
+                              <span className="w-6 h-6 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                                <BuildingIcon width={12} height={12} className="text-white" />
+                              </span>
+                            )}
+                            <span className="truncate text-text-primary">{c.name ? `${c.name} — ${c.company}` : c.company}</span>
+                          </button>
+                        ))}
+                        {filteredContractors.length === 0 && (
+                          <p className="px-3 py-3 text-[13px] text-text-3 text-center">No contractors found</p>
+                        )}
+                        {!q && (
+                          <button
+                            type="button"
+                            onClick={() => { setContractorDropdownOpen(false); setContractorSearch(""); setShowContractorModal(true); }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left text-accent font-medium hover:bg-surface-hover transition-[background] duration-[120ms] border-t border-border"
+                          >
+                            + Add New Contractor
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
-            </label>
+            </div>
 
             {/* Home Asset */}
             {homeAssets.length > 0 && (
-              <label className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5">
                 <span className="text-[14px] font-medium text-text-primary">
                   Home Asset
                 </span>
-                <div className="relative">
-                  <select
-                    value={homeAssetId}
-                    onChange={(e) => setHomeAssetId(e.target.value)}
-                    className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                <div className="relative" ref={assetDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setAssetDropdownOpen(!assetDropdownOpen)}
+                    className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[14px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                   >
-                    <option value="">None</option>
-                    {[...homeAssets]
+                    {homeAssetId ? (() => {
+                      const selected = homeAssets.find((a) => a.id === homeAssetId);
+                      if (!selected) return <span className="text-text-3">None</span>;
+                      return (
+                        <>
+                          {selected.imageUrl ? (
+                            <img src={selected.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover bg-bg shrink-0" />
+                          ) : (
+                            <span className="w-6 h-6 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                              <HomeIcon width={12} height={12} className="text-white" />
+                            </span>
+                          )}
+                          <span className="truncate">{selected.name}</span>
+                        </>
+                      );
+                    })() : (
+                      <span className="text-text-3">None</span>
+                    )}
+                    <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+                  </button>
+
+                  {assetDropdownOpen && (() => {
+                    const q = assetSearch.toLowerCase();
+                    const filteredAssets = [...homeAssets]
                       .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDownIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-3" />
+                      .filter((a) => !q || a.name.toLowerCase().includes(q));
+                    return (
+                      <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-border rounded-[var(--radius-md)] shadow-[var(--shadow-hover)] overflow-hidden">
+                        <div className="px-3 py-2 border-b border-border">
+                          <input
+                            ref={assetSearchRef}
+                            type="text"
+                            value={assetSearch}
+                            onChange={(e) => setAssetSearch(e.target.value)}
+                            placeholder="Search assets..."
+                            className="w-full text-[13px] bg-transparent text-text-primary placeholder:text-text-4 focus:outline-none"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="max-h-[200px] overflow-y-auto">
+                          {!q && (
+                            <button
+                              type="button"
+                              onClick={() => { setHomeAssetId(""); setAssetDropdownOpen(false); setAssetSearch(""); }}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!homeAssetId ? "bg-surface-hover" : ""}`}
+                            >
+                              <span className="w-6 h-6 rounded-full bg-border shrink-0" />
+                              <span className="text-text-3">None</span>
+                            </button>
+                          )}
+                          {filteredAssets.map((a) => (
+                            <button
+                              key={a.id}
+                              type="button"
+                              onClick={() => { setHomeAssetId(a.id); setAssetDropdownOpen(false); setAssetSearch(""); }}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${homeAssetId === a.id ? "bg-surface-hover" : ""}`}
+                            >
+                              {a.imageUrl ? (
+                                <img src={a.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover bg-bg shrink-0" />
+                              ) : (
+                                <span className="w-6 h-6 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                                  <HomeIcon width={12} height={12} className="text-white" />
+                                </span>
+                              )}
+                              <span className="truncate text-text-primary">{a.name}</span>
+                            </button>
+                          ))}
+                          {filteredAssets.length === 0 && (
+                            <p className="px-3 py-3 text-[13px] text-text-3 text-center">No assets found</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-              </label>
+              </div>
             )}
 
             {/* Frequency & Remind me */}

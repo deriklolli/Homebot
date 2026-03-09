@@ -100,6 +100,7 @@ export async function GET(req: NextRequest) {
     .from("services")
     .select("id, name, provider, next_service_date, frequency_months")
     .eq("user_id", userId)
+    .eq("reminders_enabled", true)
     .order("next_service_date", { ascending: true })
     .returns<DbServiceItem[]>();
 

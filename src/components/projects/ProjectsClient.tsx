@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { type Project, type ProjectStatus, PROJECT_STATUSES } from "@/lib/projects-data";
+import { type Project, type ProjectStatus, type ProjectInvoice, PROJECT_STATUSES } from "@/lib/projects-data";
 import { type Contractor } from "@/lib/contractors-data";
 import { type HomeAsset } from "@/lib/home-assets-data";
-import { supabase, type DbProject, type DbContractor, type DbHomeAsset } from "@/lib/supabase";
-import { dbToProject, dbToContractor, dbToHomeAsset, projectToDb } from "@/lib/mappers";
+import { supabase, type DbProject, type DbContractor, type DbHomeAsset, type DbProjectInvoice } from "@/lib/supabase";
+import { dbToProject, dbToContractor, dbToHomeAsset, projectToDb, contractorToDb, dbToProjectInvoice } from "@/lib/mappers";
 import { PlusIcon, ChevronDownIcon } from "@/components/icons";
 import ProjectCard from "./ProjectCard";
 import ProjectSearchFilterBar from "./ProjectSearchFilterBar";
 import AddProjectModal from "./AddProjectModal";
+import CompleteProjectModal from "./CompleteProjectModal";
 import {
   DndContext,
   DragOverlay,
@@ -131,6 +132,8 @@ export default function ProjectsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [modalOpen, setModalOpen] = useState(false);
+  const [completingProject, setCompletingProject] = useState<Project | null>(null);
+  const [completingInvoices, setCompletingInvoices] = useState<ProjectInvoice[]>([]);
 
   // Drag-and-drop state
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -324,6 +327,22 @@ export default function ProjectsClient() {
         return;
       }
 
+      // Show completion modal when dragging to Completed
+      if (newStatus === "Completed" && project.status !== "Completed") {
+        // Fetch invoices for pre-filling total cost
+        supabase
+          .from("project_invoices")
+          .select("id, user_id, project_id, storage_path, file_name, file_type, amount, created_at")
+          .eq("project_id", projectId)
+          .returns<DbProjectInvoice[]>()
+          .then(({ data }) => {
+            setCompletingInvoices(data ? data.map(dbToProjectInvoice) : []);
+          });
+        setCompletingProject(project);
+        setDragSourceColumn(null);
+        return;
+      }
+
       const oldStatus = project.status;
       const oldCompletedAt = project.completedAt;
       const completedAt = newStatus === "Completed" ? new Date().toISOString() : null;
@@ -361,6 +380,23 @@ export default function ProjectsClient() {
     setOverColumn(null);
     setDragSourceColumn(null);
     setColumnItems(buildColumns());
+  }
+
+  async function handleContractorAdded(
+    data: Omit<Contractor, "id" | "createdAt">
+  ): Promise<Contractor> {
+    const { data: rows, error } = await supabase
+      .from("contractors")
+      .insert(contractorToDb(data) as Record<string, unknown>)
+      .select()
+      .returns<DbContractor[]>();
+
+    if (error || !rows?.length) {
+      throw new Error("Failed to add contractor");
+    }
+    const newContractor = dbToContractor(rows[0]);
+    setContractors((prev) => [...prev, newContractor]);
+    return newContractor;
   }
 
   async function handleAdd(
@@ -507,8 +543,58 @@ export default function ProjectsClient() {
       {modalOpen && (
         <AddProjectModal
           homeAssets={homeAssets}
+          contractors={contractors}
           onSave={handleAdd}
+          onContractorAdded={handleContractorAdded}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {/* Complete modal */}
+      {completingProject && (
+        <CompleteProjectModal
+          project={completingProject}
+          contractorName={
+            completingProject.contractorId
+              ? contractors.find((c) => c.id === completingProject.contractorId)?.company ?? null
+              : null
+          }
+          invoices={completingInvoices}
+          onComplete={async ({ totalCost, contractorRating }) => {
+            const projectId = completingProject.id;
+            const completedAt = new Date().toISOString();
+
+            setProjects((prev) =>
+              prev.map((p) =>
+                p.id === projectId
+                  ? { ...p, status: "Completed" as ProjectStatus, completedAt, totalCost, contractorRating }
+                  : p
+              )
+            );
+            setCompletingProject(null);
+
+            const { error } = await supabase
+              .from("projects")
+              .update({
+                status: "Completed",
+                completed_at: completedAt,
+                total_cost: totalCost,
+                contractor_rating: contractorRating || null,
+              })
+              .eq("id", projectId);
+
+            if (error) {
+              console.error("Failed to complete project:", error);
+              setProjects((prev) =>
+                prev.map((p) =>
+                  p.id === projectId
+                    ? { ...p, status: completingProject.status, completedAt: completingProject.completedAt, totalCost: completingProject.totalCost, contractorRating: completingProject.contractorRating }
+                    : p
+                )
+              );
+            }
+          }}
+          onClose={() => { setCompletingProject(null); setCompletingInvoices([]); }}
         />
       )}
     </div>

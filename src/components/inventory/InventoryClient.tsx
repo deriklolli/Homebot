@@ -6,7 +6,7 @@ import { type InventoryItem, FREQUENCY_OPTIONS } from "@/lib/inventory-data";
 import { supabase, type DbInventoryItem, type DbHomeAsset } from "@/lib/supabase";
 import { dbToInventoryItem, inventoryItemToDb, dbToHomeAsset } from "@/lib/mappers";
 import { type HomeAsset } from "@/lib/home-assets-data";
-import { PlusIcon, SearchIcon, ApplianceIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, ApplianceIcon, ChevronDownIcon, ChevronRightIcon } from "@/components/icons";
 import AddInventoryItemModal from "./AddInventoryItemModal";
 import { buyNowUrl } from "@/lib/utils";
 import HomeAlerts from "@/components/HomeAlerts";
@@ -20,48 +20,71 @@ function InventoryItemRow({
   badgeClass,
   extraInfo,
   assetLabel,
+  onToggleTracked,
 }: {
   item: InventoryItem;
   dueLabel: string;
   badgeClass: string;
   extraInfo?: React.ReactNode;
   assetLabel?: string;
+  onToggleTracked: (id: string, tracked: boolean) => void;
 }) {
   return (
     <li className="border-b border-border last:border-b-0">
-      <Link
-        href={`/inventory/${item.id}`}
-        className="flex items-center gap-x-3 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]"
-      >
-        {item.thumbnailUrl ? (
-          <img
-            src={item.thumbnailUrl}
-            alt={item.name}
-            className="w-10 h-10 rounded-full object-cover shrink-0 bg-border"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
-            <ApplianceIcon width={18} height={18} className="text-white" strokeWidth={1.5} />
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          {extraInfo ?? (
-            <span className="text-[14px] font-semibold text-text-primary truncate block">
-              {item.name}
-            </span>
-          )}
-          {assetLabel ? (
-            <p className="text-[12px] text-text-3 truncate">
-              {assetLabel}
-            </p>
-          ) : null}
-        </div>
-        <span
-          className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${badgeClass}`}
+      <div className="flex items-center gap-5 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]">
+        <Link
+          href={`/inventory/${item.id}`}
+          className="flex items-center gap-x-3 flex-1 min-w-0"
         >
-          {dueLabel}
-        </span>
-      </Link>
+          {item.thumbnailUrl ? (
+            <img
+              src={item.thumbnailUrl}
+              alt={item.name}
+              className="w-10 h-10 rounded-full object-cover shrink-0 bg-border"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-accent shrink-0 flex items-center justify-center">
+              <ApplianceIcon width={18} height={18} className="text-white" strokeWidth={1.5} />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            {extraInfo ?? (
+              <span className="text-[14px] font-semibold text-text-primary truncate block">
+                {item.name}
+              </span>
+            )}
+            {assetLabel ? (
+              <p className="text-[12px] text-text-3 truncate">
+                {assetLabel}
+              </p>
+            ) : null}
+          </div>
+          <span
+            className={`text-[11px] font-medium whitespace-nowrap rounded-[var(--radius-full)] px-2 py-0.5 shrink-0 ${badgeClass}`}
+          >
+            {dueLabel}
+          </span>
+        </Link>
+
+        {/* Tracked toggle */}
+        <button
+          type="button"
+          title="Remind Me"
+          onClick={() => onToggleTracked(item.id, !item.tracked)}
+          className={`shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-[120ms] ${
+            item.tracked
+              ? "bg-accent border-accent"
+              : "bg-transparent border-text-4 hover:border-text-3"
+          }`}
+          aria-label={item.tracked ? `Stop tracking ${item.name}` : `Track ${item.name}`}
+        >
+          {item.tracked && (
+            <svg width={12} height={12} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      </div>
     </li>
   );
 }
@@ -86,6 +109,7 @@ export default function InventoryClient() {
   const [homeAssets, setHomeAssets] = useState<HomeAsset[]>([]);
   const [assetLabels, setAssetLabels] = useState<Map<string, string>>(new Map());
   const [assetLocations, setAssetLocations] = useState<Map<string, string>>(new Map());
+  const [collapsedRooms, setCollapsedRooms] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchData() {
@@ -93,7 +117,6 @@ export default function InventoryClient() {
         supabase
           .from("inventory_items")
           .select("id, user_id, name, description, frequency_months, last_ordered_date, next_reminder_date, purchase_url, thumbnail_url, notes, cost, home_asset_id, tracked, created_at")
-          .eq("tracked", true)
           .order("next_reminder_date", { ascending: true })
           .returns<DbInventoryItem[]>(),
         supabase
@@ -253,6 +276,30 @@ export default function InventoryClient() {
     return sortedRooms.map((room) => ({ room, items: groups.get(room)! }));
   })();
 
+  async function handleToggleTracked(itemId: string, tracked: boolean) {
+    setItems((prev) =>
+      prev.map((i) => (i.id === itemId ? { ...i, tracked } : i))
+    );
+    const { error } = await supabase
+      .from("inventory_items")
+      .update({ tracked })
+      .eq("id", itemId);
+    if (error) {
+      setItems((prev) =>
+        prev.map((i) => (i.id === itemId ? { ...i, tracked: !tracked } : i))
+      );
+    }
+  }
+
+  function toggleRoom(room: string) {
+    setCollapsedRooms((prev) => {
+      const next = new Set(prev);
+      if (next.has(room)) next.delete(room);
+      else next.add(room);
+      return next;
+    });
+  }
+
   async function handleAdd(data: Omit<InventoryItem, "id" | "createdAt">) {
     let thumbnailUrl = data.thumbnailUrl;
     if (!thumbnailUrl && data.purchaseUrl) {
@@ -338,45 +385,76 @@ export default function InventoryClient() {
           </p>
         </div>
       ) : (
-        <>
-          {/* Inventory grouped by room */}
-          {groupedByRoom.map(({ room, items: roomItems }) => (
-            <div key={room} className="mb-4 last:mb-0">
-              <h2 className="text-[13px] font-semibold text-text-3 uppercase tracking-wide mb-2">
-                {room}
-              </h2>
-              <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden">
-                <ul role="list" aria-label={`${room} inventory items`}>
-                  {roomItems.map((item) => {
-                    const days = daysUntil(item.nextReminderDate);
-                    const isSoon = days > 0 && days <= 30;
-                    const dueLabel = `in ${days} day${days !== 1 ? "s" : ""}`;
+        <div className="flex flex-col gap-4">
+          {groupedByRoom.map(({ room, items: roomItems }) => {
+            const isCollapsed = collapsedRooms.has(room);
+            return (
+              <div
+                key={room}
+                className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden"
+              >
+                {/* Room header */}
+                <div
+                  className={`flex items-center gap-2 px-5 py-3 bg-bg/50 ${
+                    !isCollapsed && roomItems.length > 0 ? "border-b border-border" : ""
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleRoom(room)}
+                    className="flex items-center gap-2 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
+                    aria-expanded={!isCollapsed}
+                    aria-controls={`room-${room}`}
+                  >
+                    {isCollapsed ? (
+                      <ChevronRightIcon width={14} height={14} className="text-text-3 shrink-0" />
+                    ) : (
+                      <ChevronDownIcon width={14} height={14} className="text-text-3 shrink-0" />
+                    )}
+                    <span className="text-[14px] font-semibold text-text-primary">
+                      {room}
+                    </span>
+                    <span className="text-[12px] text-text-3">
+                      ({roomItems.length})
+                    </span>
+                  </button>
+                </div>
 
-                    return (
-                      <InventoryItemRow
-                        key={item.id}
-                        item={item}
-                        dueLabel={dueLabel}
-                        badgeClass={isSoon ? "bg-accent-light text-accent" : "bg-border text-text-3"}
-                        assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}
-                        extraInfo={
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-[14px] font-semibold text-text-primary truncate">
-                              {item.name}
-                            </span>
-                            <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
-                              {frequencyLabel(item.frequencyMonths)}
-                            </span>
-                          </div>
-                        }
-                      />
-                    );
-                  })}
-                </ul>
+                {/* Inventory items — collapsible */}
+                {!isCollapsed && (
+                  <ul role="list" id={`room-${room}`} aria-label={`${room} inventory items`}>
+                    {roomItems.map((item) => {
+                      const days = daysUntil(item.nextReminderDate);
+                      const isSoon = days > 0 && days <= 30;
+                      const dueLabel = `in ${days} day${days !== 1 ? "s" : ""}`;
+
+                      return (
+                        <InventoryItemRow
+                          key={item.id}
+                          item={item}
+                          dueLabel={dueLabel}
+                          badgeClass={isSoon ? "bg-accent-light text-accent" : "bg-border text-text-3"}
+                          assetLabel={item.homeAssetId ? assetLabels.get(item.homeAssetId) : undefined}
+                          onToggleTracked={handleToggleTracked}
+                          extraInfo={
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-[14px] font-semibold text-text-primary truncate">
+                                {item.name}
+                              </span>
+                              <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
+                                {frequencyLabel(item.frequencyMonths)}
+                              </span>
+                            </div>
+                          }
+                        />
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
-            </div>
-          ))}
-        </>
+            );
+          })}
+        </div>
       )}
 
       {/* Add modal */}

@@ -12,15 +12,17 @@ import {
   ChevronLeftIcon,
   PencilIcon,
   TrashIcon,
-  PackageIcon,
   CameraIcon,
   PlusIcon,
   XIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from "@/components/icons";
 import AddHomeAssetModal from "./AddHomeAssetModal";
 import HomeAssetDocuments, { type HomeAssetDocumentsHandle } from "./HomeAssetDocuments";
 import { affiliateUrl } from "@/lib/utils";
 import { formatDateLong as formatDate } from "@/lib/date-utils";
+import { captureImageUrl, storagePathFromUrl } from "@/lib/capture-image";
 
 function warrantyPill(dateStr: string | null): { label: string; color: string } | null {
   if (!dateStr) return null;
@@ -47,12 +49,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [linkedInventory, setLinkedInventory] = useState<InventoryItem[]>([]);
+  const [inventoryCollapsed, setInventoryCollapsed] = useState(false);
   const [documents, setDocuments] = useState<HomeAssetDocument[]>([]);
   const [addFilesMenuOpen, setAddFilesMenuOpen] = useState(false);
   const addFilesMenuRef = useRef<HTMLDivElement>(null);
   const documentsRef = useRef<HomeAssetDocumentsHandle>(null);
   const [imagePromptOpen, setImagePromptOpen] = useState(false);
   const [imageInput, setImageInput] = useState("");
+  const [imgBroken, setImgBroken] = useState(false);
   const [dimensions, setDimensions] = useState<{ width: string | null; height: string | null; depth: string | null; weight: string | null } | null>(null);
   const [skulyticsWarrantyMonths, setSkulyticsWarrantyMonths] = useState<number | null>(null);
   const [manualUrl, setManualUrl] = useState<string | null>(null);
@@ -165,8 +169,10 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
           // Use Skulytics image only if no image is set yet
           if (p.image && !asset!.imageUrl) {
-            supabase.from("home_assets").update({ image_url: p.image }).eq("id", asset!.id).then(() => {
-              setAsset((prev) => prev ? { ...prev, imageUrl: p.image } : prev);
+            captureImageUrl(p.image, asset!.id).then((capturedUrl) => {
+              supabase.from("home_assets").update({ image_url: capturedUrl }).eq("id", asset!.id).then(() => {
+                setAsset((prev) => prev ? { ...prev, imageUrl: capturedUrl } : prev);
+              });
             });
           }
 
@@ -214,8 +220,10 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         }
         // Apply image from enrichment only if no image is set yet
         if (data.imageUrl && !asset!.imageUrl) {
-          supabase.from("home_assets").update({ image_url: data.imageUrl }).eq("id", asset!.id).then(() => {
-            setAsset((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : prev);
+          captureImageUrl(data.imageUrl, asset!.id).then((capturedUrl) => {
+            supabase.from("home_assets").update({ image_url: capturedUrl }).eq("id", asset!.id).then(() => {
+              setAsset((prev) => prev ? { ...prev, imageUrl: capturedUrl } : prev);
+            });
           });
         }
         if (data.productUrl) {
@@ -277,14 +285,15 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         body: JSON.stringify({ make: data.make, model: data.model, category: data.category }),
       })
         .then((res) => res.json())
-        .then((result) => {
+        .then(async (result) => {
           if (result.imageUrl) {
+            const capturedUrl = await captureImageUrl(result.imageUrl, asset.id, updated.imageUrl);
             supabase
               .from("home_assets")
-              .update({ image_url: result.imageUrl })
+              .update({ image_url: capturedUrl })
               .eq("id", asset.id)
               .then(() => {
-                setAsset((prev) => prev ? { ...prev, imageUrl: result.imageUrl } : prev);
+                setAsset((prev) => prev ? { ...prev, imageUrl: capturedUrl } : prev);
               });
           }
         })
@@ -295,19 +304,32 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
   async function handleImageSave() {
     if (!asset || !imageInput.trim()) return;
     const url = imageInput.trim();
+
+    // Capture external image to Supabase storage
+    const capturedUrl = await captureImageUrl(url, asset.id, asset.imageUrl);
+
     const { error } = await supabase
       .from("home_assets")
-      .update({ image_url: url })
+      .update({ image_url: capturedUrl })
       .eq("id", asset.id);
 
     if (!error) {
-      setAsset((prev) => prev ? { ...prev, imageUrl: url } : prev);
+      setAsset((prev) => prev ? { ...prev, imageUrl: capturedUrl } : prev);
+      setImgBroken(false);
     }
     setImagePromptOpen(false);
     setImageInput("");
   }
 
   async function handleDelete() {
+    // Clean up stored asset image
+    if (asset?.imageUrl) {
+      const imgPath = storagePathFromUrl(asset.imageUrl);
+      if (imgPath) {
+        await supabase.storage.from("home-asset-images").remove([imgPath]);
+      }
+    }
+
     // Clean up document storage files (DB rows cascade-delete automatically)
     if (documents.length > 0) {
       const paths = documents.map((d) => d.storagePath);
@@ -436,16 +458,13 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Product image — top on mobile, left on desktop */}
           <div className="shrink-0 self-start mx-auto md:mx-0">
-            {asset.imageUrl ? (
+            {asset.imageUrl && !imgBroken ? (
               <div className="relative group rounded-[var(--radius-md)] border border-border-strong bg-white p-3 shadow-[0_4px_12px_0px_rgba(0,0,0,0.1)]">
                 <img
                   src={asset.imageUrl}
                   alt={`${asset.make} ${asset.model}`}
                   className="h-[195px] w-[195px] object-contain"
-                  onError={(e) => {
-                    // Hide broken image but keep the URL in DB
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
+                  onError={() => setImgBroken(true)}
                 />
                 <button
                   type="button"
@@ -703,37 +722,55 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Recommended Inventory Upkeep */}
       {linkedInventory.length > 0 && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] overflow-hidden mb-5">
-          <div className="flex items-center rounded-[var(--radius-md)] bg-bg/50 mx-3 mt-3">
-            <div className="flex items-center gap-2 px-3 py-3 flex-1 min-w-0">
-              <PackageIcon width={14} height={14} className="text-teal" />
+          {/* Header */}
+          <div
+            className={`flex items-center gap-2 px-5 py-3 bg-bg/50 ${
+              !inventoryCollapsed && linkedInventory.length > 0 ? "border-b border-border" : ""
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setInventoryCollapsed((prev) => !prev)}
+              className="flex items-center gap-2 flex-1 min-w-0 hover:opacity-70 transition-opacity duration-[120ms]"
+              aria-expanded={!inventoryCollapsed}
+            >
+              {inventoryCollapsed ? (
+                <ChevronRightIcon width={14} height={14} className="text-text-3 shrink-0" />
+              ) : (
+                <ChevronDownIcon width={14} height={14} className="text-text-3 shrink-0" />
+              )}
               <span className="text-[14px] font-semibold text-text-primary">
                 Recommended Inventory Upkeep
               </span>
-            </div>
-            <div className="shrink-0 w-[100px] flex items-center justify-center py-3 pr-2">
-              <span className="text-[13px] font-medium text-text-3">
-                Remind Me
+              <span className="text-[12px] text-text-3">
+                ({linkedInventory.length})
               </span>
-            </div>
+            </button>
+            <span className="text-[13px] font-medium text-text-3 shrink-0">
+              Add to Home Inventory
+            </span>
           </div>
-          <ul role="list" className="mt-2">
-            {linkedInventory.map((inv) => (
-              <li key={inv.id} className="border-b border-border last:border-b-0">
-                <div className="flex items-center">
-                  <Link
-                    href={`/inventory/${inv.id}`}
-                    className="flex items-center gap-3 flex-1 min-w-0 px-5 py-3.5 hover:opacity-70 transition-opacity duration-[120ms]"
-                  >
-                    <span className="text-[14px] font-semibold text-text-primary truncate">
-                      {inv.name}
-                    </span>
-                    <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
-                      {frequencyLabel(inv.frequencyMonths)}
-                    </span>
-                  </Link>
-                  <div className="shrink-0 w-[72px] flex items-center justify-center self-stretch">
+
+          {/* Inventory items — collapsible */}
+          {!inventoryCollapsed && (
+            <ul role="list">
+              {linkedInventory.map((inv) => (
+                <li key={inv.id} className="border-b border-border last:border-b-0">
+                  <div className="flex items-center gap-5 px-5 py-3.5 hover:bg-surface-hover transition-[background] duration-[120ms]">
+                    <Link
+                      href={`/inventory/${inv.id}`}
+                      className="flex items-center gap-3 flex-1 min-w-0"
+                    >
+                      <span className="text-[14px] font-semibold text-text-primary truncate">
+                        {inv.name}
+                      </span>
+                      <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
+                        {frequencyLabel(inv.frequencyMonths)}
+                      </span>
+                    </Link>
                     <button
                       type="button"
+                      title="Add to Home Inventory"
                       onClick={async () => {
                         const newTracked = !inv.tracked;
                         setLinkedInventory((prev) =>
@@ -752,16 +789,16 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                       aria-label={inv.tracked ? `Stop tracking ${inv.name}` : `Track ${inv.name}`}
                     >
                       {inv.tracked && (
-                        <svg width={12} height={12} viewBox="0 0 12 12" fill="none">
+                        <svg width={12} height={12} viewBox="0 0 12 12" fill="none" aria-hidden="true">
                           <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}
                     </button>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

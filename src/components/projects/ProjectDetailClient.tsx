@@ -696,13 +696,13 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 </button>
 
                 {addMenuOpen && (
-                  <div className="absolute top-full right-0 mt-1.5 bg-surface rounded-[var(--radius-sm)] border border-border shadow-[var(--shadow-hover)] py-1 min-w-[170px] z-20">
+                  <div className="absolute top-full right-0 mt-1.5 bg-surface rounded-[var(--radius-md)] border border-border shadow-[var(--shadow-hover)] p-1 min-w-[210px] z-20">
                     <button
                       onClick={() => {
                         setAddMenuOpen(false);
                         setAddEventModalOpen(true);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Schedule Appointment
                     </button>
@@ -711,7 +711,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         setAddMenuOpen(false);
                         setAddNoteModalOpen(true);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Note
                     </button>
@@ -720,7 +720,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         galleryRef.current?.triggerUpload();
                         setAddMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Photos
                     </button>
@@ -729,7 +729,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         estimateSectionRef.current?.triggerUpload();
                         setAddMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Estimate
                     </button>
@@ -738,7 +738,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         invoiceSectionRef.current?.triggerUpload();
                         setAddMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Invoice
                     </button>
@@ -748,7 +748,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         setSelectedContractorId(project.contractorId ?? "");
                         setHireContractorOpen(true);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Hire Contractor
                     </button>
@@ -855,9 +855,22 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-text-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
-                Added {formatDateTime(project.createdAt)}
-              </span>
+              {project.contractorRating !== null && project.contractorRating > 0 ? (
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <StarFilledIcon
+                      key={i}
+                      width={14}
+                      height={14}
+                      className={i < project.contractorRating! ? "text-accent" : "text-border-strong"}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <span className="text-[10px] text-text-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+                  Added {formatDateTime(project.createdAt)}
+                </span>
+              )}
               <button
                 onClick={() => handleRemoveContractor()}
                 className="p-1.5 rounded-[var(--radius-sm)] text-text-4 opacity-0 group-hover:opacity-100 hover:bg-border hover:text-red transition-all duration-[120ms]"
@@ -919,6 +932,34 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Project Completed card */}
+      {project.status === "Completed" && (
+        <div className="flex items-start gap-4 mb-5">
+          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
+            <CheckCircleIcon size={30} className="text-green" />
+            Completed
+          </span>
+          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1">
+            <span className="block text-[14px] font-semibold text-text-primary mb-1">
+              Project Completed
+            </span>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+              <span className="text-[20px] font-bold text-text-primary flex items-center gap-1.5">
+                <DollarIcon width={15} height={15} className="text-text-3" />
+                {project.totalCost !== null
+                  ? `$${project.totalCost.toLocaleString()}`
+                  : "—"}
+              </span>
+              {project.completedAt && (
+                <span className="text-[14px] text-text-3">
+                  {formatDateTime(project.completedAt)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -1031,49 +1072,6 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         iconColorClass="text-text-4"
       />
 
-      {/* Project Completed card */}
-      {project.status === "Completed" && (
-        <div className="flex items-start gap-4 mb-5">
-          <span className="flex flex-col items-end gap-0.5 text-[11px] font-medium text-text-4 uppercase tracking-wide w-[80px] shrink-0 mt-4">
-            <CheckCircleIcon size={30} className="text-green" />
-            Completed
-          </span>
-          <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1">
-            <span className="block text-[14px] font-semibold text-text-primary mb-1">
-              Project Completed
-            </span>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-              <span className="text-[14px] text-text-3 flex items-center gap-1.5">
-                <DollarIcon width={13} height={13} className="text-text-3" />
-                {project.totalCost !== null
-                  ? `$${project.totalCost.toLocaleString()}`
-                  : "—"}
-              </span>
-              {project.completedAt && (
-                <span className="text-[14px] text-text-3">
-                  {formatDate(project.completedAt)}
-                </span>
-              )}
-              {project.contractorRating !== null && project.contractorRating > 0 && (
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <StarFilledIcon
-                      key={i}
-                      width={14}
-                      height={14}
-                      className={
-                        i < project.contractorRating!
-                          ? "text-accent"
-                          : "text-border-strong"
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete confirmation */}
       {confirmDelete && (
@@ -1101,7 +1099,9 @@ export default function ProjectDetailClient({ id }: { id: string }) {
         <AddProjectModal
           project={project}
           homeAssets={homeAssets}
+          contractors={contractors}
           onSave={handleEdit}
+          onContractorAdded={handleContractorAdded}
           onClose={() => setEditModalOpen(false)}
         />
       )}

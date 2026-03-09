@@ -16,6 +16,7 @@ import {
   ClipboardCheckIcon,
   PhoneIcon,
   BuildingIcon,
+  HomeIcon,
 } from "@/components/icons";
 import AddServiceModal from "./AddServiceModal";
 import ServiceHistorySection from "./ServiceHistorySection";
@@ -82,7 +83,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
           .returns<DbContractor[]>(),
         supabase
           .from("home_assets")
-          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, created_at")
+          .select("id, user_id, name, category, make, model, serial_number, purchase_date, warranty_expiration, location, notes, product_url, image_url, enrichment_data, enriched_at, created_at")
           .order("name", { ascending: true })
           .returns<DbHomeAsset[]>(),
         supabase
@@ -302,17 +303,31 @@ export default function ServiceDetailClient({ id }: { id: string }) {
       </header>
 
       {/* Details card */}
-      <div className="flex gap-5 mb-5">
-        {/* Icon */}
-        <div className="shrink-0">
-          <div className="w-28 h-28 rounded-full bg-accent flex items-center justify-center">
-            <ClipboardCheckIcon width={48} height={48} className="text-white" strokeWidth={1.5} />
-          </div>
-        </div>
-
-        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6 flex-1">
-          {/* Top row: Date / Contractor / Mark as Serviced */}
+      <div className="mb-5">
+        <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-6">
+          {/* Top row: Asset / Date / Contractor / Mark as Serviced */}
           <div className="flex gap-5 mb-5">
+            {/* Linked Asset */}
+            {linkedAsset && (
+              <div className="flex-[30] min-w-0">
+                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                  Asset
+                </span>
+                <Link href={`/home-assets/${linkedAsset.id}`} className="flex items-center gap-2.5 group">
+                  {linkedAsset.imageUrl ? (
+                    <img src={linkedAsset.imageUrl} alt="" className="w-9 h-9 rounded-full object-cover bg-bg shrink-0" />
+                  ) : (
+                    <span className="w-9 h-9 rounded-full bg-accent shrink-0 flex items-center justify-center">
+                      <HomeIcon width={16} height={16} className="text-white" />
+                    </span>
+                  )}
+                  <span className="text-[14px] text-text-primary truncate group-hover:text-accent transition-colors duration-[120ms]">
+                    {linkedAsset.name}
+                  </span>
+                </Link>
+              </div>
+            )}
+
             {/* Next Service Date */}
             <div className="flex-[35] min-w-0">
               <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
@@ -337,7 +352,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
             </div>
 
             {/* Contractor */}
-            {service.provider && (
+            {(service.provider || linkedContractor) && (
               <div className="flex-[35] min-w-0">
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Contractor
@@ -357,7 +372,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
                   )}
                   <div className="min-w-0">
                     <span className="text-[14px] text-text-primary block truncate">
-                      {service.provider}
+                      {service.provider || linkedContractor?.company}
                     </span>
                     {service.phone && (
                       <span className="flex items-center gap-1.5 text-[14px] text-text-primary mt-0.5">

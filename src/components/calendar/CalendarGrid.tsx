@@ -13,6 +13,8 @@ export interface ProjectCalendarEvent {
   projectId: string;
   projectName: string;
   projectStatus: ProjectStatus;
+  contractorName?: string | null;
+  contractorPhone?: string | null;
 }
 
 export interface InventoryCalendarEvent {
@@ -226,7 +228,7 @@ export default function CalendarGrid({
                         ev.dataTransfer.effectAllowed = "move";
                       }}
                       className={`flex items-center gap-1 w-full text-left px-2 py-[3px] text-[11px] font-medium rounded-full truncate text-white hover:brightness-110 transition-all duration-[120ms] cursor-pointer ${PROJECT_BG}`}
-                      title={`${e.projectName}: ${e.title}${e.eventTime ? ` at ${formatShortTime(e.eventTime)}${e.eventEndTime ? `–${formatShortTime(e.eventEndTime)}` : ""}` : ""}`}
+                      title={`${e.projectName}: ${e.title}${e.eventTime ? ` at ${formatShortTime(e.eventTime)}${e.eventEndTime ? `–${formatShortTime(e.eventEndTime)}` : ""}` : ""}${e.contractorName ? `\n${e.contractorName}${e.contractorPhone ? ` — ${e.contractorPhone}` : ""}` : ""}`}
                     >
                       {e.eventTime && (
                         <span className="opacity-80">{formatShortTime(e.eventTime)}</span>

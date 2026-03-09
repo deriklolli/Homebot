@@ -12,6 +12,7 @@ import LabelScannerModal, { type ScanResult } from "./LabelScannerModal";
 
 import { buyNowUrl } from "@/lib/utils";
 import { computeNextReminderDate } from "@/lib/date-utils";
+import { captureImageUrl, isSupabaseStorageUrl } from "@/lib/capture-image";
 
 interface ConsumableProduct {
   name: string;
@@ -196,14 +197,15 @@ export default function HomeAssetsClient() {
       .catch(() => { /* ignore */ });
   }
 
-  function updateAssetImage(assetId: string, imageUrl: string) {
+  async function updateAssetImage(assetId: string, imageUrl: string) {
+    const capturedUrl = await captureImageUrl(imageUrl, assetId);
     supabase
       .from("home_assets")
-      .update({ image_url: imageUrl })
+      .update({ image_url: capturedUrl })
       .eq("id", assetId)
       .then(() => {
         setAssets((prev) =>
-          prev.map((a) => (a.id === assetId ? { ...a, imageUrl } : a))
+          prev.map((a) => (a.id === assetId ? { ...a, imageUrl: capturedUrl } : a))
         );
       });
   }
@@ -283,8 +285,23 @@ export default function HomeAssetsClient() {
     // Prime the consumable cache + auto-create inventory items
     primeSuggestionCache(data, newAsset.id);
 
-    // Auto-fetch product image if none was provided
-    if (data.make && data.model && !data.imageUrl) {
+    // Capture external image that came from the add modal (enrichment)
+    if (newAsset.imageUrl && !isSupabaseStorageUrl(newAsset.imageUrl)) {
+      captureImageUrl(newAsset.imageUrl, newAsset.id).then((capturedUrl) => {
+        if (capturedUrl !== newAsset.imageUrl) {
+          supabase
+            .from("home_assets")
+            .update({ image_url: capturedUrl })
+            .eq("id", newAsset.id)
+            .then(() => {
+              setAssets((prev) =>
+                prev.map((a) => (a.id === newAsset.id ? { ...a, imageUrl: capturedUrl } : a))
+              );
+            });
+        }
+      });
+    } else if (data.make && data.model && !data.imageUrl) {
+      // Auto-fetch product image if none was provided
       fetchProductImage(newAsset.id, data.make, data.model, data.category);
     }
   }

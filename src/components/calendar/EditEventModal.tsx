@@ -157,15 +157,28 @@ export default function EditEventModal({
             />
           </label>
 
-          {/* Project link */}
-          <div className="flex items-center gap-2 text-[13px] text-text-3">
-            <span>Project:</span>
-            <Link
-              href={`/projects/${event.projectId}`}
-              className="text-accent hover:underline font-medium"
-            >
-              {event.projectName}
-            </Link>
+          {/* Project & contractor info */}
+          <div className="flex flex-col gap-1 text-[13px] text-text-3">
+            <div className="flex items-center gap-2">
+              <span>Project:</span>
+              <Link
+                href={`/projects/${event.projectId}`}
+                className="text-accent hover:underline font-medium"
+              >
+                {event.projectName}
+              </Link>
+            </div>
+            {event.contractorName && (
+              <div className="flex items-center gap-2">
+                <span>Contractor:</span>
+                <span className="text-text-primary font-medium">
+                  {event.contractorName}
+                  {event.contractorPhone && (
+                    <span className="text-text-3 font-normal"> — {event.contractorPhone}</span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Actions */}

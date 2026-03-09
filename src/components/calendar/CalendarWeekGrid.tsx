@@ -114,7 +114,7 @@ function EventPill({
         e.dataTransfer.effectAllowed = "move";
       }}
       className={`block w-full text-left px-2 py-1 text-[11px] font-medium rounded-[var(--radius-sm)] hover:brightness-110 transition-all duration-[120ms] cursor-pointer text-white ${fill ? "h-full overflow-hidden" : "truncate rounded-full"} ${PROJECT_BG}`}
-      title={`${event.projectName}: ${event.title}${timeLabel ? ` at ${timeLabel}` : ""}`}
+      title={`${event.projectName}: ${event.title}${timeLabel ? ` at ${timeLabel}` : ""}${event.contractorName ? `\n${event.contractorName}${event.contractorPhone ? ` — ${event.contractorPhone}` : ""}` : ""}`}
     >
       {fill ? (
         <div className="flex flex-col gap-0.5">
