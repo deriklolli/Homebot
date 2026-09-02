@@ -152,15 +152,46 @@ make sure they fail soft rather than blocking a user flow.
 
 ## 8. Open security items
 
-Two things surfaced during this handover. Both are resolved in the code and
-database; one still needs a manual step from Derik.
+Two things surfaced during this handover. The RLS gap is fixed. The key
+rotation is still open and needs Derik to do it in the Supabase dashboard —
+it cannot be scripted from the repo.
 
-**Needs a manual step:** `scripts/insert-test-service.mjs` had the Supabase service role key
-hardcoded in plaintext. It now reads from the environment. The file was never
-committed, so the key was never pushed to GitHub — but it sat unprotected on
-disk, so **rotate the service role key** in the Supabase dashboard
-(Settings → API → service_role → Reset) and update it in `.env.local` and in
-Vercel's environment variables.
+**Still open — rotate the service role key.**
+`scripts/insert-test-service.mjs` had the Supabase service role key hardcoded in
+plaintext. The script now reads it from the environment, and the file was never
+committed, so the key never reached GitHub — but it sat unprotected on disk long
+enough that it should be treated as exposed.
+
+Do **not** use the "Reset service_role" button. This project's `service_role`
+key is still a legacy JWT: `anon` and `service_role` are not merely API keys,
+they are JWTs signed by the project's shared JWT secret. Resetting that secret
+causes downtime and **immediately signs out every active user**.
+
+Take the additive path instead. The project already has the new API key system
+available (an `sb_publishable_...` key exists alongside the legacy `anon`), so
+this is zero-downtime and reversible at every step:
+
+1. **Create a new secret key.** Dashboard → Settings → API Keys → Secret keys →
+   create a new key (`sb_secret_...`). The legacy `service_role` key keeps
+   working, so nothing breaks yet.
+2. **Update the value.** Set `SUPABASE_SERVICE_ROLE_KEY` to the new key in
+   Vercel for **Production, Preview, and Development**, and in your local
+   `.env.local`.
+3. **Redeploy** so the running functions pick up the new value.
+4. **Verify before revoking anything.** All three of these use the service role
+   key, and all three must still work:
+   - `/admin` and `/superadmin` still load and list clients
+   - `curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/alerts/email`
+   - the same call against `/api/alerts/sms`
+5. **Disable the legacy `service_role` key** in the same dashboard screen — but
+   only once step 4 passes. If anything breaks, re-enable it; that is the
+   rollback.
+
+Leave the legacy `anon` key alone for now. Moving the browser client to
+`sb_publishable_...` means changing `NEXT_PUBLIC_SUPABASE_ANON_KEY` and is a
+separate piece of work, not part of this rotation.
+
+Reference: https://supabase.com/docs/guides/getting-started/api-keys
 
 **Fixed:** `public.service_history` was the one table with RLS disabled, so it
 was readable and writable by anyone holding the anon key. It now has RLS on and
