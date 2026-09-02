@@ -178,11 +178,19 @@ this is zero-downtime and reversible at every step:
    Vercel for **Production, Preview, and Development**, and in your local
    `.env.local`.
 3. **Redeploy** so the running functions pick up the new value.
-4. **Verify before revoking anything.** All three of these use the service role
-   key, and all three must still work:
-   - `/admin` and `/superadmin` still load and list clients
-   - `curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/alerts/email`
-   - the same call against `/api/alerts/sms`
+4. **Verify before revoking anything.** Eleven files read
+   `SUPABASE_SERVICE_ROLE_KEY`, falling into five areas. Exercise all five:
+   - **Admin** (`src/lib/admin-auth.ts`) — `/admin` and `/superadmin` load and
+     list clients; creating a client still works
+   - **Alert crons** —
+     `curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/alerts/email`
+     and the same against `/api/alerts/sms`
+   - **Calendar** — the iCal feed (`/api/calendar/feed`) still resolves for a
+     subscribed calendar, and `/api/calendar/token` issues a token
+   - **Gmail** — `/api/gmail/status` reports the connection, and a manual
+     `/api/gmail/scan` completes
+   - **Consumables** — asking for consumable suggestions on a home asset returns
+     results (`/api/suggest-consumables`)
 5. **Disable the legacy `service_role` key** in the same dashboard screen — but
    only once step 4 passes. If anything breaks, re-enable it; that is the
    rollback.
