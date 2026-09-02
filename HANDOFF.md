@@ -67,9 +67,10 @@ npm run dev                  # http://localhost:3000
 
 ## 4. Database
 
-Supabase Postgres. **There is no migration history in this repo** — the schema
-was built through the Supabase dashboard. Before your first schema change,
-snapshot the current state so there is a baseline:
+Supabase Postgres. The schema was originally built through the Supabase
+dashboard, so **`supabase/migrations/` only goes back to 2026-09-02** — there is
+no migration covering the tables created before then. Before your first schema
+change, snapshot the current state so there is a baseline:
 
 ```bash
 npx supabase link --project-ref yywtjsnkvmvevyylztfm
@@ -139,39 +140,35 @@ make sure they fail soft rather than blocking a user flow.
 
 ## 7. Known gaps and rough edges
 
-1. **`service_history` has RLS disabled.** Every other table has it on. Until
-   this is fixed, that table is readable and writable by anyone with the anon
-   key. See "Open security items" below.
-2. **No migration history.** See §4 — snapshot before changing anything.
-3. **No tests.** There is no test runner configured. `npm run build` is the only
+1. **No migration history before 2026-09-02.** See §4 — snapshot before
+   changing anything.
+2. **No tests.** There is no test runner configured. `npm run build` is the only
    automated check.
-4. **No staging environment.** `main` is production.
-5. **`CLAUDE.md` is out of date.** It predates the admin/superadmin,
+3. **No staging environment.** `main` is production.
+4. **`CLAUDE.md` is out of date.** It predates the admin/superadmin,
    utility-bills, Gmail, and rooms features and still lists a 14px base font
    (now 15px). Worth refreshing as you go.
-6. **Scraper fragility.** See §6.
+5. **Scraper fragility.** See §6.
 
 ## 8. Open security items
 
-Two things surfaced during this handover. The first is fixed; the second needs
-a decision from Derik.
+Two things surfaced during this handover. Both are resolved in the code and
+database; one still needs a manual step from Derik.
 
-**Fixed:** `scripts/insert-test-service.mjs` had the Supabase service role key
+**Needs a manual step:** `scripts/insert-test-service.mjs` had the Supabase service role key
 hardcoded in plaintext. It now reads from the environment. The file was never
 committed, so the key was never pushed to GitHub — but it sat unprotected on
 disk, so **rotate the service role key** in the Supabase dashboard
 (Settings → API → service_role → Reset) and update it in `.env.local` and in
 Vercel's environment variables.
 
-**Needs a decision:** `public.service_history` has RLS disabled. Enabling it
-without policies will block all access and break whatever reads that table, so
-this needs to ship together with the right policies — most likely the same
-`user_id = auth.uid()` shape the other tables use:
+**Fixed:** `public.service_history` was the one table with RLS disabled, so it
+was readable and writable by anyone holding the anon key. It now has RLS on and
+the same four `auth.uid() = user_id` policies every other table uses, plus a
+`NOT NULL` constraint and index on `user_id`. See
+`supabase/migrations/20260902190945_enable_rls_on_service_history.sql`.
 
-```sql
-ALTER TABLE public.service_history ENABLE ROW LEVEL SECURITY;
--- then add policies matching the pattern in supabase-rls-migration.sql
-```
+Every table in `public` now has RLS enabled.
 
 ## 9. Working agreement
 
