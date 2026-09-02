@@ -24,7 +24,7 @@ export default function SuperadminDashboardClient() {
   return (
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <header className="mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           Superadmin Dashboard
         </h1>
       </header>
@@ -40,13 +40,13 @@ export default function SuperadminDashboardClient() {
       <div className="flex gap-3 mb-6">
         <Link
           href="/superadmin/organizations/new"
-          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           + New Organization
         </Link>
         <Link
           href="/superadmin/managers/new"
-          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[14px] font-medium hover:bg-border transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-border bg-surface text-text-primary text-[15px] font-medium hover:bg-border transition-all duration-[120ms]"
         >
           + New Manager
         </Link>
@@ -58,9 +58,9 @@ export default function SuperadminDashboardClient() {
           <h2 className="text-[15px] font-semibold text-text-primary">Organizations</h2>
         </div>
         {loading ? (
-          <p className="px-5 py-8 text-[14px] text-text-3 text-center">Loading...</p>
+          <p className="px-5 py-8 text-[15px] text-text-3 text-center">Loading...</p>
         ) : orgs.length === 0 ? (
-          <p className="px-5 py-8 text-[14px] text-text-3 text-center">
+          <p className="px-5 py-8 text-[15px] text-text-3 text-center">
             No organizations yet. Create one to get started.
           </p>
         ) : (
@@ -72,7 +72,7 @@ export default function SuperadminDashboardClient() {
                   className="flex items-center justify-between px-5 py-3 hover:bg-border/30 transition-colors"
                 >
                   <div>
-                    <p className="text-[14px] font-medium text-text-primary">{org.name}</p>
+                    <p className="text-[15px] font-medium text-text-primary">{org.name}</p>
                     <p className="text-[12px] text-text-3">
                       {org.managerCount} manager{org.managerCount !== 1 ? "s" : ""} · {org.clientCount} client{org.clientCount !== 1 ? "s" : ""}
                     </p>
@@ -92,7 +92,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-4">
       <p className="text-[12px] text-text-3 mb-1">{label}</p>
-      <p className="text-[22px] font-bold text-text-primary">{value}</p>
+      <p className="text-[24px] font-bold text-text-primary">{value}</p>
     </div>
   );
 }

@@ -268,7 +268,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/projects"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Projects
@@ -277,7 +277,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           <p className="text-[15px] font-semibold text-text-primary mb-1">
             Project not found
           </p>
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             This project may have been removed.
           </p>
         </div>
@@ -663,7 +663,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Projects
@@ -676,7 +676,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
           {/* Title + status + actions */}
           <div className="flex items-start justify-between gap-4 mb-5">
             <div className="flex items-center gap-3 min-w-0">
-              <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
+              <h1 className="text-[24px] font-bold tracking-tight text-text-primary truncate">
                 {project.name}
               </h1>
               <span
@@ -689,7 +689,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               <div className="relative" ref={addMenuRef}>
                 <button
                   onClick={() => setAddMenuOpen(!addMenuOpen)}
-                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
                 >
                   <PlusIcon width={13} height={13} />
                   Add Event
@@ -702,7 +702,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         setAddMenuOpen(false);
                         setAddEventModalOpen(true);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[15px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Schedule Appointment
                     </button>
@@ -711,7 +711,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         setAddMenuOpen(false);
                         setAddNoteModalOpen(true);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[15px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Note
                     </button>
@@ -720,7 +720,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         galleryRef.current?.triggerUpload();
                         setAddMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[15px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Photos
                     </button>
@@ -729,7 +729,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         estimateSectionRef.current?.triggerUpload();
                         setAddMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[15px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Estimate
                     </button>
@@ -738,7 +738,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         invoiceSectionRef.current?.triggerUpload();
                         setAddMenuOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[15px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Add Invoice
                     </button>
@@ -748,7 +748,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                         setSelectedContractorId(project.contractorId ?? "");
                         setHireContractorOpen(true);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
+                      className="w-full text-left px-3 py-1.5 text-[15px] text-text-2 hover:bg-border hover:text-text-primary rounded-[var(--radius-sm)] transition-colors duration-[120ms]"
                     >
                       Hire Contractor
                     </button>
@@ -757,14 +757,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               </div>
               <button
                 onClick={() => setEditModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
               >
                 <PencilIcon width={13} height={13} />
                 Edit
               </button>
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
               >
                 <TrashIcon width={13} height={13} />
                 Delete
@@ -777,7 +777,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                 Project Added
               </span>
-              <span className="text-[14px] text-text-primary">
+              <span className="text-[15px] text-text-primary">
                 {formatDateTime(project.createdAt)}
               </span>
             </div>
@@ -787,7 +787,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Project Description
                 </span>
-                <p className="text-[14px] text-text-primary leading-relaxed">
+                <p className="text-[15px] text-text-primary leading-relaxed">
                   {project.description}
                 </p>
               </div>
@@ -798,7 +798,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Home Asset
                 </span>
-                <p className="text-[14px] text-text-primary">
+                <p className="text-[15px] text-text-primary">
                   <Link href={`/home-assets/${linkedAsset.id}`} className="font-medium hover:underline">
                     {linkedAsset.name}
                   </Link>
@@ -839,7 +839,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 </div>
               )}
               <div>
-                <span className="block text-[14px] font-semibold text-text-primary">
+                <span className="block text-[15px] font-semibold text-text-primary">
                   {contractor.company}
                 </span>
                 {contractor.name && (
@@ -944,7 +944,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
             Completed
           </span>
           <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1">
-            <span className="block text-[14px] font-semibold text-text-primary mb-1">
+            <span className="block text-[15px] font-semibold text-text-primary mb-1">
               Project Completed
             </span>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
@@ -955,7 +955,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                   : "—"}
               </span>
               {project.completedAt && (
-                <span className="text-[14px] text-text-3">
+                <span className="text-[15px] text-text-3">
                   {formatDateTime(project.completedAt)}
                 </span>
               )}
@@ -980,24 +980,24 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               onKeyDown={(e) => { if (e.key === "Enter") setEditingEvent(item.data); }}
             >
               <div className="flex flex-col gap-0.5">
-                <span className="text-[14px] font-semibold text-text-primary">
+                <span className="text-[15px] font-semibold text-text-primary">
                   {item.data.title}
                 </span>
-                <span className="text-[14px] text-text-3">
+                <span className="text-[15px] text-text-3">
                   {formatDate(item.data.eventDate)}{item.data.eventTime ? ` at ${formatTime(item.data.eventTime)}${item.data.eventEndTime ? ` – ${formatTime(item.data.eventEndTime)}` : ""}` : ""}
                 </span>
                 {contractor && (
                   <>
-                    <span className="text-[14px] text-text-3">
+                    <span className="text-[15px] text-text-3">
                       {contractor.company}
                     </span>
                     {contractor.name && (
-                      <span className="text-[14px] text-text-3">
+                      <span className="text-[15px] text-text-3">
                         {contractor.name}
                       </span>
                     )}
                     {contractor.phone && (
-                      <span className="text-[14px] text-text-3">
+                      <span className="text-[15px] text-text-3">
                         {contractor.phone}
                       </span>
                     )}
@@ -1025,7 +1025,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               Note
             </span>
             <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] px-5 py-4 flex-1 flex items-start justify-between group">
-              <p className="text-[14px] text-text-primary leading-relaxed whitespace-pre-wrap">
+              <p className="text-[15px] text-text-primary leading-relaxed whitespace-pre-wrap">
                 {item.data.content}
               </p>
               <div className="flex items-center gap-2 shrink-0 ml-3">
@@ -1076,18 +1076,18 @@ export default function ProjectDetailClient({ id }: { id: string }) {
       {/* Delete confirmation */}
       {confirmDelete && (
         <div className="mt-4 flex items-center gap-3 bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[var(--shadow-card)] px-5 py-3">
-          <span className="text-[14px] text-text-3 flex-1">
+          <span className="text-[15px] text-text-3 flex-1">
             Are you sure you want to delete this project? This cannot be undone.
           </span>
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
           >
             Yes, Delete
           </button>
           <button
             onClick={() => setConfirmDelete(false)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             Cancel
           </button>
@@ -1169,7 +1169,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 <select
                   value={selectedContractorId}
                   onChange={(e) => setSelectedContractorId(e.target.value)}
-                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                  className="w-full appearance-none px-3 py-[7px] pr-8 text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 >
                   <option value="">Select a contractor...</option>
                   {[...contractors]
@@ -1185,14 +1185,14 @@ export default function ProjectDetailClient({ id }: { id: string }) {
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => { setHireContractorOpen(false); setSelectedContractorId(""); }}
-                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleHireContractor}
                   disabled={!selectedContractorId}
-                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40"
+                  className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40"
                 >
                   Assign
                 </button>
@@ -1235,7 +1235,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="Write a note..."
                 autoFocus
                 onKeyDown={(e) => {
@@ -1249,7 +1249,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                     setAddNoteModalOpen(false);
                     setNewNote("");
                   }}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
                 >
                   Cancel
                 </button>
@@ -1257,7 +1257,7 @@ export default function ProjectDetailClient({ id }: { id: string }) {
                   type="button"
                   onClick={handleAddNote}
                   disabled={!newNote.trim()}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Save Note
                 </button>

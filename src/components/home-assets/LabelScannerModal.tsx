@@ -202,7 +202,7 @@ export default function LabelScannerModal({
             </p>
             <button
               onClick={onClose}
-              className="mt-6 px-5 py-2 rounded-[var(--radius-sm)] bg-white/10 text-white text-[14px] font-medium hover:bg-white/20 transition-all duration-[120ms]"
+              className="mt-6 px-5 py-2 rounded-[var(--radius-sm)] bg-white/10 text-white text-[15px] font-medium hover:bg-white/20 transition-all duration-[120ms]"
             >
               Go Back
             </button>
@@ -244,7 +244,7 @@ export default function LabelScannerModal({
             {processing && (
               <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3">
                 <span className="inline-block w-8 h-8 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                <p className="text-[14px] text-white font-medium">
+                <p className="text-[15px] text-white font-medium">
                   Reading label...
                 </p>
               </div>

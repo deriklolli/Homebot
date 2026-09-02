@@ -369,7 +369,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/home-assets"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Home Assets
@@ -378,7 +378,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           <p className="text-[15px] font-semibold text-text-primary mb-1">
             Asset not found
           </p>
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             This asset may have been removed.
           </p>
         </div>
@@ -393,7 +393,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/home-assets"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Home Assets
@@ -402,7 +402,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Header */}
       <header className="flex items-start justify-between gap-4 mb-6">
         <div className="min-w-0">
-          <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
+          <h1 className="text-[24px] font-bold tracking-tight text-text-primary truncate">
             {asset.name}
           </h1>
         </div>
@@ -413,7 +413,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           <div className="relative" ref={addFilesMenuRef}>
             <button
               onClick={() => setAddFilesMenuOpen(!addFilesMenuOpen)}
-              className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
             >
               <PlusIcon width={13} height={13} />
               Add Files
@@ -427,7 +427,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                       documentsRef.current?.triggerUpload(type);
                       setAddFilesMenuOpen(false);
                     }}
-                    className="w-full text-left px-3 py-1.5 text-[14px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
+                    className="w-full text-left px-3 py-1.5 text-[15px] text-text-2 hover:bg-border hover:text-text-primary transition-colors duration-[120ms]"
                   >
                     {type}
                   </button>
@@ -438,14 +438,14 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
 
           <button
             onClick={() => setEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <PencilIcon width={13} height={13} />
             Edit
           </button>
           <button
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <TrashIcon width={13} height={13} />
             Delete
@@ -526,7 +526,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Make
                 </span>
-                <span className="text-[14px] text-text-primary">
+                <span className="text-[15px] text-text-primary">
                   {asset.make || "\u2014"}
                 </span>
               </div>
@@ -534,7 +534,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Model
                 </span>
-                <span className="text-[14px] text-text-primary">
+                <span className="text-[15px] text-text-primary">
                   {asset.model || "\u2014"}
                 </span>
               </div>
@@ -546,7 +546,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Serial Number
                 </span>
-                <span className="text-[14px] text-text-primary font-mono">
+                <span className="text-[15px] text-text-primary font-mono">
                   {asset.serialNumber || "\u2014"}
                 </span>
               </div>
@@ -554,38 +554,44 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Location
                 </span>
-                <span className="text-[14px] text-text-primary">
+                <span className="text-[15px] text-text-primary">
                   {asset.location || "\u2014"}
                 </span>
               </div>
             </div>
 
-            {/* Row 3: Purchase Date & Warranty */}
-            <div className={`flex gap-5 pt-4${dimensions || asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 || documents.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
-              <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
-                  Purchase / Install Date
-                </span>
-                <span className="text-[14px] text-text-primary">
-                  {asset.purchaseDate ? formatDate(asset.purchaseDate) : "\u2014"}
-                </span>
-              </div>
-              <div className="flex-1">
-                <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
-                  Warranty Expiration
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[14px] text-text-primary">
-                    {asset.warrantyExpiration ? formatDate(asset.warrantyExpiration) : "\u2014"}
-                  </span>
-                  {warranty && (
-                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
-                      {warranty.label}
+            {/* Row 3: Purchase Date & Warranty (hidden if both empty) */}
+            {(asset.purchaseDate || asset.warrantyExpiration) && (
+              <div className={`flex gap-5 pt-4${dimensions || asset.productUrl || skulyticsWarrantyMonths || manualUrl || productDocuments.length > 0 || documents.length > 0 ? " pb-4 border-b border-dotted border-border-strong" : ""}`}>
+                {asset.purchaseDate && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                      Purchase / Install Date
                     </span>
-                  )}
-                </div>
+                    <span className="text-[15px] text-text-primary">
+                      {formatDate(asset.purchaseDate)}
+                    </span>
+                  </div>
+                )}
+                {asset.warrantyExpiration && (
+                  <div className="flex-1">
+                    <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
+                      Warranty Expiration
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[15px] text-text-primary">
+                        {formatDate(asset.warrantyExpiration)}
+                      </span>
+                      {warranty && (
+                        <span className={`px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] ${warranty.color}`}>
+                          {warranty.label}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {/* Row 4: Dimensions */}
             {dimensions && (
@@ -595,7 +601,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                     <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                       Width
                     </span>
-                    <span className="text-[14px] text-text-primary">{dimensions.width}</span>
+                    <span className="text-[15px] text-text-primary">{dimensions.width}</span>
                   </div>
                 )}
                 {dimensions.height && (
@@ -603,7 +609,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                     <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                       Height
                     </span>
-                    <span className="text-[14px] text-text-primary">{dimensions.height}</span>
+                    <span className="text-[15px] text-text-primary">{dimensions.height}</span>
                   </div>
                 )}
                 {dimensions.depth && (
@@ -611,7 +617,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                     <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                       Depth
                     </span>
-                    <span className="text-[14px] text-text-primary">{dimensions.depth}</span>
+                    <span className="text-[15px] text-text-primary">{dimensions.depth}</span>
                   </div>
                 )}
                 {dimensions.weight && (
@@ -619,7 +625,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                     <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                       Weight
                     </span>
-                    <span className="text-[14px] text-text-primary">{dimensions.weight}</span>
+                    <span className="text-[15px] text-text-primary">{dimensions.weight}</span>
                   </div>
                 )}
               </div>
@@ -635,7 +641,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                   href={affiliateUrl(asset.productUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[14px] text-accent hover:underline"
+                  className="text-[15px] text-accent hover:underline"
                 >
                   View Product
                 </a>
@@ -648,7 +654,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                   <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                     Manufacturer Warranty
                   </span>
-                  <span className="text-[14px] text-text-primary">
+                  <span className="text-[15px] text-text-primary">
                     {skulyticsWarrantyMonths >= 12
                       ? `${Math.floor(skulyticsWarrantyMonths / 12)} Year${Math.floor(skulyticsWarrantyMonths / 12) > 1 ? "s" : ""}`
                       : `${skulyticsWarrantyMonths} Month${skulyticsWarrantyMonths > 1 ? "s" : ""}`}
@@ -739,8 +745,8 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
               ) : (
                 <ChevronDownIcon width={14} height={14} className="text-text-3 shrink-0" />
               )}
-              <span className="text-[14px] font-semibold text-text-primary">
-                Recommended Inventory Upkeep
+              <span className="text-[15px] font-semibold text-text-primary">
+                This Product Needs...
               </span>
               <span className="text-[12px] text-text-3">
                 ({linkedInventory.length})
@@ -761,7 +767,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                       href={`/inventory/${inv.id}`}
                       className="flex items-center gap-3 flex-1 min-w-0"
                     >
-                      <span className="text-[14px] font-semibold text-text-primary truncate">
+                      <span className="text-[15px] font-semibold text-text-primary truncate">
                         {inv.name}
                       </span>
                       <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
@@ -817,7 +823,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
           <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-2">
             Notes
           </span>
-          <p className="text-[14px] text-text-primary leading-relaxed whitespace-pre-wrap">
+          <p className="text-[15px] text-text-primary leading-relaxed whitespace-pre-wrap">
             {asset.notes}
           </p>
         </div>
@@ -845,7 +851,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                     <div className={`w-[8px] shrink-0 ${statusEdge[p.status]}`} />
                     <div className="p-5 flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <p className="text-[14px] font-semibold text-text-primary truncate">
+                        <p className="text-[15px] font-semibold text-text-primary truncate">
                           {p.name}
                         </p>
                         <span className={`shrink-0 inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] ${statusBadge[p.status]}`}>
@@ -853,7 +859,7 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
                         </span>
                       </div>
                       {p.description && (
-                        <p className="text-[14px] text-text-3 line-clamp-2 leading-relaxed">
+                        <p className="text-[15px] text-text-3 line-clamp-2 leading-relaxed">
                           {p.description}
                         </p>
                       )}
@@ -869,18 +875,18 @@ export default function HomeAssetDetailClient({ id }: { id: string }) {
       {/* Delete confirmation */}
       {confirmDelete && (
         <div className="mt-4 flex items-center gap-3 bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[var(--shadow-card)] px-5 py-3">
-          <span className="text-[14px] text-text-3 flex-1">
+          <span className="text-[15px] text-text-3 flex-1">
             Are you sure you want to delete this asset? This cannot be undone.
           </span>
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
           >
             Yes, Delete
           </button>
           <button
             onClick={() => setConfirmDelete(false)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             Cancel
           </button>

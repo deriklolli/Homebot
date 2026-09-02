@@ -72,7 +72,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
-        <p className="text-[14px] text-text-3">Loading...</p>
+        <p className="text-[15px] text-text-3">Loading...</p>
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
   if (!client) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
-        <p className="text-[14px] text-text-primary">Client not found.</p>
+        <p className="text-[15px] text-text-primary">Client not found.</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <Link
         href="/admin"
-        className="inline-flex items-center gap-1 text-[14px] text-text-3 hover:text-accent mb-4 transition-colors"
+        className="inline-flex items-center gap-1 text-[15px] text-text-3 hover:text-accent mb-4 transition-colors"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Clients
@@ -99,11 +99,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
       <header className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+          <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
             {client.fullName || client.email}
           </h1>
           {client.propertyName && (
-            <p className="text-[14px] text-text-3 mt-0.5">{client.propertyName}</p>
+            <p className="text-[15px] text-text-3 mt-0.5">{client.propertyName}</p>
           )}
         </div>
         <span
@@ -118,21 +118,21 @@ export default function ClientDetailClient({ id }: { id: string }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Email</p>
-            <p className="text-[14px] text-text-primary">{client.email}</p>
+            <p className="text-[15px] text-text-primary">{client.email}</p>
           </div>
           <div>
             <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Created</p>
-            <p className="text-[14px] text-text-primary">
+            <p className="text-[15px] text-text-primary">
               {new Date(client.createdAt).toLocaleDateString()}
             </p>
           </div>
           <div>
             <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Assets</p>
-            <p className="text-[14px] text-text-primary">{client.assetCount}</p>
+            <p className="text-[15px] text-text-primary">{client.assetCount}</p>
           </div>
           <div>
             <p className="text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-0.5">Inventory</p>
-            <p className="text-[14px] text-text-primary">{client.inventoryCount}</p>
+            <p className="text-[15px] text-text-primary">{client.inventoryCount}</p>
           </div>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
       {/* Invite success */}
       {inviteSuccess && (
         <div className="mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-green/10 border border-green/20 max-w-[520px]">
-          <p className="text-[14px] text-green font-medium">
+          <p className="text-[15px] text-green font-medium">
             Invite email sent to {client.email}
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <button
             onClick={handleInvite}
             disabled={inviting}
-            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
           >
             {inviting ? "Sending..." : client.status === "invited" ? "Resend Invite" : "Send Invite"}
           </button>
@@ -169,7 +169,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
       {client.status === "activated" && (
         <div className="mb-6 px-4 py-3 rounded-[var(--radius-md)] bg-green/10 border border-green/20 max-w-[520px]">
-          <p className="text-[14px] text-green font-medium">
+          <p className="text-[15px] text-green font-medium">
             This client has activated their account. You no longer have access to their data.
           </p>
         </div>
@@ -184,7 +184,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
           <ul className="divide-y divide-border">
             {client.assets.map((asset) => (
               <li key={asset.id} className="px-5 py-3">
-                <p className="text-[14px] font-medium text-text-primary">{asset.name}</p>
+                <p className="text-[15px] font-medium text-text-primary">{asset.name}</p>
                 <p className="text-[12px] text-text-3">
                   {asset.category}
                   {asset.make ? ` · ${asset.make}` : ""}

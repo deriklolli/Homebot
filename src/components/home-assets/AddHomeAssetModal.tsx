@@ -402,7 +402,7 @@ export default function AddHomeAssetModal({
   }
 
   const inputClassName =
-    "px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]";
+    "px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]";
 
   return (
     <div
@@ -430,7 +430,7 @@ export default function AddHomeAssetModal({
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
           {/* Name */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Asset Name <span className="text-red">*</span>
             </span>
             <input
@@ -448,7 +448,7 @@ export default function AddHomeAssetModal({
           {/* Make & Model */}
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Make
               </span>
               {lookupEnabled && brandOptions.length > 0 ? (
@@ -482,7 +482,7 @@ export default function AddHomeAssetModal({
               )}
             </div>
             <div className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Model
               </span>
               {lookupEnabled && selectedBrand ? (
@@ -509,7 +509,7 @@ export default function AddHomeAssetModal({
 
           {/* Serial Number */}
           <label className={`${scanResult?.serialNumber ? 'flex' : 'hidden md:flex'} flex-col gap-1.5`}>
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Serial Number
             </span>
             <input
@@ -524,7 +524,7 @@ export default function AddHomeAssetModal({
           {/* Purchase Date & Warranty */}
           <div className="hidden md:flex gap-3">
             <label className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Purchase / Install Date
               </span>
               <DatePicker
@@ -533,7 +533,7 @@ export default function AddHomeAssetModal({
               />
             </label>
             <label className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Warranty Expiration
               </span>
               <DatePicker
@@ -545,7 +545,7 @@ export default function AddHomeAssetModal({
 
           {/* Location */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Location <span className="text-red">*</span>
             </span>
             {addingRoom ? (
@@ -607,7 +607,7 @@ export default function AddHomeAssetModal({
 
           {/* Product URL */}
           <label className="hidden md:flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Product URL
             </span>
             <input
@@ -621,7 +621,7 @@ export default function AddHomeAssetModal({
 
           {/* Notes */}
           <label className="hidden md:flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Notes
             </span>
             <textarea
@@ -638,14 +638,14 @@ export default function AddHomeAssetModal({
             <button
               type="button"
               onClick={onClose}
-              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid}
-              className="inline-flex items-center justify-center gap-1.5 w-full md:w-auto px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-1.5 w-full md:w-auto px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isEditing ? "Save Changes" : "Add Asset"}
             </button>

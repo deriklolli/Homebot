@@ -118,7 +118,7 @@ export default function AddEventModal({
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
           {/* Title */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Appointment Title <span className="text-red">*</span>
             </span>
             <input
@@ -127,21 +127,21 @@ export default function AddEventModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="e.g. Initial consultation"
             />
           </label>
 
           {/* Contractor */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Contractor
             </span>
             <div className="relative" ref={contractorDropdownRef}>
               <button
                 type="button"
                 onClick={() => setContractorDropdownOpen(!contractorDropdownOpen)}
-                className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[14px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[15px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               >
                 {contractorId ? (() => {
                   const selected = contractors.find((c) => c.id === contractorId);
@@ -186,7 +186,7 @@ export default function AddEventModal({
                         <button
                           type="button"
                           onClick={() => { setContractorId(null); setContractorDropdownOpen(false); setContractorSearch(""); }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!contractorId ? "bg-surface-hover" : ""}`}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!contractorId ? "bg-surface-hover" : ""}`}
                         >
                           <span className="w-6 h-6 rounded-full bg-border shrink-0" />
                           <span className="text-text-3">None</span>
@@ -197,7 +197,7 @@ export default function AddEventModal({
                           key={c.id}
                           type="button"
                           onClick={() => { setContractorId(c.id); setContractorDropdownOpen(false); setContractorSearch(""); }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${contractorId === c.id ? "bg-surface-hover" : ""}`}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${contractorId === c.id ? "bg-surface-hover" : ""}`}
                         >
                           {c.logoUrl ? (
                             <img src={c.logoUrl} alt="" className="w-6 h-6 rounded-full object-contain bg-white border border-border shrink-0" />
@@ -216,7 +216,7 @@ export default function AddEventModal({
                         <button
                           type="button"
                           onClick={() => { setContractorDropdownOpen(false); setContractorSearch(""); setShowContractorModal(true); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left text-accent font-medium hover:bg-surface-hover transition-[background] duration-[120ms] border-t border-border"
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left text-accent font-medium hover:bg-surface-hover transition-[background] duration-[120ms] border-t border-border"
                         >
                           + Add New Contractor
                         </button>
@@ -230,7 +230,7 @@ export default function AddEventModal({
 
           {/* Date */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Date <span className="text-red">*</span>
             </span>
             <DatePicker
@@ -243,7 +243,7 @@ export default function AddEventModal({
           {/* Start & End Time */}
           <div className="flex gap-3">
             <label className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Start Time
               </span>
               <TimePicker
@@ -260,7 +260,7 @@ export default function AddEventModal({
               />
             </label>
             <label className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 End Time
               </span>
               <TimePicker
@@ -272,14 +272,14 @@ export default function AddEventModal({
 
           {/* Notes */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Notes
             </span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] resize-none"
+              className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] resize-none"
               placeholder="Add notes..."
             />
           </label>
@@ -289,14 +289,14 @@ export default function AddEventModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isEditing ? "Save Changes" : "Schedule"}
             </button>

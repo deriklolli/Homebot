@@ -54,10 +54,10 @@ export default function LoginPage() {
         {/* Logo & Header */}
         <div className="flex flex-col items-center gap-3">
           <HomebotLogo width={40} height={34} />
-          <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+          <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
             Welcome back
           </h1>
-          <p className="text-[14px] text-text-3 text-center">
+          <p className="text-[15px] text-text-3 text-center">
             Sign in to manage your home projects, contractors, and inventory.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         {/* Error message */}
         {error && (
           <div className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-red/10 border border-red/20">
-            <p className="text-[14px] text-red">{error}</p>
+            <p className="text-[15px] text-red">{error}</p>
           </div>
         )}
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
               placeholder="you@example.com"
             />
           </div>
@@ -101,14 +101,14 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
               placeholder="Your password"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-accent text-white text-[14px] font-semibold rounded-[var(--radius-md)] hover:opacity-90 transition-opacity duration-[120ms] disabled:opacity-60"
+            className="w-full py-2.5 px-4 bg-accent text-white text-[15px] font-semibold rounded-[var(--radius-md)] hover:opacity-90 transition-opacity duration-[120ms] disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
@@ -124,14 +124,14 @@ export default function LoginPage() {
         {/* Google SSO */}
         <button
           onClick={handleGoogleSignIn}
-          className="flex items-center justify-center gap-3 w-full py-2.5 px-4 border border-border bg-surface text-text-primary text-[14px] font-medium rounded-[var(--radius-md)] hover:bg-border transition-colors duration-[120ms]"
+          className="flex items-center justify-center gap-3 w-full py-2.5 px-4 border border-border bg-surface text-text-primary text-[15px] font-medium rounded-[var(--radius-md)] hover:bg-border transition-colors duration-[120ms]"
         >
           <GoogleIcon />
           Sign in with Google
         </button>
 
         {/* Sign up link */}
-        <p className="text-[14px] text-text-3">
+        <p className="text-[15px] text-text-3">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-accent font-medium hover:underline">
             Sign up

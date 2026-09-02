@@ -49,7 +49,7 @@ function InventoryItemRow({
           )}
           <div className="flex-1 min-w-0">
             {extraInfo ?? (
-              <span className="text-[14px] font-semibold text-text-primary truncate block">
+              <span className="text-[15px] font-semibold text-text-primary truncate block">
                 {item.name}
               </span>
             )}
@@ -338,12 +338,12 @@ export default function InventoryClient() {
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       {/* Header */}
       <header className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           Home Inventory
         </h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={14} height={14} />
           Add Item
@@ -364,7 +364,7 @@ export default function InventoryClient() {
               placeholder="Search Home Inventory"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+              className="w-full pl-9 pr-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
             />
           </div>
         </div>
@@ -380,7 +380,7 @@ export default function InventoryClient() {
           <p className="text-[15px] font-semibold text-text-primary mb-1">
             No items yet
           </p>
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             Start tracking household items that need periodic replacement.
           </p>
         </div>
@@ -411,7 +411,7 @@ export default function InventoryClient() {
                     ) : (
                       <ChevronDownIcon width={14} height={14} className="text-text-3 shrink-0" />
                     )}
-                    <span className="text-[14px] font-semibold text-text-primary">
+                    <span className="text-[15px] font-semibold text-text-primary">
                       {room}
                     </span>
                     <span className="text-[12px] text-text-3">
@@ -438,7 +438,7 @@ export default function InventoryClient() {
                           onToggleTracked={handleToggleTracked}
                           extraInfo={
                             <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-[14px] font-semibold text-text-primary truncate">
+                              <span className="text-[15px] font-semibold text-text-primary truncate">
                                 {item.name}
                               </span>
                               <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">

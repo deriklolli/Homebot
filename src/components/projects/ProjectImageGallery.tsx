@@ -261,7 +261,7 @@ const ProjectImageGallery = forwardRef<ProjectImageGalleryHandle, ProjectImageGa
             </button>
           )}
 
-          <span className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-[14px] font-medium">
+          <span className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-[15px] font-medium">
             {lightboxIndex + 1} / {images.length}
           </span>
         </div>

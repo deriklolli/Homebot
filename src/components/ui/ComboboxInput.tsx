@@ -142,7 +142,7 @@ export default function ComboboxInput({
           activeIndex >= 0 ? `combobox-option-${activeIndex}` : undefined
         }
         autoComplete="off"
-        className="w-full pl-3 pr-9 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] disabled:opacity-50"
+        className="w-full pl-3 pr-9 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] disabled:opacity-50"
       />
       <svg
         width={14}
@@ -181,7 +181,7 @@ export default function ComboboxInput({
                   handleSelect(option);
                 }}
                 onMouseEnter={() => setActiveIndex(i)}
-                className={`flex items-center gap-2.5 px-3 py-2 text-[14px] cursor-pointer transition-colors duration-[80ms] ${
+                className={`flex items-center gap-2.5 px-3 py-2 text-[15px] cursor-pointer transition-colors duration-[80ms] ${
                   i === activeIndex
                     ? "bg-border text-text-primary"
                     : "text-text-2 hover:bg-border hover:text-text-primary"

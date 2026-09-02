@@ -182,7 +182,7 @@ export default function AddServiceModal({
           <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
             {/* Name */}
             <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Service Name <span className="text-red">*</span>
               </span>
               <input
@@ -191,21 +191,21 @@ export default function AddServiceModal({
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="e.g. Snow Plowing"
               />
             </label>
 
             {/* Contractor */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Contractor
               </span>
               <div className="relative" ref={contractorDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setContractorDropdownOpen(!contractorDropdownOpen)}
-                  className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[14px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                  className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[15px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 >
                   {contractorId ? (() => {
                     const selected = contractors.find((c) => c.id === contractorId);
@@ -250,7 +250,7 @@ export default function AddServiceModal({
                           <button
                             type="button"
                             onClick={() => { handleContractorChange(""); setContractorDropdownOpen(false); setContractorSearch(""); }}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!contractorId ? "bg-surface-hover" : ""}`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!contractorId ? "bg-surface-hover" : ""}`}
                           >
                             <span className="w-6 h-6 rounded-full bg-border shrink-0" />
                             <span className="text-text-3">None</span>
@@ -261,7 +261,7 @@ export default function AddServiceModal({
                             key={c.id}
                             type="button"
                             onClick={() => { handleContractorChange(c.id); setContractorDropdownOpen(false); setContractorSearch(""); }}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${contractorId === c.id ? "bg-surface-hover" : ""}`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${contractorId === c.id ? "bg-surface-hover" : ""}`}
                           >
                             {c.logoUrl ? (
                               <img src={c.logoUrl} alt="" className="w-6 h-6 rounded-full object-contain bg-white border border-border shrink-0" />
@@ -280,7 +280,7 @@ export default function AddServiceModal({
                           <button
                             type="button"
                             onClick={() => { setContractorDropdownOpen(false); setContractorSearch(""); setShowContractorModal(true); }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left text-accent font-medium hover:bg-surface-hover transition-[background] duration-[120ms] border-t border-border"
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left text-accent font-medium hover:bg-surface-hover transition-[background] duration-[120ms] border-t border-border"
                           >
                             + Add New Contractor
                           </button>
@@ -295,14 +295,14 @@ export default function AddServiceModal({
             {/* Home Asset */}
             {homeAssets.length > 0 && (
               <div className="flex flex-col gap-1.5">
-                <span className="text-[14px] font-medium text-text-primary">
+                <span className="text-[15px] font-medium text-text-primary">
                   Home Asset
                 </span>
                 <div className="relative" ref={assetDropdownRef}>
                   <button
                     type="button"
                     onClick={() => setAssetDropdownOpen(!assetDropdownOpen)}
-                    className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[14px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                    className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[15px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                   >
                     {homeAssetId ? (() => {
                       const selected = homeAssets.find((a) => a.id === homeAssetId);
@@ -348,7 +348,7 @@ export default function AddServiceModal({
                             <button
                               type="button"
                               onClick={() => { setHomeAssetId(""); setAssetDropdownOpen(false); setAssetSearch(""); }}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!homeAssetId ? "bg-surface-hover" : ""}`}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!homeAssetId ? "bg-surface-hover" : ""}`}
                             >
                               <span className="w-6 h-6 rounded-full bg-border shrink-0" />
                               <span className="text-text-3">None</span>
@@ -359,7 +359,7 @@ export default function AddServiceModal({
                               key={a.id}
                               type="button"
                               onClick={() => { setHomeAssetId(a.id); setAssetDropdownOpen(false); setAssetSearch(""); }}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${homeAssetId === a.id ? "bg-surface-hover" : ""}`}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${homeAssetId === a.id ? "bg-surface-hover" : ""}`}
                             >
                               {a.imageUrl ? (
                                 <img src={a.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover bg-bg shrink-0" />
@@ -385,13 +385,13 @@ export default function AddServiceModal({
             {/* Frequency & Remind me */}
             <div className="flex gap-3 items-end">
               <label className="flex flex-col gap-1.5 flex-1">
-                <span className="text-[14px] font-medium text-text-primary">
+                <span className="text-[15px] font-medium text-text-primary">
                   Frequency <span className="text-red">*</span>
                 </span>
                 <select
                   value={frequencyMonths}
                   onChange={(e) => setFrequencyMonths(Number(e.target.value))}
-                  className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                  className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 >
                   {FREQUENCY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -413,7 +413,7 @@ export default function AddServiceModal({
                 ) : (
                   <span className="shrink-0 w-[18px] h-[18px] rounded-full border-2 border-border-strong" />
                 )}
-                <span className="text-[14px] font-medium text-text-primary">
+                <span className="text-[15px] font-medium text-text-primary">
                   Remind me
                 </span>
               </div>
@@ -421,7 +421,7 @@ export default function AddServiceModal({
 
             {/* Cost */}
             <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Cost
               </span>
               <CurrencyInput
@@ -432,7 +432,7 @@ export default function AddServiceModal({
 
             {/* Last Service Date */}
             <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Last Service Date
               </span>
               <DatePicker
@@ -443,14 +443,14 @@ export default function AddServiceModal({
 
             {/* Notes */}
             <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Notes
               </span>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="Contract details, schedule preferences..."
               />
             </label>
@@ -480,7 +480,7 @@ export default function AddServiceModal({
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 text-[14px] font-medium hover:bg-red-light hover:text-red hover:border-red/20 transition-all duration-[120ms]"
+                    className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-3 text-[15px] font-medium hover:bg-red-light hover:text-red hover:border-red/20 transition-all duration-[120ms]"
                   >
                     <TrashIcon width={13} height={13} />
                     Delete
@@ -491,14 +491,14 @@ export default function AddServiceModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!isValid}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isEditing ? "Save Changes" : "Add Service"}
                 </button>

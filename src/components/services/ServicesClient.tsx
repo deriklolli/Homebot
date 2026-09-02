@@ -145,12 +145,12 @@ export default function ServicesClient() {
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       {/* Header */}
       <header className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           Home Services
         </h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={14} height={14} />
           Add Service
@@ -171,7 +171,7 @@ export default function ServicesClient() {
               placeholder="Search Home Services"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
+              className="w-full pl-9 pr-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent transition-all duration-[120ms]"
             />
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function ServicesClient() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`pb-2.5 text-[14px] font-medium transition-colors duration-[120ms] border-b-2 -mb-px ${
+                className={`pb-2.5 text-[15px] font-medium transition-colors duration-[120ms] border-b-2 -mb-px ${
                   isActive
                     ? "text-text-primary border-accent"
                     : "text-text-3 border-transparent hover:text-text-primary"
@@ -210,7 +210,7 @@ export default function ServicesClient() {
           <p className="text-[15px] font-semibold text-text-primary mb-1">
             No services yet
           </p>
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             Start tracking recurring home services like mowing, plowing, and maintenance.
           </p>
         </div>
@@ -254,7 +254,7 @@ export default function ServicesClient() {
                       {/* Service info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-[14px] font-semibold text-text-primary truncate">
+                          <span className="text-[15px] font-semibold text-text-primary truncate">
                             {s.name}
                           </span>
                           <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
@@ -272,7 +272,7 @@ export default function ServicesClient() {
                       {/* Due date */}
                       <div className="flex flex-col items-end gap-0.5 shrink-0">
                         <span
-                          className={`text-[14px] font-medium whitespace-nowrap ${
+                          className={`text-[15px] font-medium whitespace-nowrap ${
                             isOverdue
                               ? "text-red"
                               : isSoon

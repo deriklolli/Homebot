@@ -145,7 +145,7 @@ export default function HelpPage() {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       <header className="mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           Help &amp; Support
         </h1>
       </header>
@@ -192,10 +192,10 @@ export default function HelpPage() {
                       {Icon && <Icon width={18} height={18} className="text-accent" />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-[14px] font-semibold text-text-primary mb-1">
+                      <h3 className="text-[15px] font-semibold text-text-primary mb-1">
                         {topic.name}
                       </h3>
-                      <p className="text-[14px] text-text-primary leading-relaxed">
+                      <p className="text-[15px] text-text-primary leading-relaxed">
                         {topic.summary}
                       </p>
                     </div>
@@ -233,13 +233,13 @@ export default function HelpPage() {
                     ) : (
                       <ChevronRightIcon width={14} height={14} className="text-text-3 shrink-0" />
                     )}
-                    <span className="text-[14px] font-medium text-text-primary">
+                    <span className="text-[15px] font-medium text-text-primary">
                       {faq.question}
                     </span>
                   </button>
                   {isOpen && (
                     <div className="px-5 py-[25px] pl-[42px]">
-                      <p className="text-[14px] text-text-primary leading-relaxed">
+                      <p className="text-[15px] text-text-primary leading-relaxed">
                         {faq.answer}
                       </p>
                     </div>
@@ -254,7 +254,7 @@ export default function HelpPage() {
       {/* No results */}
       {q && filteredTopics.length === 0 && filteredFaqs.length === 0 && (
         <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             No results found for &ldquo;{searchQuery}&rdquo;
           </p>
         </div>

@@ -128,7 +128,7 @@ export default function AddProjectModal({
           <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
             {/* Name */}
             <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Project Name <span className="text-red">*</span>
               </span>
               <input
@@ -137,14 +137,14 @@ export default function AddProjectModal({
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="e.g. Kitchen Faucet Replacement"
               />
             </label>
 
             {/* Description */}
             <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Description
               </span>
               <input
@@ -153,7 +153,7 @@ export default function AddProjectModal({
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
-                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="Brief description of the work"
               />
             </label>
@@ -161,14 +161,14 @@ export default function AddProjectModal({
             {/* Contractor */}
             {contractors.length > 0 && (
               <div className="flex flex-col gap-1.5">
-                <span className="text-[14px] font-medium text-text-primary">
+                <span className="text-[15px] font-medium text-text-primary">
                   Contractor
                 </span>
                 <div className="relative" ref={contractorDropdownRef}>
                   <button
                     type="button"
                     onClick={() => setContractorDropdownOpen(!contractorDropdownOpen)}
-                    className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[14px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                    className="w-full flex items-center gap-2.5 px-3 py-[7px] pr-8 text-[15px] bg-white border border-border rounded-[var(--radius-sm)] text-text-primary cursor-pointer focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                   >
                     {form.contractorId ? (() => {
                       const selected = contractors.find((c) => c.id === form.contractorId);
@@ -213,7 +213,7 @@ export default function AddProjectModal({
                             <button
                               type="button"
                               onClick={() => { setForm({ ...form, contractorId: "" }); setContractorDropdownOpen(false); setContractorSearch(""); }}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!form.contractorId ? "bg-surface-hover" : ""}`}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${!form.contractorId ? "bg-surface-hover" : ""}`}
                             >
                               <span className="w-6 h-6 rounded-full bg-border shrink-0" />
                               <span className="text-text-3">None</span>
@@ -224,7 +224,7 @@ export default function AddProjectModal({
                               key={c.id}
                               type="button"
                               onClick={() => { setForm({ ...form, contractorId: c.id }); setContractorDropdownOpen(false); setContractorSearch(""); }}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${form.contractorId === c.id ? "bg-surface-hover" : ""}`}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left hover:bg-surface-hover transition-[background] duration-[120ms] ${form.contractorId === c.id ? "bg-surface-hover" : ""}`}
                             >
                               {c.logoUrl ? (
                                 <img src={c.logoUrl} alt="" className="w-6 h-6 rounded-full object-contain bg-white border border-border shrink-0" />
@@ -243,7 +243,7 @@ export default function AddProjectModal({
                             <button
                               type="button"
                               onClick={() => { setContractorDropdownOpen(false); setContractorSearch(""); setShowContractorModal(true); }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-left text-accent font-medium hover:bg-surface-hover transition-[background] duration-[120ms] border-t border-border"
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[15px] text-left text-accent font-medium hover:bg-surface-hover transition-[background] duration-[120ms] border-t border-border"
                             >
                               + Add New Contractor
                             </button>
@@ -259,7 +259,7 @@ export default function AddProjectModal({
             {/* Home Asset */}
             {homeAssets.length > 0 && (
               <div className="flex flex-col gap-1.5">
-                <span className="text-[14px] font-medium text-text-primary">
+                <span className="text-[15px] font-medium text-text-primary">
                   Home Asset
                 </span>
                 <ComboboxInput
@@ -288,14 +288,14 @@ export default function AddProjectModal({
 
             {/* Notes */}
             <label className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Notes
               </span>
               <textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={3}
-                className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+                className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
                 placeholder="Materials, special instructions, access notes..."
               />
             </label>
@@ -305,14 +305,14 @@ export default function AddProjectModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!isValid}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isEditing ? "Save Changes" : "Create Project"}
               </button>

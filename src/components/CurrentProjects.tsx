@@ -58,7 +58,7 @@ export default function CurrentProjects() {
     <div className="p-5">
       <header className="flex items-start justify-between gap-4 mb-4">
         <div className="flex flex-col gap-[3px] min-w-0">
-          <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
+          <h2 className="text-[17px] font-semibold text-text-primary flex items-center gap-1.5">
             <WrenchIcon width={15} height={15} className="text-accent" />
             Latest Projects
           </h2>
@@ -77,9 +77,9 @@ export default function CurrentProjects() {
       </header>
 
       {loading ? (
-        <p className="text-[14px] text-text-3 py-4">Loading...</p>
+        <p className="text-[15px] text-text-3 py-4">Loading...</p>
       ) : projects.length === 0 ? (
-        <p className="text-[14px] text-text-3 py-4">
+        <p className="text-[15px] text-text-3 py-4">
           No projects yet.
         </p>
       ) : (
@@ -98,7 +98,7 @@ export default function CurrentProjects() {
                   <WrenchIcon width={16} height={16} className="text-accent" />
                 </div>
                 <div className="flex flex-col gap-0.5 min-w-0">
-                  <span className="text-[14px] font-medium text-text-primary truncate">
+                  <span className="text-[15px] font-medium text-text-primary truncate">
                     {p.name}
                   </span>
                   {p.contractorCompany && (

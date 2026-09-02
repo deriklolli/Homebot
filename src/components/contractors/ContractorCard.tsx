@@ -42,7 +42,7 @@ export default function ContractorCard({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-[14px] font-semibold text-text-primary truncate">
+            <p className="text-[15px] font-semibold text-text-primary truncate">
               {contractor.company?.trim() || contractor.name}
             </p>
             {contractor.company?.trim() && contractor.name && (
@@ -79,7 +79,7 @@ export default function ContractorCard({
 
         {/* Contact info */}
         <div className="flex flex-col gap-1.5 py-3 border-t border-border">
-          <div className="flex items-center gap-2 text-[14px] text-text-2">
+          <div className="flex items-center gap-2 text-[15px] text-text-2">
             <PhoneCallIcon
               width={13}
               height={13}
@@ -92,7 +92,7 @@ export default function ContractorCard({
               {contractor.phone}
             </a>
           </div>
-          <div className="flex items-center gap-2 text-[14px] text-text-2">
+          <div className="flex items-center gap-2 text-[15px] text-text-2">
             <MailIcon
               width={13}
               height={13}
@@ -113,7 +113,7 @@ export default function ContractorCard({
             {contractor.specialty}
           </span>
           {contractor.notes && (
-            <p className="text-[14px] text-text-3 line-clamp-2 leading-relaxed">
+            <p className="text-[15px] text-text-3 line-clamp-2 leading-relaxed">
               {contractor.notes}
             </p>
           )}

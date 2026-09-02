@@ -41,9 +41,9 @@ export default function DashboardPage() {
           <Card>
             <SpendingCard />
           </Card>
-          <Card>
+          {/* <Card>
             <HomeSnapshot />
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>

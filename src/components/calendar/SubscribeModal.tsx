@@ -73,7 +73,7 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
 
         {/* Body */}
         <div className="p-5 flex flex-col gap-4">
-          <p className="text-[14px] text-text-2 leading-relaxed">
+          <p className="text-[15px] text-text-2 leading-relaxed">
             Add your HOMEBOT schedule to your calendar so project
             appointments, inventory reminders, and service dates stay in sync.
           </p>
@@ -81,7 +81,7 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
           {/* Quick add button */}
           <a
             href={webcalUrl}
-            className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-semibold hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-semibold hover:brightness-110 transition-all duration-[120ms]"
           >
             <CalendarIcon />
             Add to Calendar
@@ -106,7 +106,7 @@ export default function SubscribeModal({ onClose }: SubscribeModalProps) {
             />
             <button
               onClick={handleCopy}
-              className="inline-flex items-center px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] shrink-0"
+              className="inline-flex items-center px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms] shrink-0"
             >
               {copied ? "Copied!" : "Copy"}
             </button>

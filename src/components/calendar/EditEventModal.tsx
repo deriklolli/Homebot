@@ -86,7 +86,7 @@ export default function EditEventModal({
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
           {/* Title */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Title <span className="text-red">*</span>
             </span>
             <input
@@ -95,14 +95,14 @@ export default function EditEventModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="Event title"
             />
           </label>
 
           {/* Date */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Date <span className="text-red">*</span>
             </span>
             <DatePicker
@@ -115,7 +115,7 @@ export default function EditEventModal({
           {/* Start & End Time */}
           <div className="flex gap-3">
             <label className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Start Time
               </span>
               <TimePicker
@@ -133,7 +133,7 @@ export default function EditEventModal({
               />
             </label>
             <label className="flex flex-col gap-1.5 flex-1">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 End Time
               </span>
               <TimePicker
@@ -145,14 +145,14 @@ export default function EditEventModal({
 
           {/* Notes */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Notes
             </span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] resize-none"
+              className="px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms] resize-none"
               placeholder="Add notes..."
             />
           </label>
@@ -194,14 +194,14 @@ export default function EditEventModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!isValid}
-                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Save Changes
               </button>

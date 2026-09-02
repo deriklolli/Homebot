@@ -257,7 +257,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/inventory"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Inventory
@@ -266,7 +266,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
           <p className="text-[15px] font-semibold text-text-primary mb-1">
             Item not found
           </p>
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             This item may have been removed.
           </p>
         </div>
@@ -293,7 +293,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/inventory"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Inventory
@@ -303,7 +303,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       <header className="flex items-start justify-between gap-4 mb-6">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
+            <h1 className="text-[24px] font-bold tracking-tight text-text-primary truncate">
               {item.name}
             </h1>
             <span className="shrink-0 px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
@@ -316,14 +316,14 @@ export default function InventoryDetailClient({ id }: { id: string }) {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <PencilIcon width={13} height={13} />
             Edit
           </button>
           <button
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <TrashIcon width={13} height={13} />
             Delete
@@ -407,7 +407,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Next Reminder
                 </span>
-                <span className="text-[14px] font-semibold text-text-primary">
+                <span className="text-[15px] font-semibold text-text-primary">
                   {formatDate(item.nextReminderDate)}
                 </span>
                 {isOverdue ? (
@@ -440,7 +440,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Last Ordered
                 </span>
-                <span className="text-[14px] text-text-primary">
+                <span className="text-[15px] text-text-primary">
                   {item.lastOrderedDate ? formatDate(item.lastOrderedDate) : "\u2014"}
                 </span>
               </div>
@@ -454,7 +454,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                     <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                       Est. Cost
                     </span>
-                    <span className="text-[14px] text-text-primary">
+                    <span className="text-[15px] text-text-primary">
                       ${item.cost}
                     </span>
                   </div>
@@ -468,7 +468,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                       href={buyNowUrl(item.name, item.purchaseUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[14px] text-accent hover:underline"
+                      className="text-[15px] text-accent hover:underline"
                     >
                       Buy Now
                     </a>
@@ -483,7 +483,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Description
                 </span>
-                <p className="text-[14px] text-text-primary leading-relaxed">
+                <p className="text-[15px] text-text-primary leading-relaxed">
                   {item.description}
                 </p>
               </div>
@@ -505,10 +505,10 @@ export default function InventoryDetailClient({ id }: { id: string }) {
             <SparklesIcon width={20} height={20} className="text-accent" />
           </div>
           <div className="min-w-0 flex-1 pr-6">
-            <p className="text-[14px] font-semibold text-text-primary mb-1">
+            <p className="text-[15px] font-semibold text-text-primary mb-1">
               Helpful Homebot Tip
             </p>
-            <p className="text-[14px] text-text-primary leading-relaxed">
+            <p className="text-[15px] text-text-primary leading-relaxed">
               Did you know you can get more product options for this item? Simply connect this item to an asset with a model number.
             </p>
           </div>
@@ -555,7 +555,7 @@ export default function InventoryDetailClient({ id }: { id: string }) {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-semibold text-text-primary">
+                      <p className="text-[15px] font-semibold text-text-primary">
                         {product.name}
                       </p>
                       {product.estimatedCost != null && (
@@ -578,18 +578,18 @@ export default function InventoryDetailClient({ id }: { id: string }) {
       {/* Delete confirmation */}
       {confirmDelete && (
         <div className="mt-4 flex items-center gap-3 bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[var(--shadow-card)] px-5 py-3">
-          <span className="text-[14px] text-text-3 flex-1">
+          <span className="text-[15px] text-text-3 flex-1">
             Are you sure you want to delete this item? This cannot be undone.
           </span>
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
           >
             Yes, Delete
           </button>
           <button
             onClick={() => setConfirmDelete(false)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             Cancel
           </button>

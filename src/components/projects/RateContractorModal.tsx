@@ -65,7 +65,7 @@ export default function RateContractorModal({
 
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               How was your experience?
             </span>
             <div
@@ -94,14 +94,14 @@ export default function RateContractorModal({
           </div>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary">
+            <span className="text-[15px] font-medium text-text-primary">
               Note <span className="text-text-3 font-normal">(optional)</span>
             </span>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
-              className="w-full px-3 py-[7px] text-[14px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
+              className="w-full px-3 py-[7px] text-[15px] bg-surface border border-border rounded-[var(--radius-sm)] text-text-primary placeholder:text-text-4 resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-[120ms]"
               placeholder="Any notes about this contractor..."
             />
           </label>
@@ -110,13 +110,13 @@ export default function RateContractorModal({
             <button
               type="button"
               onClick={handleSkip}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
             >
               Skip
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
             >
               Submit Rating
             </button>

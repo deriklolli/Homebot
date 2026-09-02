@@ -205,7 +205,7 @@ export default function CalendarWeekGrid({
           return (
             <div key={i} className={`py-3 pl-3 border-l border-border ${isToday ? "bg-accent/[0.04]" : ""}`}>
               <span
-                className={`text-[22px] font-bold leading-none ${
+                className={`text-[24px] font-bold leading-none ${
                   isToday ? "text-accent" : "text-text-primary"
                 }`}
               >

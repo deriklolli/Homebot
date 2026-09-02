@@ -110,7 +110,7 @@ export default function UtilityBillDetailClient({
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
-        <div className="text-[14px] text-text-3">Loading...</div>
+        <div className="text-[15px] text-text-3">Loading...</div>
       </div>
     );
   }
@@ -118,7 +118,7 @@ export default function UtilityBillDetailClient({
   if (!bill) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
-        <p className="text-[14px] text-text-3">Bill not found.</p>
+        <p className="text-[15px] text-text-3">Bill not found.</p>
       </div>
     );
   }
@@ -141,10 +141,10 @@ export default function UtilityBillDetailClient({
             className={`w-4 h-4 rounded-full shrink-0 ${getCategoryColor(bill.category)}`}
           />
           <div>
-            <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+            <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
               {bill.providerName}
             </h1>
-            <p className="text-[14px] text-text-3">
+            <p className="text-[15px] text-text-3">
               {getCategoryLabel(bill.category)}
               {bill.source === "gmail_scan" && (
                 <span className="inline-flex items-center gap-1 ml-2 text-text-4">
@@ -157,7 +157,7 @@ export default function UtilityBillDetailClient({
         </div>
         <button
           onClick={() => setEditOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
         >
           <PencilIcon width={14} height={14} />
           Edit
@@ -213,10 +213,10 @@ export default function UtilityBillDetailClient({
                 onClick={() => router.push(`/utility-bills/${b.id}`)}
                 className="w-full flex items-center justify-between px-3 py-2.5 rounded-[var(--radius-md)] hover:bg-surface-hover transition-colors text-left"
               >
-                <span className="text-[14px] text-text-primary">
+                <span className="text-[15px] text-text-primary">
                   {b.dueDate ? formatDateShort(b.dueDate) : "No date"}
                 </span>
-                <span className="text-[14px] font-medium text-text-primary">
+                <span className="text-[15px] font-medium text-text-primary">
                   $
                   {b.amount.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
@@ -255,7 +255,7 @@ function DetailRow({
   return (
     <div className={fullWidth ? "sm:col-span-2" : ""}>
       <p className="text-[12px] text-text-3 mb-0.5">{label}</p>
-      <div className="text-[14px] text-text-primary">{children}</div>
+      <div className="text-[15px] text-text-primary">{children}</div>
     </div>
   );
 }

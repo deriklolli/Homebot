@@ -131,6 +131,7 @@ export default function ProjectsClient() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [activeTab, setActiveTab] = useState<"current" | "past">("current");
   const [modalOpen, setModalOpen] = useState(false);
   const [completingProject, setCompletingProject] = useState<Project | null>(null);
   const [completingInvoices, setCompletingInvoices] = useState<ProjectInvoice[]>([]);
@@ -206,6 +207,13 @@ export default function ProjectsClient() {
     return [...years].sort((a, b) => b - a);
   }, [projects]);
 
+  // A project is "past" if completed more than 7 days ago
+  function isPastProject(p: Project): boolean {
+    if (p.status !== "Completed" || !p.completedAt) return false;
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return new Date(p.completedAt).getTime() < sevenDaysAgo;
+  }
+
   // Build column items from filtered projects
   const buildColumns = useCallback(() => {
     const cols: Record<ProjectStatus, string[]> = {
@@ -224,10 +232,13 @@ export default function ProjectsClient() {
         )
           continue;
       }
+      const past = isPastProject(p);
+      if (activeTab === "current" && past) continue;
+      if (activeTab === "past" && !past) continue;
       cols[p.status].push(p.id);
     }
     return cols;
-  }, [projects, selectedYear, searchQuery]);
+  }, [projects, selectedYear, searchQuery, activeTab]);
 
   // Re-initialize columns when projects or filters change
   useEffect(() => {
@@ -443,7 +454,7 @@ export default function ProjectsClient() {
       {/* Header */}
       <header className="flex items-center justify-between mb-6 shrink-0">
         <div className="flex items-center gap-3">
-          <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+          <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
             Projects
           </h1>
           <div className="relative inline-flex items-center">
@@ -468,7 +479,7 @@ export default function ProjectsClient() {
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={14} height={14} />
           Add Project
@@ -483,57 +494,104 @@ export default function ProjectsClient() {
         />
       </div>
 
-      {/* Kanban board — columns scroll independently */}
+      {/* Tabs */}
+      <div className="shrink-0">
+        <div className="flex gap-6 border-b border-[#DAD3CE]">
+          {([["current", "Current Projects"], ["past", "Past Projects"]] as const).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className={`pb-2.5 text-[15px] font-medium transition-colors duration-[120ms] border-b-2 -mb-px ${
+                activeTab === value
+                  ? "text-text-primary border-accent"
+                  : "text-text-3 border-transparent hover:text-text-primary"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Board */}
       <div className="mt-[25px] flex-1 min-h-0">
         {totalFiltered > 0 ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-              {PROJECT_STATUSES.map((status) => (
-                <KanbanColumn
-                  key={status}
-                  status={status}
-                  projectIds={columnItems[status]}
-                  projectMap={projectMap}
-                  contractorMap={contractorMap}
-                  isOver={overColumn === status && dragSourceColumn !== status}
-                />
-              ))}
-            </div>
+          activeTab === "current" ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCorners}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+                {PROJECT_STATUSES.map((status) => (
+                  <KanbanColumn
+                    key={status}
+                    status={status}
+                    projectIds={columnItems[status]}
+                    projectMap={projectMap}
+                    contractorMap={contractorMap}
+                    isOver={overColumn === status && dragSourceColumn !== status}
+                  />
+                ))}
+              </div>
 
-            <DragOverlay dropAnimation={null}>
-              {activeProject ? (
-                <div style={{ cursor: "grabbing" }}>
+              <DragOverlay dropAnimation={null}>
+                {activeProject ? (
+                  <div style={{ cursor: "grabbing" }}>
+                    <ProjectCard
+                      project={activeProject}
+                      contractorCompany={
+                        activeProject.contractorId
+                          ? contractorMap.get(activeProject.contractorId)?.company ?? null
+                          : null
+                      }
+                      contractorLogoUrl={
+                        activeProject.contractorId
+                          ? contractorMap.get(activeProject.contractorId)?.logoUrl ?? null
+                          : null
+                      }
+                    />
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          ) : (
+            /* Past Projects — simple list, no drag-and-drop */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {columnItems["Completed"].map((id) => {
+                const p = projectMap.get(id);
+                if (!p) return null;
+                return (
                   <ProjectCard
-                    project={activeProject}
+                    key={id}
+                    project={p}
                     contractorCompany={
-                      activeProject.contractorId
-                        ? contractorMap.get(activeProject.contractorId)?.company ?? null
+                      p.contractorId
+                        ? contractorMap.get(p.contractorId)?.company ?? null
                         : null
                     }
                     contractorLogoUrl={
-                      activeProject.contractorId
-                        ? contractorMap.get(activeProject.contractorId)?.logoUrl ?? null
+                      p.contractorId
+                        ? contractorMap.get(p.contractorId)?.logoUrl ?? null
                         : null
                     }
                   />
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+                );
+              })}
+            </div>
+          )
         ) : (
           <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 text-center">
             <p className="text-[15px] font-semibold text-text-primary mb-1">
-              No projects found
+              {activeTab === "past" ? "No past projects" : "No projects found"}
             </p>
-            <p className="text-[14px] text-text-3">
-              Try adjusting your search or filter, or add a new project.
+            <p className="text-[15px] text-text-3">
+              {activeTab === "past"
+                ? "Completed projects older than 7 days will appear here."
+                : "Try adjusting your search or filter, or add a new project."}
             </p>
           </div>
         )}

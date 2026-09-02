@@ -74,7 +74,7 @@ export default function CompleteProjectModal({
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
           {/* Total Cost */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-[14px] font-medium text-text-primary flex items-center gap-1.5">
+            <span className="text-[15px] font-medium text-text-primary flex items-center gap-1.5">
               <DollarIcon width={13} height={13} className="text-text-3" />
               Total Cost <span className="text-red">*</span>
             </span>
@@ -89,7 +89,7 @@ export default function CompleteProjectModal({
           {/* Contractor Rating */}
           {hasContractor && (
             <div className="flex flex-col gap-1.5">
-              <span className="text-[14px] font-medium text-text-primary">
+              <span className="text-[15px] font-medium text-text-primary">
                 Rate {contractorName || "Contractor"}{" "}
                 <span className="text-red">*</span>
               </span>
@@ -124,14 +124,14 @@ export default function CompleteProjectModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid}
-              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-green text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-green text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Mark Completed
             </button>

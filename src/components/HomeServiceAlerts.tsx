@@ -123,7 +123,7 @@ export default function HomeServiceAlerts() {
     <article className="bg-surface rounded-[var(--radius-lg)] border border-red/20 shadow-[0_1px_4px_rgba(224,49,49,0.15),0_2px_8px_rgba(224,49,49,0.1)] overflow-hidden hover:shadow-[0_4px_16px_rgba(224,49,49,0.18),0_2px_6px_rgba(224,49,49,0.12)] transition-shadow duration-200 mb-4">
       <div className="px-5 pt-5 pb-0">
         <header className="flex items-start justify-between gap-4 mb-4">
-          <h2 className="text-[15px] font-semibold text-text-primary flex items-center gap-1.5">
+          <h2 className="text-[17px] font-semibold text-text-primary flex items-center gap-1.5">
             <BellIcon width={15} height={15} className="text-accent" />
             Home Service Alert
           </h2>
@@ -142,7 +142,7 @@ export default function HomeServiceAlerts() {
         </header>
 
         {loading ? (
-          <p className="text-[14px] text-text-3 py-4">Loading...</p>
+          <p className="text-[15px] text-text-3 py-4">Loading...</p>
         ) : (
           <ul
             className="flex flex-col -mx-5"
@@ -167,7 +167,7 @@ export default function HomeServiceAlerts() {
                       <ClipboardCheckIcon width={16} height={16} className="text-white" />
                     </div>
                     <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                      <span className="text-[14px] font-medium text-text-primary truncate">
+                      <span className="text-[15px] font-medium text-text-primary truncate">
                         {item.name}
                       </span>
                       <span className="text-[11px] text-text-3">

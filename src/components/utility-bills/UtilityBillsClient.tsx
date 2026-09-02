@@ -174,11 +174,11 @@ export default function UtilityBillsClient() {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         <header className="mb-6">
-          <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+          <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
             Utility Bills
           </h1>
         </header>
-        <div className="text-[14px] text-text-3">Loading...</div>
+        <div className="text-[15px] text-text-3">Loading...</div>
       </div>
     );
   }
@@ -187,12 +187,12 @@ export default function UtilityBillsClient() {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           Utility Bills
         </h1>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           <PlusIcon width={15} height={15} />
           Add Bill
@@ -201,7 +201,7 @@ export default function UtilityBillsClient() {
 
       {/* Scanning indicator */}
       {scanning && (
-        <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-accent-light border border-accent/20 text-[14px] text-accent">
+        <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-accent-light border border-accent/20 text-[15px] text-accent">
           <span className="inline-block w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0" />
           Scanning your Gmail for utility bills — this may take a moment...
         </div>
@@ -209,7 +209,7 @@ export default function UtilityBillsClient() {
 
       {/* Scan result */}
       {scanResult && !scanning && (
-        <div className="mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-green-light text-green border border-green/20 text-[14px]">
+        <div className="mb-4 px-4 py-3 rounded-[var(--radius-md)] bg-green-light text-green border border-green/20 text-[15px]">
           Scan complete! Found {scanResult.scanned} emails, imported{" "}
           {scanResult.imported} new bill{scanResult.imported !== 1 ? "s" : ""}.
         </div>
@@ -226,7 +226,7 @@ export default function UtilityBillsClient() {
               <h2 className="text-[15px] font-semibold text-text-primary mb-1">
                 Track your utility spending automatically
               </h2>
-              <p className="text-[14px] text-text-3 mb-4 max-w-[520px]">
+              <p className="text-[15px] text-text-3 mb-4 max-w-[520px]">
                 Connect your Gmail and Homebot will scan for utility bills from
                 your email — electric, gas, water, internet, and more. Amounts,
                 due dates, and providers are extracted automatically so you can
@@ -236,7 +236,7 @@ export default function UtilityBillsClient() {
                 <button
                   onClick={handleConnectGmail}
                   disabled={connecting}
-                  className="inline-flex items-center gap-2 px-4 py-[8px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-[8px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
                 >
                   <MailIcon width={15} height={15} />
                   {connecting ? "Connecting..." : "Connect Gmail"}
@@ -310,7 +310,7 @@ export default function UtilityBillsClient() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by provider..."
-            className="w-full pl-9 pr-3 py-2 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+            className="w-full pl-9 pr-3 py-2 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
           />
         </div>
         {tabs.length > 2 && (
@@ -374,21 +374,21 @@ export default function UtilityBillsClient() {
                     onClick={() => window.location.href = `/utility-bills/${bill.id}`}
                   >
                     <td className="px-4 py-3">
-                      <span className="text-[14px] text-text-2">{monthLabel}</span>
+                      <span className="text-[15px] text-text-2">{monthLabel}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-[14px] font-medium text-text-primary group-hover:text-accent transition-colors">
+                      <span className="text-[15px] font-medium text-text-primary group-hover:text-accent transition-colors">
                         {bill.providerName}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="flex items-center gap-2">
                         <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${getCategoryColor(bill.category)}`} />
-                        <span className="text-[14px] text-text-primary">{getCategoryLabel(bill.category)}</span>
+                        <span className="text-[15px] text-text-primary">{getCategoryLabel(bill.category)}</span>
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="text-[14px] font-semibold text-text-primary">
+                      <span className="text-[15px] font-semibold text-text-primary">
                         ${bill.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </td>

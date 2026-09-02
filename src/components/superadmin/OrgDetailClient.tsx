@@ -55,7 +55,7 @@ export default function OrgDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
-        <p className="text-[14px] text-text-3">Loading...</p>
+        <p className="text-[15px] text-text-3">Loading...</p>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export default function OrgDetailClient({ id }: { id: string }) {
   if (!org) {
     return (
       <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
-        <p className="text-[14px] text-text-primary">Organization not found.</p>
+        <p className="text-[15px] text-text-primary">Organization not found.</p>
       </div>
     );
   }
@@ -72,14 +72,14 @@ export default function OrgDetailClient({ id }: { id: string }) {
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <Link
         href="/superadmin/organizations"
-        className="inline-flex items-center gap-1 text-[14px] text-text-3 hover:text-accent mb-4 transition-colors"
+        className="inline-flex items-center gap-1 text-[15px] text-text-3 hover:text-accent mb-4 transition-colors"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Organizations
       </Link>
 
       <header className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           {org.name}
         </h1>
         <button
@@ -98,14 +98,14 @@ export default function OrgDetailClient({ id }: { id: string }) {
           <h2 className="text-[15px] font-semibold text-text-primary">Managers</h2>
           <Link
             href={`/superadmin/managers/new?org=${id}`}
-            className="text-[14px] text-accent font-medium hover:underline"
+            className="text-[15px] text-accent font-medium hover:underline"
           >
             + Add Manager
           </Link>
         </div>
 
         {managers.length === 0 ? (
-          <p className="px-5 py-8 text-[14px] text-text-3 text-center">
+          <p className="px-5 py-8 text-[15px] text-text-3 text-center">
             No managers in this organization yet.
           </p>
         ) : (
@@ -113,7 +113,7 @@ export default function OrgDetailClient({ id }: { id: string }) {
             {managers.map((mgr) => (
               <li key={mgr.id} className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p className="text-[14px] font-medium text-text-primary">
+                  <p className="text-[15px] font-medium text-text-primary">
                     {mgr.fullName || mgr.email}
                   </p>
                   <p className="text-[12px] text-text-3">

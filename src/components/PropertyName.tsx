@@ -13,7 +13,7 @@ export default function PropertyName() {
   }, []);
 
   return (
-    <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+    <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
       {name ?? "My Home"}
     </h1>
   );

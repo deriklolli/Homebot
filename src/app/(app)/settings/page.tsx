@@ -148,7 +148,7 @@ export default function SettingsPage() {
   return (
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <header className="mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           Settings
         </h1>
       </header>
@@ -156,7 +156,7 @@ export default function SettingsPage() {
       {/* Property */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mb-4">
         <h2 className="text-[15px] font-semibold text-text-primary mb-1">Property</h2>
-        <p className="text-[14px] text-text-3 mb-4">
+        <p className="text-[15px] text-text-3 mb-4">
           Name your property. This appears on the dashboard header.
         </p>
         <input
@@ -164,13 +164,13 @@ export default function SettingsPage() {
           value={propertyName}
           onChange={(e) => setPropertyName(e.target.value)}
           placeholder="e.g. 1715 Red Hawk Trail"
-          className="w-full max-w-[320px] px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+          className="w-full max-w-[320px] px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
         />
         <div className="pt-3">
           <button
             onClick={handleSaveProperty}
             disabled={savingProperty}
-            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
           >
             {savingProperty ? "Saving..." : savedProperty ? "Saved!" : "Save"}
           </button>
@@ -180,7 +180,7 @@ export default function SettingsPage() {
       {/* Appearance */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5">
         <h2 className="text-[15px] font-semibold text-text-primary mb-1">Appearance</h2>
-        <p className="text-[14px] text-text-3 mb-4">Choose your preferred theme.</p>
+        <p className="text-[15px] text-text-3 mb-4">Choose your preferred theme.</p>
         <div className="flex gap-2">
           {themeOptions.map((opt) => {
             const isActive = theme === opt.value;
@@ -188,7 +188,7 @@ export default function SettingsPage() {
               <button
                 key={opt.value}
                 onClick={() => setTheme(opt.value)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border text-[14px] font-medium transition-all duration-[120ms] ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-[var(--radius-sm)] border text-[15px] font-medium transition-all duration-[120ms] ${
                   isActive
                     ? "border-accent bg-accent-light text-accent"
                     : "border-border-strong bg-surface text-text-2 hover:bg-border hover:text-text-primary"
@@ -205,12 +205,12 @@ export default function SettingsPage() {
       {/* Notifications */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mt-4">
         <h2 className="text-[15px] font-semibold text-text-primary mb-1">Notifications</h2>
-        <p className="text-[14px] text-text-3 mb-4">
+        <p className="text-[15px] text-text-3 mb-4">
           Get alerts when inventory items are due for reorder.
         </p>
 
         {loadingPrefs ? (
-          <p className="text-[14px] text-text-3">Loading preferences...</p>
+          <p className="text-[15px] text-text-3">Loading preferences...</p>
         ) : (
           <div className="space-y-4">
             {/* Email toggle */}
@@ -229,7 +229,7 @@ export default function SettingsPage() {
               )}
               <MailIcon width={15} height={15} className="text-text-3 shrink-0" />
               <div>
-                <span className="text-[14px] font-medium text-text-primary block">
+                <span className="text-[15px] font-medium text-text-primary block">
                   Email notifications
                 </span>
                 {userEmail && (
@@ -256,7 +256,7 @@ export default function SettingsPage() {
               )}
               <PhoneIcon width={15} height={15} className="text-text-3 shrink-0" />
               <div>
-                <span className="text-[14px] font-medium text-text-primary block">
+                <span className="text-[15px] font-medium text-text-primary block">
                   SMS notifications
                 </span>
                 <span className="text-[12px] text-text-3 block">
@@ -281,7 +281,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
               >
                 {saving ? "Saving..." : saved ? "Saved!" : "Save preferences"}
               </button>
@@ -292,17 +292,17 @@ export default function SettingsPage() {
       {/* Gmail Integration */}
       <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-5 mt-4">
         <h2 className="text-[15px] font-semibold text-text-primary mb-1">Gmail Integration</h2>
-        <p className="text-[14px] text-text-3 mb-4">
+        <p className="text-[15px] text-text-3 mb-4">
           Connect your Gmail account to automatically scan for utility bills.
         </p>
 
         {gmailLoading ? (
-          <p className="text-[14px] text-text-3">Checking connection...</p>
+          <p className="text-[15px] text-text-3">Checking connection...</p>
         ) : gmailConnected ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green shrink-0" />
-              <span className="text-[14px] text-text-primary">
+              <span className="text-[15px] text-text-primary">
                 Connected as <strong>{gmailEmail}</strong>
               </span>
             </div>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
             <button
               onClick={handleDisconnectGmail}
               disabled={disconnecting}
-              className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-red text-red text-[14px] font-medium hover:bg-red/5 transition-all duration-[120ms] disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] border border-red text-red text-[15px] font-medium hover:bg-red/5 transition-all duration-[120ms] disabled:opacity-50"
             >
               {disconnecting ? "Disconnecting..." : "Disconnect Gmail"}
             </button>
@@ -322,7 +322,7 @@ export default function SettingsPage() {
         ) : (
           <button
             onClick={handleConnectGmail}
-            className="inline-flex items-center gap-2 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+            className="inline-flex items-center gap-2 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
           >
             <MailIcon width={15} height={15} />
             Connect Gmail

@@ -33,7 +33,7 @@ export default function HelpTopicClient({ slug }: { slug: string }) {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
         <Link
           href="/help"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Help
@@ -42,7 +42,7 @@ export default function HelpTopicClient({ slug }: { slug: string }) {
           <p className="text-[15px] font-semibold text-text-primary mb-1">
             Topic not found
           </p>
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             The help topic you&apos;re looking for doesn&apos;t exist.
           </p>
         </div>
@@ -56,7 +56,7 @@ export default function HelpTopicClient({ slug }: { slug: string }) {
     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
       <Link
         href="/help"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Help
@@ -69,7 +69,7 @@ export default function HelpTopicClient({ slug }: { slug: string }) {
             <Icon width={20} height={20} className="text-accent" />
           </div>
         )}
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           {topic.name}
         </h1>
       </header>
@@ -83,7 +83,7 @@ export default function HelpTopicClient({ slug }: { slug: string }) {
               <h2 className="text-[15px] font-semibold text-text-primary mb-3">
                 {section.heading}
               </h2>
-              <p className="text-[14px] text-text-primary leading-relaxed">
+              <p className="text-[15px] text-text-primary leading-relaxed">
                 {section.body}
               </p>
             </div>

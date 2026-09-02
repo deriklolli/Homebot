@@ -220,7 +220,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scroll">
         <Link
           href="/services"
-          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+          className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
         >
           <ChevronLeftIcon width={14} height={14} />
           Back to Services
@@ -229,7 +229,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
           <p className="text-[15px] font-semibold text-text-primary mb-1">
             Service not found
           </p>
-          <p className="text-[14px] text-text-3">
+          <p className="text-[15px] text-text-3">
             This service may have been removed.
           </p>
         </div>
@@ -264,7 +264,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
       {/* Back link */}
       <Link
         href="/services"
-        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[14px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
+        className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-transparent text-text-2 text-[15px] font-medium hover:bg-border/50 hover:text-text-primary transition-all duration-[120ms] -mt-2 mb-6"
       >
         <ChevronLeftIcon width={14} height={14} />
         Back to Services
@@ -274,7 +274,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
       <header className="flex items-start justify-between gap-4 mb-6">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <h1 className="text-[22px] font-bold tracking-tight text-text-primary truncate">
+            <h1 className="text-[24px] font-bold tracking-tight text-text-primary truncate">
               {service.name}
             </h1>
             <span className="shrink-0 px-2.5 py-0.5 text-[11px] font-medium rounded-[var(--radius-full)] bg-accent-light text-accent">
@@ -287,14 +287,14 @@ export default function ServiceDetailClient({ id }: { id: string }) {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <PencilIcon width={13} height={13} />
             Edit
           </button>
           <button
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+            className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
           >
             <TrashIcon width={13} height={13} />
             Delete
@@ -321,7 +321,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
                       <HomeIcon width={16} height={16} className="text-white" />
                     </span>
                   )}
-                  <span className="text-[14px] text-text-primary truncate group-hover:text-accent transition-colors duration-[120ms]">
+                  <span className="text-[15px] text-text-primary truncate group-hover:text-accent transition-colors duration-[120ms]">
                     {linkedAsset.name}
                   </span>
                 </Link>
@@ -333,16 +333,16 @@ export default function ServiceDetailClient({ id }: { id: string }) {
               <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                 Next Service Date
               </span>
-              <span className="text-[14px] font-semibold text-text-primary">
+              <span className="text-[15px] font-semibold text-text-primary">
                 {formatDate(service.nextServiceDate)}
               </span>
               {isOverdue ? (
-                <span className="block mt-1 px-2 py-0.5 text-[14px] font-medium rounded-[var(--radius-full)] bg-red text-white w-fit">
+                <span className="block mt-1 px-2 py-0.5 text-[15px] font-medium rounded-[var(--radius-full)] bg-red text-white w-fit">
                   {dueLabel}
                 </span>
               ) : (
                 <span
-                  className={`block text-[14px] mt-0.5 ${
+                  className={`block text-[15px] mt-0.5 ${
                     isSoon ? "text-accent font-medium" : "text-text-3"
                   }`}
                 >
@@ -371,11 +371,11 @@ export default function ServiceDetailClient({ id }: { id: string }) {
                     </div>
                   )}
                   <div className="min-w-0">
-                    <span className="text-[14px] text-text-primary block truncate">
+                    <span className="text-[15px] text-text-primary block truncate">
                       {service.provider || linkedContractor?.company}
                     </span>
                     {service.phone && (
-                      <span className="flex items-center gap-1.5 text-[14px] text-text-primary mt-0.5">
+                      <span className="flex items-center gap-1.5 text-[15px] text-text-primary mt-0.5">
                         <PhoneIcon width={13} height={13} className="shrink-0" />
                         {service.phone}
                       </span>
@@ -392,7 +392,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
                   type="button"
                   onClick={handleMarkAsServiced}
                   disabled={serviceReset}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[14px] font-medium transition-all duration-[120ms] h-fit whitespace-nowrap ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[15px] font-medium transition-all duration-[120ms] h-fit whitespace-nowrap ${
                     serviceReset
                       ? "bg-green text-white"
                       : "bg-accent text-white hover:brightness-110"
@@ -411,7 +411,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Cost
                 </span>
-                <span className="text-[14px] text-text-primary">
+                <span className="text-[15px] text-text-primary">
                   ${service.cost.toLocaleString()}
                 </span>
               </div>
@@ -422,7 +422,7 @@ export default function ServiceDetailClient({ id }: { id: string }) {
                 <span className="block text-[11px] font-medium text-[#D4BDAB] uppercase tracking-wide mb-1">
                   Notes
                 </span>
-                <p className="text-[14px] text-text-primary leading-relaxed whitespace-pre-wrap">
+                <p className="text-[15px] text-text-primary leading-relaxed whitespace-pre-wrap">
                   {service.notes}
                 </p>
               </div>
@@ -446,20 +446,20 @@ export default function ServiceDetailClient({ id }: { id: string }) {
             <h2 className="text-[15px] font-semibold text-text-primary mb-2">
               Delete Service
             </h2>
-            <p className="text-[14px] text-text-3 mb-5">
+            <p className="text-[15px] text-text-3 mb-5">
               Are you sure you want to delete &ldquo;{service.name}&rdquo;?
               This cannot be undone.
             </p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setConfirmDelete(false)}
-                className="px-4 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[14px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
+                className="px-4 py-[7px] rounded-[var(--radius-sm)] border border-border-strong bg-surface text-text-2 text-[15px] font-medium hover:bg-border hover:text-text-primary transition-all duration-[120ms]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+                className="px-4 py-[7px] rounded-[var(--radius-sm)] bg-red text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
               >
                 Delete
               </button>

@@ -84,7 +84,7 @@ export default function AddBillModal({
   }
 
   const inputCls =
-    "w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all";
+    "w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all";
 
   return (
     <div
@@ -133,7 +133,7 @@ export default function AddBillModal({
                     key={p.id}
                     type="button"
                     onClick={() => handleProviderSelect(p)}
-                    className="w-full text-left px-3 py-2 text-[14px] text-text-primary hover:bg-surface-hover transition-colors"
+                    className="w-full text-left px-3 py-2 text-[15px] text-text-primary hover:bg-surface-hover transition-colors"
                   >
                     {p.name}
                   </button>
@@ -166,7 +166,7 @@ export default function AddBillModal({
               Amount
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-3 text-[14px]">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-3 text-[15px]">
                 $
               </span>
               <input
@@ -254,7 +254,7 @@ export default function AddBillModal({
             <button
               type="submit"
               disabled={saving || !providerName.trim() || !amount}
-              className="flex-1 py-[9px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
+              className="flex-1 py-[9px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms] disabled:opacity-50"
             >
               {saving ? "Saving..." : bill ? "Update Bill" : "Add Bill"}
             </button>
@@ -262,7 +262,7 @@ export default function AddBillModal({
               <button
                 type="button"
                 onClick={onDelete}
-                className="px-4 py-[9px] rounded-[var(--radius-sm)] border border-red text-red text-[14px] font-medium hover:bg-red/5 transition-all duration-[120ms]"
+                className="px-4 py-[9px] rounded-[var(--radius-sm)] border border-red text-red text-[15px] font-medium hover:bg-red/5 transition-all duration-[120ms]"
               >
                 Delete
               </button>

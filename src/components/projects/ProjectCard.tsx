@@ -35,7 +35,7 @@ export default function ProjectCard({
         <div className="p-5 flex-1 min-w-0">
           {/* Name + status */}
           <div className="flex items-start justify-between gap-2 mb-2">
-            <p className="text-[14px] font-semibold text-text-primary truncate">
+            <p className="text-[15px] font-semibold text-text-primary truncate">
               {project.name}
             </p>
             <span
@@ -47,7 +47,7 @@ export default function ProjectCard({
 
           {/* Description */}
           {project.description && (
-            <p className="text-[14px] text-text-3 line-clamp-2 leading-relaxed mb-3">
+            <p className="text-[15px] text-text-3 line-clamp-2 leading-relaxed mb-3">
               {project.description}
             </p>
           )}

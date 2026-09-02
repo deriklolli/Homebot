@@ -201,22 +201,22 @@ export default function ServiceHistorySection({
                     className="group border-b border-border last:border-b-0 hover:bg-surface-hover transition-[background] duration-[120ms]"
                   >
                     <td className="px-5 py-3">
-                      <span className="text-[14px] text-text-primary">
+                      <span className="text-[15px] text-text-primary">
                         {formatDateLong(entry.serviceDate)}
                       </span>
                     </td>
                     <td className="px-5 py-3">
-                      <span className="text-[14px] text-text-primary">
+                      <span className="text-[15px] text-text-primary">
                         {entry.contractorName || "—"}
                       </span>
                     </td>
                     <td className="px-5 py-3">
-                      <span className="text-[14px] text-text-primary">
+                      <span className="text-[15px] text-text-primary">
                         {linkedAsset?.make || "—"}
                       </span>
                     </td>
                     <td className="px-5 py-3">
-                      <span className="text-[14px] text-text-primary">
+                      <span className="text-[15px] text-text-primary">
                         {linkedAsset?.model || "—"}
                       </span>
                     </td>

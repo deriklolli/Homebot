@@ -63,16 +63,16 @@ export default function SignUpPage() {
       <div className="min-h-dvh flex items-center justify-center bg-bg p-4">
         <div className="w-full max-w-[400px] bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-8 flex flex-col items-center gap-4 text-center">
           <HomebotLogo width={40} height={34} />
-          <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+          <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
             Check your email
           </h1>
-          <p className="text-[14px] text-text-3 leading-relaxed">
+          <p className="text-[15px] text-text-3 leading-relaxed">
             We&apos;ve sent a confirmation link to <strong className="text-text-primary">{email}</strong>.
             Click the link to activate your account.
           </p>
           <Link
             href="/login"
-            className="mt-2 text-[14px] text-accent font-medium hover:underline"
+            className="mt-2 text-[15px] text-accent font-medium hover:underline"
           >
             Back to sign in
           </Link>
@@ -87,10 +87,10 @@ export default function SignUpPage() {
         {/* Logo & Header */}
         <div className="flex flex-col items-center gap-3">
           <HomebotLogo width={40} height={34} />
-          <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+          <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
             Create an account
           </h1>
-          <p className="text-[14px] text-text-3 text-center">
+          <p className="text-[15px] text-text-3 text-center">
             Get started managing your home projects and inventory.
           </p>
         </div>
@@ -98,7 +98,7 @@ export default function SignUpPage() {
         {/* Error message */}
         {error && (
           <div className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-red/10 border border-red/20">
-            <p className="text-[14px] text-red">{error}</p>
+            <p className="text-[15px] text-red">{error}</p>
           </div>
         )}
 
@@ -117,7 +117,7 @@ export default function SignUpPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
               placeholder="you@example.com"
             />
           </div>
@@ -134,7 +134,7 @@ export default function SignUpPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
               placeholder="At least 6 characters"
             />
           </div>
@@ -151,14 +151,14 @@ export default function SignUpPage() {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[14px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+              className="w-full px-3 py-2.5 rounded-[var(--radius-md)] border border-border bg-surface text-[15px] text-text-primary placeholder:text-text-4 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
               placeholder="Repeat your password"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-accent text-white text-[14px] font-semibold rounded-[var(--radius-md)] hover:opacity-90 transition-opacity duration-[120ms] disabled:opacity-60"
+            className="w-full py-2.5 px-4 bg-accent text-white text-[15px] font-semibold rounded-[var(--radius-md)] hover:opacity-90 transition-opacity duration-[120ms] disabled:opacity-60"
           >
             {loading ? "Creating account..." : "Sign up"}
           </button>
@@ -174,14 +174,14 @@ export default function SignUpPage() {
         {/* Google SSO */}
         <button
           onClick={handleGoogleSignUp}
-          className="flex items-center justify-center gap-3 w-full py-2.5 px-4 border border-border bg-surface text-text-primary text-[14px] font-medium rounded-[var(--radius-md)] hover:bg-border transition-colors duration-[120ms]"
+          className="flex items-center justify-center gap-3 w-full py-2.5 px-4 border border-border bg-surface text-text-primary text-[15px] font-medium rounded-[var(--radius-md)] hover:bg-border transition-colors duration-[120ms]"
         >
           <GoogleIcon />
           Sign up with Google
         </button>
 
         {/* Sign in link */}
-        <p className="text-[14px] text-text-3">
+        <p className="text-[15px] text-text-3">
           Already have an account?{" "}
           <Link href="/login" className="text-accent font-medium hover:underline">
             Sign in

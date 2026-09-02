@@ -41,12 +41,12 @@ export default function AdminDashboardClient() {
   return (
     <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
       <header className="flex items-center justify-between mb-6">
-        <h1 className="text-[22px] font-bold tracking-tight text-text-primary">
+        <h1 className="text-[24px] font-bold tracking-tight text-text-primary">
           Clients
         </h1>
         <Link
           href="/admin/clients/new"
-          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[14px] font-medium hover:brightness-110 transition-all duration-[120ms]"
+          className="inline-flex items-center gap-1.5 px-4 py-[7px] rounded-[var(--radius-sm)] bg-accent text-white text-[15px] font-medium hover:brightness-110 transition-all duration-[120ms]"
         >
           + New Client
         </Link>
@@ -66,9 +66,9 @@ export default function AdminDashboardClient() {
         </div>
 
         {loading ? (
-          <p className="px-5 py-8 text-[14px] text-text-3 text-center">Loading...</p>
+          <p className="px-5 py-8 text-[15px] text-text-3 text-center">Loading...</p>
         ) : clients.length === 0 ? (
-          <p className="px-5 py-8 text-[14px] text-text-3 text-center">
+          <p className="px-5 py-8 text-[15px] text-text-3 text-center">
             No clients yet. Create one to get started.
           </p>
         ) : (
@@ -79,7 +79,7 @@ export default function AdminDashboardClient() {
                   href={`/admin/clients/${client.id}`}
                   className="flex-1 min-w-0 hover:opacity-80 transition-opacity"
                 >
-                  <p className="text-[14px] font-medium text-text-primary truncate">
+                  <p className="text-[15px] font-medium text-text-primary truncate">
                     {client.fullName || client.email}
                   </p>
                   <p className="text-[12px] text-text-3">
@@ -115,7 +115,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="bg-surface rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)] p-4">
       <p className="text-[12px] text-text-3 mb-1">{label}</p>
-      <p className="text-[22px] font-bold text-text-primary">{value}</p>
+      <p className="text-[24px] font-bold text-text-primary">{value}</p>
     </div>
   );
 }
